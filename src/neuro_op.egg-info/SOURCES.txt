@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+src/neuro_op/__init__.py
+src/neuro_op/neuro_op.py
+src/neuro_op.egg-info/PKG-INFO
+src/neuro_op.egg-info/SOURCES.txt
+src/neuro_op.egg-info/dependency_links.txt
+src/neuro_op.egg-info/requires.txt
+src/neuro_op.egg-info/top_level.txt
