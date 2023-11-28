@@ -8,7 +8,7 @@ import scipy.stats as st
 class Agent:
     """
     Agents with belief-holding, -sampling, and -updating behavior.
-    
+
     Attributes:
     beliefs -- Numpy array of possible parameter values into which an agent may hold belief
     log_probs -- Numpy array current relative log-probabilities of each belief
@@ -16,16 +16,8 @@ class Agent:
     diary -- Array of past incoming information
     protocol -- Array of past outgoing information
     """
-    
-    def __init__(
-            self,
-            beliefs,
-            log_priors,
-            likelihood=st.norm(
-                loc = 0, 
-                scale = 5
-                )
-            ):
+
+    def __init__(self, beliefs, log_priors, likelihood=st.norm(loc=0, scale=5)):
         """
         Initialize an agent capable of updating and sampling of a world model (= beliefs & log-probabilities of each belief).
         """
@@ -36,14 +28,14 @@ class Agent:
         self.likelihood = likelihood
         self.diary = np.array([])
         self.protocol = np.array([])
-     
+
     def set_updated_belief(self, incoming_info):
         """Bayesian update of the agent's belief AND fit of new likelihood function."""
 
         self.diary = np.append(self.diary, incoming_info)
-        self.log_probs += self.likelihood.logpdf(x=self.beliefs-incoming_info)
+        self.log_probs += self.likelihood.logpdf(x=self.beliefs - incoming_info)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
-        #self.likelihood = st.fit(st.norm, logpdf_to_pdf(self.log_probs))
+        # self.likelihood = st.fit(st.norm, logpdf_to_pdf(self.log_probs))
 
     def get_belief_sample(self, size=1):
         """Sample a belief according to world model."""
@@ -60,13 +52,15 @@ class Agent:
 
 
 def logpdf_to_pdf(logprobs):
-    """ 
+    """
     Returns array of relative log probabilities as normalized relative probabilities.
-    
+
     Keyword arguments:
     logprobs -- array of log probabilities
     """
-    probs = logprobs - np.max(logprobs) # shift logprobs to be >0 after exponentiation -- probably needed due to non-normalized log-space Bayesian update
+    probs = logprobs - np.max(
+        logprobs
+    )  # shift logprobs to be >0 after exponentiation -- probably needed due to non-normalized log-space Bayesian update
     probs = np.exp(probs)
     return probs / np.sum(probs)
 
@@ -76,17 +70,19 @@ def build_random_network(N_agents, N_neighbours):
     Build adjacency matrix of a weighted graph of N_agents, with random connections.
     At the start, each agent has, on average, 3 connections, each connection is bidirectional and of weight 1.
     """
-    #size = (N_agents, N_agents)
-    p = N_neighbours/(N_agents - 1)   # probability of connection; '-1' to exclude self-connections
-    #network = rng.uniform(size=size)
-    #network = np.where(network < p, 1, 0)
-    #network = np.triu(network, k=1)   # remove self-connections
-    #network2 = network + network.T
+    # size = (N_agents, N_agents)
+    p = N_neighbours / (
+        N_agents - 1
+    )  # probability of connection; '-1' to exclude self-connections
+    # network = rng.uniform(size=size)
+    # network = np.where(network < p, 1, 0)
+    # network = np.triu(network, k=1)   # remove self-connections
+    # network2 = network + network.T
     #
-    #return network2
+    # return network2
 
     G = nx.gnp_random_graph(N_agents, p, seed=RANDOM_SEED).to_directed()
-    return G #nx.adjacency_matrix(G).todense()
+    return G  # nx.adjacency_matrix(G).todense()
 
 
 def network_dynamics(agents, G, world, h, r, t_end):
@@ -104,24 +100,22 @@ def network_dynamics(agents, G, world, h, r, t_end):
     """
 
     assert nx.number_of_nodes(G) == len(agents)
-    
+
     N_nodes = nx.number_of_nodes(G)
     N_edges = nx.number_of_edges(G)
     t = 0
     N_events = 0
-    
+
     while t < t_end:
-        dt = st.expon.rvs(scale=1/(h+r), random_state=rng)
+        dt = st.expon.rvs(scale=1 / (h + r), random_state=rng)
         t = t + dt
         N_events += 1
         event = rng.uniform()
-        
-        if event < N_nodes*h / (N_nodes*h+N_edges*r):
+
+        if event < N_nodes * h / (N_nodes * h + N_edges * r):
             # external information draw event
             agent = random.choice(agents)
-            agent.set_updated_belief(
-                world.get_belief_sample(size=1)
-                )
+            agent.set_updated_belief(world.get_belief_sample(size=1))
 
         else:
             # edge event
@@ -132,27 +126,28 @@ def network_dynamics(agents, G, world, h, r, t_end):
             agents[chatters[0]].set_updated_belief(sample1)
             agents[chatters[1]].set_updated_belief(sample0)
 
-    return (agents,
-            G,
-            world,
-            N_events,
-            t_end,
-            )
+    return (
+        agents,
+        G,
+        world,
+        N_events,
+        t_end,
+    )
 
 
 def run_model(
-        N_agents=100,
-        N_neighbours=3,
-        N_beliefs=1000,
-        belief_min=-100,
-        belief_max=100,
-        log_priors = np.zeros(1000),
-        likelihood = st.norm(loc=0, scale=5),
-        world_dist = st.norm(loc=0, scale=5),
-        h=1,
-        r=1,
-        t_max=1000,
-        ):  
+    N_agents=100,
+    N_neighbours=3,
+    N_beliefs=1000,
+    belief_min=-100,
+    belief_max=100,
+    log_priors=np.zeros(1000),
+    likelihood=st.norm(loc=0, scale=5),
+    world_dist=st.norm(loc=0, scale=5),
+    h=1,
+    r=1,
+    t_max=1000,
+):
     """
     Execute program.
     Get all parameters and initialize agents (w. belief and log-prior distributions), network graph, and world distribution.
@@ -160,7 +155,7 @@ def run_model(
 
     Keyword arguments:
     N_agents -- number of agents
-    N_neighbours -- expected number of neighbours per agent 
+    N_neighbours -- expected number of neighbours per agent
     N_beliefs -- number of beliefs (= grid points) we consider
     belief_min -- minimum value with belief > 0
     belief_max -- maximum value with belief > 0
@@ -175,12 +170,8 @@ def run_model(
     beliefs = np.linspace(belief_min, belief_max, N_beliefs)
     agents = [Agent(beliefs, log_priors, likelihood) for i in range(N_agents)]
     G = build_random_network(N_agents, N_neighbours)
-    world = Agent(
-        beliefs=beliefs,
-        log_priors=world_dist.logpdf(x=beliefs)
-        )
+    world = Agent(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
 
     agents, G, world, N_events, t_end = network_dynamics(agents, G, world, h, r, t_max)
 
     return agents, G, beliefs, world, N_events, t_end
-

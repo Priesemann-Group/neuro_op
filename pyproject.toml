@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version"]
+name = "neuro_op"
+authors = [
+  { name="Jens Friedel", email="jens.friedel@ds.mpg.de" },
+]
+description = "Package to research information establishment in networks of topology-restricted active inference nodes."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "matplotlib",
+  "networkx",
+  "numpy",
+  "scipy",
+]
+
+[project.urls]
+Homepage = "https://github.com/Priesemann-Group/neuro_op"
+Issues = "https://github.com/Priesemann-Group/neuro_op/issues"
