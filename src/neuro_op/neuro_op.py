@@ -18,8 +18,8 @@ class Agent:
     beliefs -- Numpy array of possible parameter values into which an agent may hold belief
     log_probs -- Numpy array current relative log-probabilities of each belief
     likelihood -- likelihood function used during Bayesian belief updating; added for potential future extension to changing tolerance (i.e., sigma)
-    diary -- Array of past incoming information
-    protocol -- Array of past outgoing information
+    diary_in -- Array of past incoming information
+    diary_out -- Array of past outgoing information
     """
 
     def __init__(self, beliefs, log_priors, likelihood=st.norm(loc=0, scale=5)):
@@ -31,13 +31,13 @@ class Agent:
         self.beliefs = np.copy(beliefs)
         self.log_probs = np.copy(log_priors)
         self.likelihood = likelihood
-        self.diary = np.array([])
-        self.protocol = np.array([])
+        self.diary_in = np.array([])
+        self.diary_out = np.array([])
 
     def set_updated_belief(self, incoming_info):
         """Bayesian update of the agent's belief AND fit of new likelihood function."""
 
-        self.diary = np.append(self.diary, incoming_info)
+        self.diary_in = np.append(self.diary_in, incoming_info)
         self.log_probs += self.likelihood.logpdf(x=self.beliefs - incoming_info)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
 
@@ -46,14 +46,14 @@ class Agent:
 
         probs = logpdf_to_pdf(self.log_probs)
         sample = np.random.choice(self.beliefs, size=size, p=probs)
-        self.protocol = np.append(self.protocol, sample)
+        self.diary_out = np.append(self.diary_out, sample)
 
         return sample
 
     def __repr__(self):
         """Return a string representation of the agent."""
 
-        return f"Agent(beliefs={self.beliefs}, log_probs={self.log_probs}, likelihood={self.likelihood}, diary={self.diary}, protocol={self.protocol})"
+        return f"Agent(beliefs={self.beliefs}, log_probs={self.log_probs}, likelihood={self.likelihood}, diary_in={self.diary_in}, diary_out={self.diary_out})"
 
 
 def build_random_network(N_agents, N_neighbours):
@@ -93,50 +93,46 @@ def logpdf_to_pdf(logprobs):
     return probs / np.sum(probs)
 
 
-def KL_divergence(log_P, log_Q):
+def kl_divergence(P, Q):
     """
-    Returns Kullback-Leibler divergence between two arrays of potentially non-normalized log probabilities.
+    Returns Kullback-Leibler divergence between two identically binned discrete probability distributions.
+
+    Returns Kullback-Leibler divergence in base b=e (i.e., nats).
+    Usually, P is the to-be-tested (and/or data-based) distribution and Q the reference distribution.
+
+    If you want to use samples as basis of your inputs, you can normalize and bin them via
+    > np.histogram(samples, bins=N_bins, range=(sample_space_min, sample_space_max), density=True)'
 
     Keyword arguments:
-    log_P -- array of potentially non-normalized log probabilities of tested distribution
-    log_Q -- array of potentially non-normalized log probabilities of reference distribution
+    P -- array of discrete probability distribution
+    Q -- array of discrete probability distribution
+    """
+
+    return np.sum(P * np.log(P/Q))
+
+
+def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
+    """
+    Simulate predictions using the whole posterior, with the underlying likelihood function being Gaussian.
+
+    Posterior predictive distribution (PPD) sampling first samples paramter values of the estimand from the posterior.
+    Then these sampled parameter values will be used in the likelihood function to sample predictions.
+    Thereby, the PPD includes all the uncertainty (i.e., model parameter value uncertainty (from posterior) & generative uncertainty (model with given parameter values creating data stochastically).
+
+    Keyword arguments:
+    beliefs -- array of possible parameter values into which an agent may hold belief
+    logprobs -- array of log probabilities corresponding to 'beliefs' array
+    N_samples -- number of to-be-drawn likelihood parameter values and then-sampled predictions; can in principle be split up into two separate parameters (one for parameter sampling, one for prediction sampling)
     """
 
     # Transform potentially non-normalized log probabilities to normalized probabilities.
-    P = logpdf_to_pdf(log_P)
-    Q = logpdf_to_pdf(log_Q)
+    probs = logpdf_to_pdf(logprobs)
 
-    # Return KL-divergence with base 2.
-    return np.sum(P * np.log2(P / Q))
+    # Sample parameter values proportional to the posterior.
+    parameter_samples = np.random.choice(beliefs, p=probs, size=N_samples)
 
-
-def KL_divergence_from_samples(P_samples, Q_samples, N_bins, sample_space_min, sample_space_max):
-    """
-    Returns Kullback-Leibler divergence between samples and a potentially non-normalized log probability distribution.
-
-    Keyword arguments:
-    samples -- array of samples from tested distribution
-    log_Q -- array of potentially non-normalized log probabilities of reference distribution
-    bins -- number of bins used for sample binning
-    sample_space_min -- minimum of sample space interval considered here (usually = belief_min)
-    sample_space_max -- maximum of sample space interval considered here (usually = belief_max)
-    """
-
-    # Get normalized sample probabilites per bin via histogram of samples.
-    P, _ = np.histogram(
-        P_samples,
-        bins=N_bins,
-        range=(sample_space_min, sample_space_max),
-        density=True,
-    )
-    Q, _ = np.histogram(
-        Q_samples,
-        bins=N_bins,
-        range=(sample_space_min, sample_space_max),
-        density=True,
-    )
-
-    return np.sum(P * np.log2(P / Q))
+    # Generate predictions using the likelihood function.
+    return st.norm.rvs(loc=parameter_samples, scale=5, size=N_samples)
 
 
 def network_dynamics(agents, G, world, h, r, t_end):
