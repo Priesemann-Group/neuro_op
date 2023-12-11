@@ -93,6 +93,24 @@ def logpdf_to_pdf(logprobs):
     return probs / np.sum(probs)
 
 
+def dist_binning(dist, range=(-20, 20), N_bins=50):
+    """
+    Returns a scipy distribution's probability mass binned into N equally-spaced bins.
+
+    Returns normalized numpy array of scipy distribution probabilities to sample value in corresponding bin.
+    Uses scipy distribution's cdf function to integrate over each bin's range.
+
+    Keyword arguments:
+    dist -- scipy distribution
+    range -- interval for which binning is performed
+    N_bins -- number of bins to be returned
+    """
+    Q_bins = np.linspace(range[0], range[1], N_bins + 1)
+    Q = dist.cdf(Q_bins[1:]) - dist.cdf(Q_bins[:-1])
+
+    return Q / np.sum(Q)
+
+
 def kl_divergence(P, Q):
     """
     Returns Kullback-Leibler divergence between two identically binned discrete probability distributions.
@@ -108,7 +126,12 @@ def kl_divergence(P, Q):
     Q -- array of discrete probability distribution
     """
 
-    return np.sum(P * np.log(P/Q))
+    terms = P * np.log(P / Q)
+
+    # assure that KL-div is 0 for (P==0 && Q>0)
+    terms[(P / Q == 0)] = 0
+
+    return np.sum(terms)
 
 
 def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
