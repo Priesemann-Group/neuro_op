@@ -105,6 +105,7 @@ def dist_binning(dist, range=(-20, 20), N_bins=50):
     range -- interval for which binning is performed
     N_bins -- number of bins to be returned
     """
+
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
     Q = dist.cdf(Q_bins[1:]) - dist.cdf(Q_bins[:-1])
 
@@ -132,6 +133,30 @@ def kl_divergence(P, Q):
     terms[(P / Q == 0)] = 0
 
     return np.sum(terms)
+
+
+def p_distances(mu_agents, mu_ref, p=1, p_inv=1):
+    """
+    Returns an average distance between an array of agents' inferred parameters and a reference parameter.
+
+    Returns a distance between an array of agent-inferred generative model parameters and a reference value.
+    Usually, the reference value of interest is the parameter encoding/generating the real world data
+    (e.g., the mean of a Gaussian distribution).
+    Usually, the array of MLEs is usually created from agents' posterior predictive distributions (PPDs).
+
+    If p_inv = 1/p, this function returns the p-norm.
+    If p_inv = 1, the return value is usually multiplied by 1/len(mu_agents) to obtain the mean distance.
+    For sum of linear distances, choose p = 1, p_inv = 1  .
+    For sum of quadratic distances, choose p = 2, p_inv = 1  .
+
+    Keyword arguments:
+    mu_agents -- array of values
+    mu_ref -- reference value to which mu_agents values are compared
+    p -- value by which each difference is raised, usually 1 (linear distance) or 2 (squared distance)
+    p_inv -- value by which the sum of differences is raised.
+    """
+
+    return np.sum(np.abs(mu_agents - mu_ref) ** p) ** p_inv
 
 
 def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
