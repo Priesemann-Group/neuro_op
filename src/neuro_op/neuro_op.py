@@ -10,12 +10,12 @@ random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
 
 
-class Agent:
+class node:
     """
-    Agents with belief-holding, -sampling, and -updating behavior.
+    nodes with belief-holding, -sampling, and -updating behavior.
 
     Attributes:
-    beliefs -- Numpy array of possible parameter values into which an agent may hold belief
+    beliefs -- Numpy array of possible parameter values into which an node may hold belief
     log_probs -- Numpy array current relative log-probabilities of each belief
     likelihood -- likelihood function used during Bayesian belief updating; added for potential future extension to changing tolerance (i.e., sigma)
     diary_in -- Array of past incoming information
@@ -24,7 +24,7 @@ class Agent:
 
     def __init__(self, beliefs, log_priors, likelihood=st.norm(loc=0, scale=5)):
         """
-        Initialize an agent capable of updating and sampling of a world model (= beliefs & log-probabilities of each belief).
+        Initialize an node capable of updating and sampling of a world model (= beliefs & log-probabilities of each belief).
         """
 
         assert len(beliefs) == len(log_priors)
@@ -35,7 +35,7 @@ class Agent:
         self.diary_out = np.array([])
 
     def set_updated_belief(self, incoming_info):
-        """Bayesian update of the agent's belief AND fit of new likelihood function."""
+        """Bayesian update of the node's belief AND fit of new likelihood function."""
 
         self.diary_in = np.append(self.diary_in, incoming_info)
         self.log_probs += self.likelihood.logpdf(x=self.beliefs - incoming_info)
@@ -51,22 +51,22 @@ class Agent:
         return sample
 
     def __repr__(self):
-        """Return a string representation of the agent."""
+        """Return a string representation of the node."""
 
-        return f"Agent(beliefs={self.beliefs}, log_probs={self.log_probs}, likelihood={self.likelihood}, diary_in={self.diary_in}, diary_out={self.diary_out})"
+        return f"node(beliefs={self.beliefs}, log_probs={self.log_probs}, likelihood={self.likelihood}, diary_in={self.diary_in}, diary_out={self.diary_out})"
 
 
-def build_random_network(N_agents, N_neighbours):
+def build_random_network(N_nodes, N_neighbours):
     """
-    Build adjacency matrix of a weighted graph of N_agents, with random connections.
-    At the start, each agent has, on average, 3 connections, each connection is bidirectional and of weight 1.
+    Build adjacency matrix of a weighted graph of N_nodes, with random connections.
+    At the start, each node has, on average, 3 connections, each connection is bidirectional and of weight 1.
     """
 
     p = N_neighbours / (
-        N_agents - 1
+        N_nodes - 1
     )  # probability of connection; '-1' to exclude self-connections
 
-    # size = (N_agents, N_agents)
+    # size = (N_nodes, N_nodes)
     # network = rng.uniform(size=size)
     # network = np.where(network < p, 1, 0)
     # network = np.triu(network, k=1)   # remove self-connections
@@ -74,7 +74,7 @@ def build_random_network(N_agents, N_neighbours):
     #
     # return network2
 
-    G = nx.gnp_random_graph(N_agents, p).to_directed()
+    G = nx.gnp_random_graph(N_nodes, p).to_directed()
     return G  # nx.adjacency_matrix(G).todense()
 
 
@@ -93,7 +93,7 @@ def logpdf_to_pdf(logprobs):
     return probs / np.sum(probs)
 
 
-def dist_binning(dist, range=(-20, 20), N_bins=50):
+def dist_binning(dist, N_bins=50, range=(-20, 20)):
     """
     Returns a scipy distribution's probability mass binned into N equally-spaced bins.
 
@@ -120,7 +120,8 @@ def kl_divergence(P, Q):
     Usually, P is the to-be-tested (and/or data-based) distribution and Q the reference distribution.
 
     If you want to use samples as basis of your inputs, you can normalize and bin them via
-    > np.histogram(samples, bins=N_bins, range=(sample_space_min, sample_space_max), density=True)'
+    > inputs = np.histogram(samples, bins=N_bins, range=(sample_space_min, sample_space_max)
+    > inputs = inputs[0] / np.sum(inputs[0])
 
     Keyword arguments:
     P -- array of discrete probability distribution
@@ -135,28 +136,28 @@ def kl_divergence(P, Q):
     return np.sum(terms)
 
 
-def p_distances(mu_agents, mu_ref, p=1, p_inv=1):
+def p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
     """
-    Returns an average distance between an array of agents' inferred parameters and a reference parameter.
+    Returns an average distance between an array of nodes' inferred parameters and a reference parameter.
 
-    Returns a distance between an array of agent-inferred generative model parameters and a reference value.
+    Returns a distance between an array of node-inferred generative model parameters and a reference value.
     Usually, the reference value of interest is the parameter encoding/generating the real world data
     (e.g., the mean of a Gaussian distribution).
-    Usually, the array of MLEs is usually created from agents' posterior predictive distributions (PPDs).
+    Usually, the array of MLEs is usually created from nodes' posterior predictive distributions (PPDs).
 
     If p_inv = 1/p, this function returns the p-norm.
-    If p_inv = 1, the return value is usually multiplied by 1/len(mu_agents) to obtain the mean distance.
+    If p_inv = 1, the return value is usually multiplied by 1/len(mu_nodes) to obtain the mean distance.
     For sum of linear distances, choose p = 1, p_inv = 1  .
     For sum of quadratic distances, choose p = 2, p_inv = 1  .
 
     Keyword arguments:
-    mu_agents -- array of values
-    mu_ref -- reference value to which mu_agents values are compared
+    mu_nodes -- array of values
+    mu_ref -- reference value to which mu_nodes values are compared
     p -- value by which each difference is raised, usually 1 (linear distance) or 2 (squared distance)
     p_inv -- value by which the sum of differences is raised.
     """
 
-    return np.sum(np.abs(mu_agents - mu_ref) ** p) ** p_inv
+    return np.sum(np.abs(mu_nodes - mu_ref) ** p) ** p_inv
 
 
 def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
@@ -168,7 +169,7 @@ def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     Thereby, the PPD includes all the uncertainty (i.e., model parameter value uncertainty (from posterior) & generative uncertainty (model with given parameter values creating data stochastically).
 
     Keyword arguments:
-    beliefs -- array of possible parameter values into which an agent may hold belief
+    beliefs -- array of possible parameter values into which an node may hold belief
     logprobs -- array of log probabilities corresponding to 'beliefs' array
     N_samples -- number of to-be-drawn likelihood parameter values and then-sampled predictions; can in principle be split up into two separate parameters (one for parameter sampling, one for prediction sampling)
     """
@@ -183,13 +184,13 @@ def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     return st.norm.rvs(loc=parameter_samples, scale=5, size=N_samples)
 
 
-def network_dynamics(agents, G, world, h, r, t_end):
+def network_dynamics(nodes, G, world, h, r, t_end):
     """
     Simulate the dynamics of Graph.
     As of now, weights are constant, only beliefs change.
 
     Keyword arguments:
-    agents -- list of agents, each having beliefs and nodes
+    nodes -- list of nodes, each having beliefs and nodes
     G -- networkx graph object (formerly adjacency matrix)
     world -- distribution providing stochastically blurred actual world state
     h -- rate of external information draw events
@@ -210,20 +211,20 @@ def network_dynamics(agents, G, world, h, r, t_end):
 
         if event < N_nodes * h / (N_nodes * h + N_edges * r):
             # external information draw event
-            agent = random.choice(agents)
-            agent.set_updated_belief(world.get_belief_sample(size=1))
+            node = random.choice(nodes)
+            node.set_updated_belief(world.get_belief_sample(size=1))
 
         else:
             # edge event
             chatters = random.choice(list(G.edges()))
-            # update each agent's log-probabilities with sample of edge neighbour's beliefs
-            sample0 = agents[chatters[0]].get_belief_sample(size=1)
-            sample1 = agents[chatters[1]].get_belief_sample(size=1)
-            agents[chatters[0]].set_updated_belief(sample1)
-            agents[chatters[1]].set_updated_belief(sample0)
+            # update each node's log-probabilities with sample of edge neighbour's beliefs
+            sample0 = nodes[chatters[0]].get_belief_sample(size=1)
+            sample1 = nodes[chatters[1]].get_belief_sample(size=1)
+            nodes[chatters[0]].set_updated_belief(sample1)
+            nodes[chatters[1]].set_updated_belief(sample0)
 
     return (
-        agents,
+        nodes,
         G,
         world,
         N_events,
@@ -232,7 +233,7 @@ def network_dynamics(agents, G, world, h, r, t_end):
 
 
 def run_model(
-    N_agents=100,
+    N_nodes=100,
     N_neighbours=3,
     N_beliefs=500,
     belief_min=-50,
@@ -246,12 +247,12 @@ def run_model(
 ):
     """
     Execute program.
-    Get all parameters and initialize agents (w. belief and log-prior distributions), network graph, and world distribution.
+    Get all parameters and initialize nodes (w. belief and log-prior distributions), network graph, and world distribution.
     Then, run simulation until t>=t_max and return simulation results.
 
     Keyword arguments:
-    N_agents -- number of agents
-    N_neighbours -- expected number of neighbours per agent
+    N_nodes -- number of nodes
+    N_neighbours -- expected number of neighbours per node
     N_beliefs -- number of beliefs (= grid points) we consider
     belief_min -- minimum value with belief > 0
     belief_max -- maximum value with belief > 0
@@ -264,10 +265,10 @@ def run_model(
     assert N_beliefs == len(log_priors)
 
     beliefs = np.linspace(belief_min, belief_max, N_beliefs)
-    agents = [Agent(beliefs, log_priors, likelihood) for i in range(N_agents)]
-    G = build_random_network(N_agents, N_neighbours)
-    world = Agent(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
+    nodes = [node(beliefs, log_priors, likelihood) for i in range(N_nodes)]
+    G = build_random_network(N_nodes, N_neighbours)
+    world = node(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
 
-    agents, G, world, N_events, t_end = network_dynamics(agents, G, world, h, r, t_max)
+    nodes, G, world, N_events, t_end = network_dynamics(nodes, G, world, h, r, t_max)
 
-    return agents, G, beliefs, world, N_events, t_end
+    return nodes, G, beliefs, world, N_events, t_end
