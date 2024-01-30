@@ -1,5 +1,5 @@
 Metadata-Version: 2.1
-Name: neuro-op
+Name: neuro_op
 Version: 0.0.0
 Summary: Package to research information establishment in networks of topology-restricted active inference nodes.
 Author-email: Jens Friedel <jens.friedel@ds.mpg.de>
@@ -8,12 +8,16 @@ Project-URL: Issues, https://github.com/Priesemann-Group/neuro_op/issues
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
 Classifier: Operating System :: OS Independent
-Requires-Python: >=3.8
+Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: ipykernel
+Requires-Dist: jax
 Requires-Dist: matplotlib
-Requires-Dist: networkx
 Requires-Dist: numpy
+Requires-Dist: networkx[default]
+Requires-Dist: numpy
+Requires-Dist: pymc
 Requires-Dist: scipy
 
 # neuro_op
@@ -35,11 +39,25 @@ or SSH (requires SSH key setup)
 $ git clone git@github.com:Priesemann-Group/neuro_op.git
 ```
 
-Subsequently, enter the just-cloned directory and install via pip:
+Subsequently, change into the just-cloned directory and, if you have not yet set up a conda environment with needed packages, do so:
+
+``bash
+$ cd neuro_op
+$ # If not yet existing, create conda environment with needed packages. This also installs pip within that environment
+$ conda env create -f environment.yml
+```
+
+To install the package within this environment (named `neuro_op`), activate the package and install from the repo's directory
 
 ```bash
-$ cd neuro_op
-$ pip install -e .
+$ conda activate neuro_op
+$ pip install -e .	    # This assumes you have been 'cd'ing into the neuro_op directory
 ```
 
 This will install the project in editable mode, meaning that changes in the local source code will apply without requiring a reinstall of the package.
+
+To access this environment via Jupyter (e.g., via JupyterLab), install an ipykernel for it:
+
+```bash
+$ python -m ipykernel install --user --name neuro_op --display-name "Python 3.11 (neuro_op)"
+```

@@ -1,4 +1,8 @@
+ipykernel
+jax
 matplotlib
-networkx
 numpy
+networkx[default]
+numpy
+pymc
 scipy
