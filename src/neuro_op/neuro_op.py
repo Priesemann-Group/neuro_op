@@ -17,7 +17,7 @@ class node:
     Attributes:
     beliefs -- Numpy array of possible parameter values into which an node may hold belief
     log_probs -- Numpy array current relative log-probabilities of each belief
-    likelihood -- likelihood function used during Bayesian belief updating; added for potential future extension to changing tolerance (i.e., sigma)
+    likelihood -- scipy object used for Bayesian belief updating in p(data|parameters)
     diary_in -- Array of past incoming information
     diary_out -- Array of past outgoing information
     """
@@ -75,6 +75,7 @@ def build_random_network(N_nodes, N_neighbours):
     # return network2
 
     G = nx.gnp_random_graph(N_nodes, p).to_directed()
+
     return G  # nx.adjacency_matrix(G).todense()
 
 
@@ -102,8 +103,8 @@ def dist_binning(dist, N_bins=50, range=(-20, 20)):
 
     Keyword arguments:
     dist -- scipy distribution
-    range -- interval for which binning is performed
     N_bins -- number of bins to be returned
+    range -- interval for which binning is performed
     """
 
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
@@ -124,10 +125,13 @@ def kl_divergence(P, Q):
     > inputs = inputs[0] / np.sum(inputs[0])
 
     Keyword arguments:
-    P -- array of discrete probability distribution
-    Q -- array of discrete probability distribution
+    P -- array of recorded discrete probability distribution
+    Q -- array of reference discrete probability distribution
     """
 
+    # kind of wackily add machine epsilon to all elements of Q to avoid 'divided by zero' errors
+    epsilon = 7.0 / 3 - 4.0 / 3 - 1
+    Q += epsilon
     terms = P * np.log(P / Q)
 
     # assure that KL-div is 0 for (P==0 && Q>0)
@@ -143,9 +147,9 @@ def p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
     Returns a distance between an array of node-inferred generative model parameters and a reference value.
     Usually, the reference value of interest is the parameter encoding/generating the real world data
     (e.g., the mean of a Gaussian distribution).
-    Usually, the array of MLEs is usually created from nodes' posterior predictive distributions (PPDs).
+    Usually, the array of MLEs is created from nodes' posterior predictive distributions (PPDs).
 
-    If p_inv = 1/p, this function returns the p-norm.
+    If p_inv = 1/p, this function returns the p-norm distances.
     If p_inv = 1, the return value is usually multiplied by 1/len(mu_nodes) to obtain the mean distance.
     For sum of linear distances, choose p = 1, p_inv = 1  .
     For sum of quadratic distances, choose p = 2, p_inv = 1  .
@@ -184,9 +188,74 @@ def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     return st.norm.rvs(loc=parameter_samples, scale=5, size=N_samples)
 
 
-def network_dynamics(nodes, G, world, h, r, t_end):
+def system_ppd_distances(
+    nodes,
+    world,
+    N_bins=50,
+    opinion_range=[-20, 20],
+    # p_distance_inputs = [
+    #    p=1
+    # ]
+):
     """
-    Simulate the dynamics of Graph.
+    Return approximated distances between system nodes' PPDs and world state's distribution and binning used during approximation.
+
+    Approximates distance between system nodes' posterior predictive distributions (PPDs) and world state's distribution.
+    PPDs and world state distributions are approximated by histogram-binning posterior predictive samples of each distribution.
+    Then, the wanted distance (KL divergence or p-distance) is calculated between each node distribution and the world distribution.
+
+    Keyword arguments:
+    nodes -- object(s) of class 'node'
+    world -- "real state" representing object of class 'node'
+    N_bins -- number of bins used in histogram binning of posterior predictive samples
+    opinion_range -- interval over which binning is performed
+    """
+
+    # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
+    ppd_samples = [
+        ppd_Gaussian_mu(node.beliefs, node.log_probs, N_samples=1000) for node in nodes
+    ]
+    ppds = [np.histogram(i, bins=N_bins, range=opinion_range)[0] for i in ppd_samples]
+    ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
+        world.diary_out, bins=N_bins, range=opinion_range
+    )
+    ppd_bins = ppd_world_out[1]
+    ppd_world_out = ppd_world_out[0] / np.sum(
+        ppd_world_out[0]
+    )  # normalize world_out PPD
+
+    ppd_world_true = dist_binning(world.likelihood, N_bins, opinion_range)
+
+    kl_divs = []
+    for i in ppds:
+        node_ppd = i / np.sum(i)
+        kl_divs.append(
+            [
+                kl_divergence(node_ppd, ppd_world_out),
+                kl_divergence(node_ppd, ppd_world_true),
+            ]
+        )
+
+    return (
+        kl_divs,
+        ppd_bins,
+    )
+
+
+def network_dynamics(
+    nodes,
+    G,
+    world,
+    h,
+    r,
+    t0,
+    t_max,
+    t_sample,
+    sample_bins,
+    sample_opinion_range,
+):
+    """
+    Simulate the dynamics of Graph and sample distances between world state and node's beliefs via PPD comparisons.
     As of now, weights are constant, only beliefs change.
 
     Keyword arguments:
@@ -195,17 +264,30 @@ def network_dynamics(nodes, G, world, h, r, t_end):
     world -- distribution providing stochastically blurred actual world state
     h -- rate of external information draw events
     r -- rate of edge information exchange events
-    t_end -- end time of simulation
+    t0 -- start time of simulation
+    t_max -- end time of simulation
+    t_sample -- periodicity for which distance measures (KL-div, p-distance) are taken
+    sample_bins -- number of bins used in distance measures
+    sample_opinion_range -- interval over which distance measure distributions are considered
     """
 
     N_nodes = nx.number_of_nodes(G)
     N_edges = nx.number_of_edges(G)
-    t = 0
+    sample_counter = int(t0 / t_sample)
+    t = t0
+    kl_divs_means = []
     N_events = 0
 
-    while t < t_end:
-        dt = st.expon.rvs(scale=1 / (h + r))
-        t = t + dt
+    while t < t_max:
+        # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
+        if int(t / t_sample) >= sample_counter:
+            print("Sampling at t=", t)
+            sample_counter += 1
+            sample_kl_div = system_ppd_distances(
+                nodes, world, sample_bins, sample_opinion_range
+            )[0]
+            kl_divs_means.append(np.mean(sample_kl_div, axis=0))
+
         N_events += 1
         event = rng.uniform()
 
@@ -223,12 +305,25 @@ def network_dynamics(nodes, G, world, h, r, t_end):
             nodes[chatters[0]].set_updated_belief(sample1)
             nodes[chatters[1]].set_updated_belief(sample0)
 
+        dt = st.expon.rvs(scale=1 / (h + r))
+        t = t + dt
+
+    # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
+    if int(t / t_sample) >= sample_counter:
+        print("Sampling at t=", t)
+        sample_counter += 1
+        sample_kl_div = system_ppd_distances(
+            nodes, world, sample_bins, sample_opinion_range
+        )[0]
+        kl_divs_means.append(np.mean(sample_kl_div, axis=0))
+
     return (
         nodes,
         G,
         world,
         N_events,
-        t_end,
+        t,
+        kl_divs_means,
     )
 
 
@@ -243,7 +338,11 @@ def run_model(
     world_dist=st.norm(loc=0, scale=5),
     h=1,
     r=1,
-    t_max=1000,
+    t0=0,
+    t_max=10000,
+    t_sample=1000,
+    sample_bins=50,
+    sample_opinion_range=[-20, 20],
 ):
     """
     Execute program.
@@ -256,10 +355,16 @@ def run_model(
     N_beliefs -- number of beliefs (= grid points) we consider
     belief_min -- minimum value with belief > 0
     belief_max -- maximum value with belief > 0
-    world -- distribution providing stochastically blurred actual world state
+    log_priors -- array of node's prior log-probabilities
+    likelihood -- scipy object nodes use for Bayesian belief updating in p(data|parameters) 
+    world -- scipy object providing stochastically blurred actual world state
     h -- world distribution sampling rate
     r -- edge neighbour's beliefs sampling rate
-    t_max -- time after which simulation stops
+    t_0 -- start time of simulation
+    t_max -- end time of simulation
+    t_sample -- periodicity for which distance measures (KL-div, p-distance) are taken
+    sample_bins -- number of bins used in distance measures
+    sample_opinion_range -- interval over which distance measure distributions are considered
     """
 
     assert N_beliefs == len(log_priors)
@@ -269,6 +374,17 @@ def run_model(
     G = build_random_network(N_nodes, N_neighbours)
     world = node(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
 
-    nodes, G, world, N_events, t_end = network_dynamics(nodes, G, world, h, r, t_max)
+    nodes, G, world, N_events, t_end, kl_divs_means = network_dynamics(
+        nodes,
+        G,
+        world,
+        h,
+        r,
+        t0,
+        t_max,
+        t_sample,
+        sample_bins,
+        sample_opinion_range,
+    )
 
-    return nodes, G, beliefs, world, N_events, t_end
+    return nodes, G, beliefs, world, N_events, t_end, kl_divs_means, t_sample, RANDOM_SEED
