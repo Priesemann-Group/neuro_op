@@ -258,6 +258,8 @@ def network_dynamics(
     Simulate the dynamics of Graph and sample distances between world state and node's beliefs via PPD comparisons.
     As of now, weights are constant, only beliefs change.
 
+    Runtime order of magnitude ~ 1s/1000 events (on Dell XPS 13 9370)
+    
     Keyword arguments:
     nodes -- list of nodes, each having beliefs and nodes
     G -- networkx graph object (formerly adjacency matrix)
@@ -353,8 +355,7 @@ def run_model(
     N_nodes -- number of nodes
     N_neighbours -- expected number of neighbours per node
     N_beliefs -- number of beliefs (= grid points) we consider
-    belief_min -- minimum value with belief > 0
-    belief_max -- maximum value with belief > 0
+    belief_interval -- interval for which we consider 'belief > 0'
     log_priors -- array of node's prior log-probabilities
     likelihood -- scipy object nodes use for Bayesian belief updating in p(data|parameters) 
     world -- scipy object providing stochastically blurred actual world state
@@ -373,6 +374,10 @@ def run_model(
     nodes = [node(beliefs, log_priors, likelihood) for i in range(N_nodes)]
     G = build_random_network(N_nodes, N_neighbours)
     world = node(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
+
+    # Renormalize rates to keep rate per node constant (division by 100 to keep input's order of magnitude around 1)
+    h = h * N_nodes / 100
+    r = r * N_nodes / 100
 
     nodes, G, world, N_events, t_end, kl_divs_means = network_dynamics(
         nodes,
