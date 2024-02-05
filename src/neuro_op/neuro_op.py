@@ -193,9 +193,7 @@ def system_ppd_distances(
     world,
     N_bins=50,
     opinion_range=[-20, 20],
-    # p_distance_inputs = [
-    #    p=1
-    # ]
+    p_distances_params=[],
 ):
     """
     Return approximated distances between system nodes' PPDs and world state's distribution and binning used during approximation.
@@ -215,7 +213,9 @@ def system_ppd_distances(
     ppd_samples = [
         ppd_Gaussian_mu(node.beliefs, node.log_probs, N_samples=1000) for node in nodes
     ]
-    ppds = [np.histogram(i, bins=N_bins, range=opinion_range)[0] for i in ppd_samples]
+    ppds = [
+        np.histogram(i, bins=N_bins, range=opinion_range)[0] for i in ppd_samples
+    ]  # create PPD approximations via sampling and binning into histograms
     ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
         world.diary_out, bins=N_bins, range=opinion_range
     )
@@ -236,10 +236,32 @@ def system_ppd_distances(
             ]
         )
 
-    return (
-        kl_divs,
-        ppd_bins,
-    )
+    # If array for 'p_distances' function all is not empty , calculate p-distances between each node's MLE and the world's MLE
+    if p_distances_params:
+        # First approach: Go for MLE comparisons
+        argmax = np.argmax(ppd_world_out)
+        mu_world_out = (ppd_bins[argmax] + ppd_bins[argmax + 1]) / 2
+        argmax = np.argmax(ppd_world_true)
+        mu_world_true = (ppd_bins[argmax] + ppd_bins[argmax + 1]) / 2
+        argmax = [np.argmax[i] for i in ppds]
+        mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
+
+    p_dists = []
+    for mu_i in mu_nodes:
+        p_dists.append(
+            [
+                [
+                    p_distances(mu_i, mu_world_out, p_params[0], p_params[1])
+                    for p_params in p_distances_params
+                ],
+                [
+                    p_distances(mu_i, mu_world_true, p_params[0], p_params[1])
+                    for p_params in p_distances_params
+                ],
+            ]
+        )
+
+    return (kl_divs, ppd_bins, p_dists)
 
 
 def network_dynamics(
@@ -259,7 +281,7 @@ def network_dynamics(
     As of now, weights are constant, only beliefs change.
 
     Runtime order of magnitude ~ 1s/1000 events (on Dell XPS 13 9370)
-    
+
     Keyword arguments:
     nodes -- list of nodes, each having beliefs and nodes
     G -- networkx graph object (formerly adjacency matrix)
@@ -275,20 +297,22 @@ def network_dynamics(
 
     N_nodes = nx.number_of_nodes(G)
     N_edges = nx.number_of_edges(G)
-    sample_counter = int(t0 / t_sample)
-    t = t0
-    kl_divs_means = []
     N_events = 0
+    t = t0
+    sample_counter = int(t0 / t_sample)
+    kl_divs_means = []
+    p_dists_means = []
 
     while t < t_max:
         # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
         if int(t / t_sample) >= sample_counter:
             print("Sampling at t=", t)
             sample_counter += 1
-            sample_kl_div = system_ppd_distances(
+            sample_kl_div, ppd_bins, p_dists = system_ppd_distances(
                 nodes, world, sample_bins, sample_opinion_range
-            )[0]
-            kl_divs_means.append(np.mean(sample_kl_div, axis=0))
+            )
+            kl_divs_means.append(np.mean(sample_kl_div[0], axis=0))
+            p_dists_means.append()
 
         N_events += 1
         event = rng.uniform()
@@ -314,7 +338,7 @@ def network_dynamics(
     if int(t / t_sample) >= sample_counter:
         print("Sampling at t=", t)
         sample_counter += 1
-        sample_kl_div = system_ppd_distances(
+        sample_kl_div, ppd_bins, p_dists = system_ppd_distances(
             nodes, world, sample_bins, sample_opinion_range
         )[0]
         kl_divs_means.append(np.mean(sample_kl_div, axis=0))
@@ -357,7 +381,7 @@ def run_model(
     N_beliefs -- number of beliefs (= grid points) we consider
     belief_interval -- interval for which we consider 'belief > 0'
     log_priors -- array of node's prior log-probabilities
-    likelihood -- scipy object nodes use for Bayesian belief updating in p(data|parameters) 
+    likelihood -- scipy object nodes use for Bayesian belief updating in p(data|parameters)
     world -- scipy object providing stochastically blurred actual world state
     h -- world distribution sampling rate
     r -- edge neighbour's beliefs sampling rate
@@ -392,4 +416,14 @@ def run_model(
         sample_opinion_range,
     )
 
-    return nodes, G, beliefs, world, N_events, t_end, kl_divs_means, t_sample, RANDOM_SEED
+    return (
+        nodes,
+        G,
+        beliefs,
+        world,
+        N_events,
+        t_end,
+        kl_divs_means,
+        t_sample,
+        RANDOM_SEED,
+    )
