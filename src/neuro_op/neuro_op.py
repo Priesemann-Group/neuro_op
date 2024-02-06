@@ -140,7 +140,7 @@ def kl_divergence(P, Q):
     return np.sum(terms)
 
 
-def p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
+def get_p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
     """
     Returns an average distance between an array of nodes' inferred parameters and a reference parameter.
 
@@ -223,9 +223,13 @@ def system_ppd_distances(
     ppd_world_out = ppd_world_out[0] / np.sum(
         ppd_world_out[0]
     )  # normalize world_out PPD
-
     ppd_world_true = dist_binning(world.likelihood, N_bins, opinion_range)
+    
+    # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
+    argmax = [np.argmax(i) for i in ppds]
+    mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
 
+    # Get KL-divergences of each node's PPD
     kl_divs = []
     for i in ppds:
         node_ppd = i / np.sum(i)
@@ -236,32 +240,30 @@ def system_ppd_distances(
             ]
         )
 
-    # If array for 'p_distances' function all is not empty , calculate p-distances between each node's MLE and the world's MLE
+    # If array for 'get_p_distances' function is not empty , calculate p-distances between each node's MLE and the world's MLE
     if p_distances_params:
         # First approach: Go for MLE comparisons
         argmax = np.argmax(ppd_world_out)
         mu_world_out = (ppd_bins[argmax] + ppd_bins[argmax + 1]) / 2
         argmax = np.argmax(ppd_world_true)
         mu_world_true = (ppd_bins[argmax] + ppd_bins[argmax + 1]) / 2
-        argmax = [np.argmax[i] for i in ppds]
-        mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
 
-    p_dists = []
-    for mu_i in mu_nodes:
-        p_dists.append(
+    p_distances = []
+    for p in p_distances_params:
+        p_distances.append(
             [
                 [
-                    p_distances(mu_i, mu_world_out, p_params[0], p_params[1])
-                    for p_params in p_distances_params
+                    get_p_distances(mu_i, mu_world_out, p=p[0], p_inv=p[1])
+                    for mu_i in mu_nodes
                 ],
                 [
-                    p_distances(mu_i, mu_world_true, p_params[0], p_params[1])
-                    for p_params in p_distances_params
+                    get_p_distances(mu_i, mu_world_true, p=p[0], p_inv=p[1])
+                    for mu_i in mu_nodes
                 ],
             ]
         )
 
-    return (kl_divs, ppd_bins, p_dists)
+    return (mu_nodes, kl_divs, p_distances)
 
 
 def network_dynamics(
@@ -275,6 +277,7 @@ def network_dynamics(
     t_sample,
     sample_bins,
     sample_opinion_range,
+    sample_p_distance_params,
 ):
     """
     Simulate the dynamics of Graph and sample distances between world state and node's beliefs via PPD comparisons.
@@ -300,19 +303,25 @@ def network_dynamics(
     N_events = 0
     t = t0
     sample_counter = int(t0 / t_sample)
-    kl_divs_means = []
-    p_dists_means = []
+    mu_nodes = []
+    kl_divs = []
+    p_distances = []
 
     while t < t_max:
         # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
         if int(t / t_sample) >= sample_counter:
             print("Sampling at t=", t)
             sample_counter += 1
-            sample_kl_div, ppd_bins, p_dists = system_ppd_distances(
-                nodes, world, sample_bins, sample_opinion_range
+            sample_mu_nodes, sample_kl_div, sample_p_distances = system_ppd_distances(
+                nodes,
+                world,
+                sample_bins,
+                sample_opinion_range,
+                sample_p_distance_params,
             )
-            kl_divs_means.append(np.mean(sample_kl_div[0], axis=0))
-            p_dists_means.append()
+            mu_nodes.append(sample_mu_nodes)
+            kl_divs.append(sample_kl_div)
+            p_distances.append(sample_p_distances)
 
         N_events += 1
         event = rng.uniform()
@@ -338,10 +347,16 @@ def network_dynamics(
     if int(t / t_sample) >= sample_counter:
         print("Sampling at t=", t)
         sample_counter += 1
-        sample_kl_div, ppd_bins, p_dists = system_ppd_distances(
-            nodes, world, sample_bins, sample_opinion_range
-        )[0]
-        kl_divs_means.append(np.mean(sample_kl_div, axis=0))
+        sample_mu_nodes, sample_kl_div, sample_p_distances = system_ppd_distances(
+            nodes,
+            world,
+            sample_bins,
+            sample_opinion_range,
+            sample_p_distance_params,
+        )
+        mu_nodes.append(sample_mu_nodes)
+        kl_divs.append(sample_kl_div)
+        p_distances.append(sample_p_distances)
 
     return (
         nodes,
@@ -349,7 +364,9 @@ def network_dynamics(
         world,
         N_events,
         t,
-        kl_divs_means,
+        mu_nodes,
+        kl_divs,
+        p_distances,
     )
 
 
@@ -369,6 +386,7 @@ def run_model(
     t_sample=1000,
     sample_bins=50,
     sample_opinion_range=[-20, 20],
+    sample_p_distance_params=[[1, 1], [2, 1]],
 ):
     """
     Execute program.
@@ -403,7 +421,7 @@ def run_model(
     h = h * N_nodes / 100
     r = r * N_nodes / 100
 
-    nodes, G, world, N_events, t_end, kl_divs_means = network_dynamics(
+    nodes, G, world, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
         nodes,
         G,
         world,
@@ -414,6 +432,7 @@ def run_model(
         t_sample,
         sample_bins,
         sample_opinion_range,
+        sample_p_distance_params,
     )
 
     return (
@@ -423,7 +442,8 @@ def run_model(
         world,
         N_events,
         t_end,
-        kl_divs_means,
-        t_sample,
+        mu_nodes,
+        kl_divs,
+        p_distances,
         RANDOM_SEED,
     )
