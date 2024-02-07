@@ -224,7 +224,7 @@ def system_ppd_distances(
         ppd_world_out[0]
     )  # normalize world_out PPD
     ppd_world_true = dist_binning(world.likelihood, N_bins, opinion_range)
-    
+
     # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
     argmax = [np.argmax(i) for i in ppds]
     mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
@@ -278,6 +278,7 @@ def network_dynamics(
     sample_bins,
     sample_opinion_range,
     sample_p_distance_params,
+    progress,
 ):
     """
     Simulate the dynamics of Graph and sample distances between world state and node's beliefs via PPD comparisons.
@@ -310,7 +311,8 @@ def network_dynamics(
     while t < t_max:
         # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
         if int(t / t_sample) >= sample_counter:
-            print("Sampling at t=", t)
+            if progress:
+                print("Sampling at t=", t)
             sample_counter += 1
             sample_mu_nodes, sample_kl_div, sample_p_distances = system_ppd_distances(
                 nodes,
@@ -345,7 +347,8 @@ def network_dynamics(
 
     # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
     if int(t / t_sample) >= sample_counter:
-        print("Sampling at t=", t)
+        if progress:
+            print("Sampling at t=", t)
         sample_counter += 1
         sample_mu_nodes, sample_kl_div, sample_p_distances = system_ppd_distances(
             nodes,
@@ -387,6 +390,7 @@ def run_model(
     sample_bins=50,
     sample_opinion_range=[-20, 20],
     sample_p_distance_params=[[1, 1], [2, 1]],
+    progress=True,
 ):
     """
     Execute program.
@@ -433,6 +437,7 @@ def run_model(
         sample_bins,
         sample_opinion_range,
         sample_p_distance_params,
+        progress,
     )
 
     return (
