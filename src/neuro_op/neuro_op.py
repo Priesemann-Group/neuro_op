@@ -1,41 +1,71 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import random
 import scipy.stats as st
 
 
+# Initialize randomness and RNGs
 RANDOM_SEED = np.random.SeedSequence().entropy
 random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
 
 
-class node:
+# Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
+input_standard = dict(
+    N_nodes=100,
+    N_neighbours=3,
+    N_beliefs=500,
+    belief_min=-50,
+    belief_max=50,
+    log_priors=np.zeros(500),
+    likelihood=st.norm(loc=0, scale=5),
+    world_dist=st.norm(loc=0, scale=5),
+    h=1,
+    r=1,
+    t0=0,
+    t_max=10000,
+    t_sample=250,
+    sample_bins=50,
+    sample_opinion_range=(-20, 20),
+    sample_p_distance_params=[(1, 1), (2, 1)],
+    progress=False,
+)
+
+
+class Node:
     """
-    nodes with belief-holding, -sampling, and -updating behavior.
+    Nodes with belief-holding, -sampling, and -updating behavior.
 
     Attributes:
-    beliefs -- Numpy array of possible parameter values into which an node may hold belief
+    beliefs -- Numpy array of possible parameter values into which a Node may hold belief
     log_probs -- Numpy array current relative log-probabilities of each belief
     likelihood -- scipy object used for Bayesian belief updating in p(data|parameters)
     diary_in -- Array of past incoming information
     diary_out -- Array of past outgoing information
     """
 
-    def __init__(self, beliefs, log_priors, likelihood=st.norm(loc=0, scale=5)):
+    def __init__(
+        self,
+        beliefs,
+        log_priors,
+        likelihood=st.norm(loc=0, scale=5),
+        diary_in=[],
+        diary_out=[],
+    ):
         """
-        Initialize an node capable of updating and sampling of a world model (= beliefs & log-probabilities of each belief).
+        Initialize a Node capable of updating and sampling of a world model (= beliefs & log-probabilities of each belief).
         """
 
         assert len(beliefs) == len(log_priors)
         self.beliefs = np.copy(beliefs)
         self.log_probs = np.copy(log_priors)
         self.likelihood = likelihood
-        self.diary_in = np.array([])
-        self.diary_out = np.array([])
+        self.diary_in = np.array(diary_in)
+        self.diary_out = np.array(diary_out)
 
     def set_updated_belief(self, incoming_info):
-        """Bayesian update of the node's belief AND fit of new likelihood function."""
+        """Bayesian update of the Node's belief AND fit of new likelihood function."""
 
         self.diary_in = np.append(self.diary_in, incoming_info)
         self.log_probs += self.likelihood.logpdf(x=self.beliefs - incoming_info)
@@ -51,9 +81,9 @@ class node:
         return sample
 
     def __repr__(self):
-        """Return a string representation of the node."""
+        """Return a string representation of the Node."""
 
-        return f"node(beliefs={self.beliefs}, log_probs={self.log_probs}, likelihood={self.likelihood}, diary_in={self.diary_in}, diary_out={self.diary_out})"
+        return f"Node(beliefs={self.beliefs}, log_probs={self.log_probs}, likelihood={self.likelihood}, diary_in={self.diary_in}, diary_out={self.diary_out})"
 
 
 def build_random_network(N_nodes, N_neighbours):
@@ -192,7 +222,7 @@ def system_ppd_distances(
     nodes,
     world,
     N_bins=50,
-    opinion_range=[-20, 20],
+    opinion_range=(-20, 20),
     p_distances_params=[],
 ):
     """
@@ -203,8 +233,8 @@ def system_ppd_distances(
     Then, the wanted distance (KL divergence or p-distance) is calculated between each node distribution and the world distribution.
 
     Keyword arguments:
-    nodes -- object(s) of class 'node'
-    world -- "real state" representing object of class 'node'
+    nodes -- object(s) of class 'Node'
+    world -- "real state" representing object of class 'Node'
     N_bins -- number of bins used in histogram binning of posterior predictive samples
     opinion_range -- interval over which binning is performed
     """
@@ -374,23 +404,23 @@ def network_dynamics(
 
 
 def run_model(
-    N_nodes=100,
-    N_neighbours=3,
-    N_beliefs=500,
-    belief_min=-50,
-    belief_max=50,
-    log_priors=np.zeros(500),
-    likelihood=st.norm(loc=0, scale=5),
-    world_dist=st.norm(loc=0, scale=5),
-    h=1,
-    r=1,
-    t0=0,
-    t_max=10000,
-    t_sample=1000,
-    sample_bins=50,
-    sample_opinion_range=[-20, 20],
-    sample_p_distance_params=[[1, 1], [2, 1]],
-    progress=True,
+    N_nodes,
+    N_neighbours,
+    N_beliefs,
+    belief_min,
+    belief_max,
+    log_priors,
+    likelihood,
+    world_dist,
+    h,
+    r,
+    t0,
+    t_max,
+    t_sample,
+    sample_bins,
+    sample_opinion_range,
+    sample_p_distance_params,
+    progress,
 ):
     """
     Execute program.
@@ -398,28 +428,45 @@ def run_model(
     Then, run simulation until t>=t_max and return simulation results.
 
     Keyword arguments:
-    N_nodes -- number of nodes
-    N_neighbours -- expected number of neighbours per node
-    N_beliefs -- number of beliefs (= grid points) we consider
-    belief_interval -- interval for which we consider 'belief > 0'
-    log_priors -- array of node's prior log-probabilities
-    likelihood -- scipy object nodes use for Bayesian belief updating in p(data|parameters)
-    world -- scipy object providing stochastically blurred actual world state
-    h -- world distribution sampling rate
-    r -- edge neighbour's beliefs sampling rate
-    t_0 -- start time of simulation
-    t_max -- end time of simulation
-    t_sample -- periodicity for which distance measures (KL-div, p-distance) are taken
-    sample_bins -- number of bins used in distance measures
-    sample_opinion_range -- interval over which distance measure distributions are considered
+    N_nodes : int
+        Number of inference-performing network nodes.
+    N_neighbours : int
+        Wished expected number of neighbours per node.
+    N_beliefs : int
+        Number of beliefs (i.e., grid points) to consider.
+    belief_min, belief_max : float
+        Lower/Upper bound for which to consider 'belief > 0'.
+    log_priors : numpy.ndarray
+        Array of node's prior log-probabilities.
+    likelihood : scipy.stats._distn_infrastructure.rv_continuous_frozen
+        Scipy object nodes use for Bayesian belief updating in p(data|parameters).
+    world : Node
+        Node providing stochastically blurred actual world state.
+    h : float
+        World distribution information sharing rate.
+    r : float
+        Communication rate along edges (excludes 'world' node).
+    t_0, t_max : float
+        Starting/Ending time of simulation.
+    t_sample : float
+        Periodicity for which distances (KL-div, p-distance) between PPDs are estimated.
+    sample_bins : int
+        Number of bins used in distance estimation.
+    sample_opinion_range : tuple
+        PPDs' intervals considered during distance estimation.
+    sample_p_distance_params: list of tuples, optional
+        Tuples with which to call 'p_distances' during sampling.
+        If `bool(sample_p_distance_params)` does not evaluate to true, only KL-divergences will be estimated.
+    progress: bool
+        Whether or not to print sampling times.
     """
 
     assert N_beliefs == len(log_priors)
 
     beliefs = np.linspace(belief_min, belief_max, N_beliefs)
-    nodes = [node(beliefs, log_priors, likelihood) for i in range(N_nodes)]
+    nodes = [Node(beliefs, log_priors, likelihood) for i in range(N_nodes)]
     G = build_random_network(N_nodes, N_neighbours)
-    world = node(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
+    world = Node(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
 
     # Renormalize rates to keep rate per node constant (division by 100 to keep input's order of magnitude around 1)
     h = h * N_nodes / 100
@@ -440,15 +487,15 @@ def run_model(
         progress,
     )
 
-    return (
-        nodes,
-        G,
-        beliefs,
-        world,
-        N_events,
-        t_end,
-        mu_nodes,
-        kl_divs,
-        p_distances,
-        RANDOM_SEED,
-    )
+    return {
+        "nodes": nodes,
+        "G": G,
+        "beliefs": beliefs,
+        "world": world,
+        "N_events": N_events,
+        "t_end": t_end,
+        "mu_nodes": mu_nodes,
+        "kl_divs": kl_divs,
+        "p_distances": p_distances,
+        "seed": RANDOM_SEED,
+    }
