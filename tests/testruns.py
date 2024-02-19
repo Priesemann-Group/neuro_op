@@ -14,19 +14,21 @@ def model_scan(dict_list):
 
     for dic_tmp in dict_list:
         input = copy.deepcopy(nop.input_standard)
+        adaptions = ""
         for key, value in dic_tmp.items():
             input[key] = value
+            adaptions += "--" + str(key)+"-"+str(value)
         print("Current adaptions:\t", dic_tmp.items())
         t0 = time.time()
         output = dict(nop.run_model(**input))
         t1 = time.time()
+        output["t_start"] = time.strftime("%Y-%m-%d--%H-%M", time.localtime(t0))
         output["t_exec"] = t1 - t0
         print("For adaptions\t", dic_tmp.items(), " :\n\t t_exec = ", (t1 - t0))
         filename = (
             "out"
-            + str(dic_tmp)
-            + time.strftime("--%Y-%m-%d--%H-%M--", time.localtime(t0))
-            + "--export.pkl"
+            + adaptions
+            + ".pkl"
         )
         with open(filename, "wb") as f:
             pickle.dump(output, f)
@@ -36,19 +38,19 @@ def model_scan(dict_list):
 
 params = []
 
-for N in [1, 2, 3, 4]:
+for N in [1, 1.5, 2, 2.5, 3, 3.5, 4]:
     for t in [1, 2, 3, 4]:
-        params.append(dict(N_nodes=10**N, t_max=10**t))
+        params.append(dict(N_nodes=int(10**N), t_max=int(10**t)))
 
-for t in [5, 6]:
-    params.append(dict(t_max=10**t))
+for t in [5, 5.5, 6]:
+    params.append(dict(t_max=int(10**t)))
 
 for r, h in [(0.1, 5), (5, 0.1), (5, 5)]:
-    for N in [1, 2, 3, 4]:
-        params.append(dict(N_nodes=10**N, r=r, h=h))
+    for N in [1, 1.5, 2, 2.5, 3, 3.5, 4]:
+        params.append(dict(N_nodes=int(10**N), r=r, h=h))
 
-for N in [5]:
-    params.append(dict(N_nodes=10**N))
+for N in [4.5, 5]:
+    params.append(dict(N_nodes=int(10**N)))
 
 
 model_scan(params)
