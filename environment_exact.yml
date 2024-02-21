@@ -249,4 +249,7 @@ dependencies:
       - jaxlib==0.4.23
       - ml-dtypes==0.3.2
       - networkx==3.2.1
+      - neuro-op==0.0.0
       - opt-einsum==3.3.0
+      - palettable==3.3.3
+prefix: /home/jens/conda/envs/neuro_op
