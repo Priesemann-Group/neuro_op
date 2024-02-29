@@ -1,6 +1,7 @@
 import copy  # deep-copying of input dictionary (which includes mutable objects)
 import gc  # explicit garbace collection calling after each run
 import neuro_op as nop  # project's main module
+import numpy as np
 import pickle  # output export/import
 import time  # runtime measuring
 
@@ -17,7 +18,7 @@ def model_scan(dict_list):
         adaptions = ""
         for key, value in dic_tmp.items():
             input[key] = value
-            adaptions += "--" + str(key)+"-"+str(value)
+            adaptions += "--" + str(key) + "-" + str(value)
         print("Current adaptions:\t", dic_tmp.items())
         t0 = time.time()
         output = dict(nop.run_model(**input))
@@ -25,11 +26,7 @@ def model_scan(dict_list):
         output["t_start"] = time.strftime("%Y-%m-%d--%H-%M", time.localtime(t0))
         output["t_exec"] = t1 - t0
         print("For adaptions\t", dic_tmp.items(), " :\n\t t_exec = ", (t1 - t0))
-        filename = (
-            "out"
-            + adaptions
-            + ".pkl"
-        )
+        filename = "out" + adaptions + ".pkl"
         with open(filename, "wb") as f:
             pickle.dump(output, f)
         del output
@@ -38,18 +35,18 @@ def model_scan(dict_list):
 
 params = []
 
-for N in [1, 1.5, 2, 2.5, 3, 3.5, 4]:
-    for t in [1, 2, 3, 4]:
+for N in np.arange(1.0, 4.5, 0.5):
+    for t in np.arange(1.0, 5.0, 0.5):
         params.append(dict(N_nodes=int(10**N), t_max=int(10**t)))
 
-for t in [5, 5.5, 6]:
+for t in np.arange(5.0, 6.5, 0.5):
     params.append(dict(t_max=int(10**t)))
 
 for r, h in [(0.1, 5), (5, 0.1), (5, 5)]:
-    for N in [1, 1.5, 2, 2.5, 3, 3.5, 4]:
+    for N in np.arange(1.0, 4.5, 0.5):
         params.append(dict(N_nodes=int(10**N), r=r, h=h))
 
-for N in [4.5, 5]:
+for N in np.arange(4.5, 5.5, 0.5):
     params.append(dict(N_nodes=int(10**N)))
 
 
