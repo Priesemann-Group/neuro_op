@@ -327,6 +327,7 @@ def network_dynamics(
     t_sample -- periodicity for which distance measures (KL-div, p-distance) are taken
     sample_bins -- number of bins used in distance measures
     sample_opinion_range -- interval over which distance measure distributions are considered
+    progress -- boolean of whether or not to print sampling times
     """
 
     N_nodes = nx.number_of_nodes(G)
@@ -459,6 +460,18 @@ def run_model(
         If `bool(sample_p_distance_params)` does not evaluate to true, only KL-divergences will be estimated.
     progress: bool
         Whether or not to print sampling times.
+
+    Returns:
+    Dictioniary containing the following keys and according data after end of simulation:
+    nodes : list
+        all nodes of the network
+    G : networkx graph object
+        
+    beliefs : array of possible parameter values into which a Node may hold belief
+    world : Node object representing the world
+    N_events : int
+        Number of events executed during simulation.
+
     """
 
     assert N_beliefs == len(log_priors)
