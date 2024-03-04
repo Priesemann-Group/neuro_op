@@ -463,15 +463,28 @@ def run_model(
 
     Returns:
     Dictioniary containing the following keys and according data after end of simulation:
-    nodes : list
-        all nodes of the network
+    nodes : list (Nodes)
+        All nodes of the network.
     G : networkx graph object
         
-    beliefs : array of possible parameter values into which a Node may hold belief
-    world : Node object representing the world
+    beliefs : np.array (floats)
+        Array of possible parameter values into which a Node may hold beliefs in.
+    world : Node
+        Object representing the world.
     N_events : int
         Number of events executed during simulation.
-
+    t_end : float
+        End time of simulation.
+    mu_nodes : list
+        MAP estimates of each node's mu, sampled during run.
+    kl_divs : list
+        KL-divergences between each node's PPD and the world's PPD, sampled during run.
+        Shape: (#samples, #nodes, 2)
+        '2' refers to world_out ([0]) and world_true ([1]) as reference distribution, respectively.
+    p_distances : list
+        p-distances between each node's MLE and the world's MLE, sampled during run.
+        Shape: (#samples, #(p_distance parameter tuples), 2)
+        '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
     """
 
     assert N_beliefs == len(log_priors)
