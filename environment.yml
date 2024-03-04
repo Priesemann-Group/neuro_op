@@ -8,6 +8,8 @@ dependencies:
   - numpy
   - pymc[version='>=5']
   - scipy
+  - seaborn
+  - pandas
   - pip
   - pip:
     - networkx[default]

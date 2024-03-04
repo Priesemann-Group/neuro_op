@@ -24,8 +24,8 @@ input_standard = dict(
     h=1,
     r=1,
     t0=0,
-    t_max=10000,
-    t_sample=250,
+    t_max=100,
+    t_sample=2.5,
     sample_bins=50,
     sample_opinion_range=(-20, 20),
     sample_p_distance_params=[(1, 1), (2, 1)],
@@ -466,7 +466,7 @@ def run_model(
     nodes : list (Nodes)
         All nodes of the network.
     G : networkx graph object
-        
+
     beliefs : np.array (floats)
         Array of possible parameter values into which a Node may hold beliefs in.
     world : Node
@@ -477,6 +477,7 @@ def run_model(
         End time of simulation.
     mu_nodes : list
         MAP estimates of each node's mu, sampled during run.
+        Shape: (#samples, #nodes)
     kl_divs : list
         KL-divergences between each node's PPD and the world's PPD, sampled during run.
         Shape: (#samples, #nodes, 2)
@@ -494,9 +495,9 @@ def run_model(
     G = build_random_network(N_nodes, N_neighbours)
     world = Node(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
 
-    # Renormalize rates to keep rate per node constant (division by 100 to keep input's order of magnitude around 1)
-    h = h * N_nodes / 100
-    r = r * N_nodes / 100
+    # Renormalize rates to keep rate per node constant
+    h = h * N_nodes
+    r = r * N_nodes
 
     nodes, G, world, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
         nodes,

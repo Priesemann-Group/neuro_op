@@ -41,7 +41,7 @@ $ git clone git@github.com:Priesemann-Group/neuro_op.git
 
 Subsequently, change into the just-cloned directory and, if you have not yet set up a conda environment with needed packages, do so:
 
-``bash
+```bash
 $ cd neuro_op
 $ # If not yet existing, create conda environment with needed packages. This also installs pip within that environment
 $ conda env create -f environment.yml
