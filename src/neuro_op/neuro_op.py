@@ -19,8 +19,8 @@ input_standard = dict(
     belief_min=-50,
     belief_max=50,
     log_priors=np.zeros(500),
-    likelihood=st.norm(loc=0, scale=5),
-    world_dist=st.norm(loc=0, scale=5),
+    llh_logpdf=st.norm(loc=0, scale=5).logpdf,
+    world_logpdf=st.norm(loc=0, scale=5).logpdf,
     h=1,
     r=1,
     t0=0,
@@ -40,7 +40,7 @@ class Node:
     Attributes:
     beliefs -- Numpy array of possible parameter values into which a Node may hold belief
     log_probs -- Numpy array current relative log-probabilities of each belief
-    likelihood -- scipy object used for Bayesian belief updating in p(data|parameters)
+    llh_logpdf -- method to return Bayesian log-likelihood p(data|parameters); supposed to take as first argument x=<data>
     diary_in -- Array of past incoming information
     diary_out -- Array of past outgoing information
     """
@@ -49,7 +49,7 @@ class Node:
         self,
         beliefs,
         log_priors,
-        likelihood=st.norm(loc=0, scale=5),
+        llh_logpdf=st.norm(loc=0, scale=5).logpdf,
         diary_in=[],
         diary_out=[],
     ):
@@ -60,15 +60,15 @@ class Node:
         assert len(beliefs) == len(log_priors)
         self.beliefs = np.copy(beliefs)
         self.log_probs = np.copy(log_priors)
-        self.likelihood = likelihood
+        self.llh_logpdf = llh_logpdf
         self.diary_in = np.array(diary_in)
         self.diary_out = np.array(diary_out)
 
     def set_updated_belief(self, incoming_info):
-        """Bayesian update of the Node's belief AND fit of new likelihood function."""
+        """Bayesian update of the Node's belief."""
 
         self.diary_in = np.append(self.diary_in, incoming_info)
-        self.log_probs += self.likelihood.logpdf(x=self.beliefs - incoming_info)
+        self.log_probs += self.llh_logpdf(x=self.beliefs - incoming_info)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
 
     def get_belief_sample(self, size=1):
@@ -83,7 +83,7 @@ class Node:
     def __repr__(self):
         """Return a string representation of the Node."""
 
-        return f"Node(beliefs={self.beliefs}, log_probs={self.log_probs}, likelihood={self.likelihood}, diary_in={self.diary_in}, diary_out={self.diary_out})"
+        return f"Node(beliefs={self.beliefs}, log_probs={self.log_probs}, llh_logpdf={self.llh_logpdf}, diary_in={self.diary_in}, diary_out={self.diary_out})"
 
 
 def build_random_network(N_nodes, N_neighbours):
@@ -124,12 +124,12 @@ def logpdf_to_pdf(logprobs):
     return probs / np.sum(probs)
 
 
-def dist_binning(dist, N_bins=50, range=(-20, 20)):
+def dist_binning(logpdf, N_bins=50, range=(-20, 20)):
     """
-    Returns a scipy distribution's probability mass binned into N equally-spaced bins.
+    Returns a logpdf method's probability mass binned into N equally-spaced bins.
 
-    Returns normalized numpy array of scipy distribution probabilities to sample value in corresponding bin.
-    Uses scipy distribution's cdf function to integrate over each bin's range.
+    Returns normalized numpy array of probabilities to sample value in corresponding bin.
+    'Integrates' the logpdf function by summing over exponentiated logpdf values at bin margins.
 
     Keyword arguments:
     dist -- scipy distribution
@@ -138,8 +138,8 @@ def dist_binning(dist, N_bins=50, range=(-20, 20)):
     """
 
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
-    Q = dist.cdf(Q_bins[1:]) - dist.cdf(Q_bins[:-1])
-
+    Q = np.exp(logpdf(Q_bins[:-1])) + np.exp(logpdf(Q_bins[1:]))
+    
     return Q / np.sum(Q)
 
 
@@ -196,16 +196,16 @@ def get_p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
 
 def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     """
-    Simulate predictions using the whole posterior, with the underlying likelihood function being Gaussian.
+    Simulate predictions using the whole posterior, with the underlying likelihood logprobability funtion (llh_logpdf) being Gaussian.
 
     Posterior predictive distribution (PPD) sampling first samples paramter values of the estimand from the posterior.
-    Then these sampled parameter values will be used in the likelihood function to sample predictions.
+    Then these sampled parameter values will be used in llh_logpdf  to sample predictions.
     Thereby, the PPD includes all the uncertainty (i.e., model parameter value uncertainty (from posterior) & generative uncertainty (model with given parameter values creating data stochastically).
 
     Keyword arguments:
     beliefs -- array of possible parameter values into which an node may hold belief
     logprobs -- array of log probabilities corresponding to 'beliefs' array
-    N_samples -- number of to-be-drawn likelihood parameter values and then-sampled predictions; can in principle be split up into two separate parameters (one for parameter sampling, one for prediction sampling)
+    N_samples -- number of to-be-drawn likelihood (llh_logpdf) parameter values and then-sampled predictions; can in principle be split up into two separate parameters (one for parameter sampling, one for prediction sampling)
     """
 
     # Transform potentially non-normalized log probabilities to normalized probabilities.
@@ -214,7 +214,7 @@ def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     # Sample parameter values proportional to the posterior.
     parameter_samples = np.random.choice(beliefs, p=probs, size=N_samples)
 
-    # Generate predictions using the likelihood function.
+    # Generate predictions using the llh_logpdf method.
     return st.norm.rvs(loc=parameter_samples, scale=5, size=N_samples)
 
 
@@ -253,7 +253,7 @@ def system_ppd_distances(
     ppd_world_out = ppd_world_out[0] / np.sum(
         ppd_world_out[0]
     )  # normalize world_out PPD
-    ppd_world_true = dist_binning(world.likelihood, N_bins, opinion_range)
+    ppd_world_true = dist_binning(world.llh_logpdf, N_bins, opinion_range)
 
     # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
     argmax = [np.argmax(i) for i in ppds]
@@ -411,8 +411,8 @@ def run_model(
     belief_min,
     belief_max,
     log_priors,
-    likelihood,
-    world_dist,
+    llh_logpdf,
+    world_logpdf,
     h,
     r,
     t0,
@@ -439,8 +439,8 @@ def run_model(
         Lower/Upper bound for which to consider 'belief > 0'.
     log_priors : numpy.ndarray
         Array of node's prior log-probabilities.
-    likelihood : scipy.stats._distn_infrastructure.rv_continuous_frozen
-        Scipy object nodes use for Bayesian belief updating in p(data|parameters).
+    llh_logpdf : method
+        Method returning log-probabilities for given data & parameters.
     world : Node
         Node providing stochastically blurred actual world state.
     h : float
@@ -491,9 +491,9 @@ def run_model(
     assert N_beliefs == len(log_priors)
 
     beliefs = np.linspace(belief_min, belief_max, N_beliefs)
-    nodes = [Node(beliefs, log_priors, likelihood) for i in range(N_nodes)]
+    nodes = [Node(beliefs, log_priors, llh_logpdf) for i in range(N_nodes)]
     G = build_random_network(N_nodes, N_neighbours)
-    world = Node(beliefs=beliefs, log_priors=world_dist.logpdf(x=beliefs))
+    world = Node(beliefs=beliefs, log_priors=world_logpdf(x=beliefs))
 
     # Renormalize rates to keep rate per node constant
     h = h * N_nodes
