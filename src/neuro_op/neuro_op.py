@@ -330,8 +330,6 @@ def network_dynamics(
     progress -- boolean of whether or not to print sampling times
     """
 
-    N_nodes = nx.number_of_nodes(G)
-    N_edges = nx.number_of_edges(G)
     N_events = 0
     t = t0
     sample_counter = int(t0 / t_sample)
