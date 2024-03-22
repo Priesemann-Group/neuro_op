@@ -399,5 +399,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Personal additions
-data/
+#data/
 *.pkl

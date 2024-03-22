@@ -14,7 +14,7 @@ rng = np.random.default_rng(RANDOM_SEED)
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_standard = dict(
     N_nodes=100,
-    N_neighbours=3,
+    N_neighbours=12,
     N_beliefs=500,
     belief_min=-50,
     belief_max=50,
@@ -359,7 +359,8 @@ def network_dynamics(
         N_events += 1
         event = rng.uniform()
 
-        if event < N_nodes * h / (N_nodes * h + N_edges * r):
+#        if event < N_nodes * h / (N_nodes * h + N_edges * r):
+        if event < h / (h + r):
             # external information draw event
             node = random.choice(nodes)
             node.set_updated_belief(world.get_belief_sample(size=1))

@@ -26,7 +26,6 @@ def model_runs(input0, dict_list):
         t1 = time.time()
         output["t_start"] = time.strftime("%Y-%m-%d--%H-%M", time.localtime(t0))
         output["t_exec"] = t1 - t0
-        output["input_dict"] = input
         print("For adaptions\t", dic_tmp.items(), " :\n\t t_exec = ", (t1 - t0))
         filename = "out" + adaptions + ".pkl"
         with open(filename, "wb") as f:
@@ -36,8 +35,8 @@ def model_runs(input0, dict_list):
 
 
 input0 = copy.deepcopy(nop.input_standard)
+input0["t_max"] = 1000
 input0["sample_bins"] = 101
-input0["sample_opinion_range"] = (-50, 50)
 
 variations = []
 # Power laws: mean if (a-1)<-2, variance if (a-1)<-3
@@ -47,36 +46,10 @@ for a_tmp in [10, 50, 85]:
     def world_pow(x):
         return st.powerlaw(a=a_tmp / 100, scale=50).logpdf(x=np.abs(x))
 
-    for N in [1.5, 2.5]:
-        for r in [0.1, 1, 10]:
-            for op_min in [0, -50]:
-                variations.append(
-                    dict(
-                        N_nodes=int(10**N),
-                        belief_min=op_min,
-                        world_logpdf=world_pow,
-                        r=r,
-                        sample_opinion_range=(
-                            op_min,
-                            input0["sample_opinion_range"][1],
-                        ),
-                    )
-                )
-
-variations = []
-for N in [1.5, 2.5, 3.5]:
-    for r in [0.1, 1, 10]:
-        for prior in [0, 1]:
-            if prior:
-                small_prior = nop.dist_binning(
-                    logpdf=st.norm(loc=0, scale=5).logpdf,
-                    N_bins=len(input0["log_priors"]),
-                    range=input0["sample_opinion_range"],
-
-                )
-                variations.append(dict(N_nodes=int(10**N), log_priors=small_prior, r=r))
-            else:
-                variations.append(dict(N_nodes=int(10**N), r=r))
-
+    for N in [2, 3]:
+        for r, h in [(1, 1), (0.1, 5), (5, 0.1)]:
+            variations.append(
+                dict(N_nodes=int(10**N), h=h, r=r, world_logpdf=world_pow)
+            )
 
 model_runs(input0, variations)
