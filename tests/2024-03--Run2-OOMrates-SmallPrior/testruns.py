@@ -26,7 +26,6 @@ def model_runs(input0, dict_list):
         t1 = time.time()
         output["t_start"] = time.strftime("%Y-%m-%d--%H-%M", time.localtime(t0))
         output["t_exec"] = t1 - t0
-        output["input_dict"] = input
         print("For adaptions\t", dic_tmp.items(), " :\n\t t_exec = ", (t1 - t0))
         filename = "out" + adaptions + ".pkl"
         with open(filename, "wb") as f:
@@ -79,3 +78,6 @@ for N in [1.5, 2.5, 3.5]:
 
 
 model_runs(input0, variations)
+
+with open("input0", "wb") as f:
+    pickle.dump(input0)
