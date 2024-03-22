@@ -14,7 +14,7 @@ rng = np.random.default_rng(RANDOM_SEED)
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_standard = dict(
     N_nodes=100,
-    N_neighbours=12,
+    N_neighbours=11,    # JZ: powers of 12 ~ typcial group sizes
     N_beliefs=500,
     belief_min=-50,
     belief_max=50,
