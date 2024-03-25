@@ -7,28 +7,27 @@ import scipy.stats as st
 import time  # runtime measuring
 
 
-def model_runs(input0, dict_list):
+def model_runs(input0, dict_list, string_list):
     """
     Call 'run_model' with 'input_standard' adapted at specified dictionary entries.
 
     Serially run multiple model parameter sets, safe output to pickle file, garbage collect memory.
     """
 
-    for dic_tmp in dict_list:
+    assert len(dict_list) == len(string_list)
+
+    for i in range(len(dict_list)):
         input = copy.deepcopy(input0)
-        adaptions = ""
-        for key, value in dic_tmp.items():
+        for key, value in dict_list[i].items():
             input[key] = value
-            adaptions += "--" + str(key) + "-" + str(value)
-        print("Current adaptions:\t", dic_tmp.items())
+        print("Current adaptions:\t", string_list[i])
         t0 = time.time()
         output = dict(nop.run_model(**input))
-        t1 = time.time()
+        t_exec = time.time() - t0
         output["t_start"] = time.strftime("%Y-%m-%d--%H-%M", time.localtime(t0))
-        output["t_exec"] = t1 - t0
-        print("For adaptions\t", dic_tmp.items(), " :\n\t t_exec = ", (t1 - t0))
-        filename = "out" + adaptions + ".pkl"
-        with open(filename, "wb") as f:
+        output["t_exec"] = t_exec
+        print("t_exec = ", t_exec, "s")
+        with open("out--" + string_list[i] + ".pkl", "wb") as f:
             pickle.dump(output, f)
         del output
         gc.collect()
@@ -39,6 +38,7 @@ input0["sample_bins"] = 101
 input0["sample_opinion_range"] = (-50, 50)
 
 variations = []
+var_string = []
 # Power laws: mean if (a-1)<-2, variance if (a-1)<-3
 # (or: a<-1, a<-2) -- BUT st.powerlaw wants a>0
 for a_tmp in [10, 50, 85]:
@@ -61,6 +61,18 @@ for a_tmp in [10, 50, 85]:
                         ),
                     )
                 )
+                var_string.append(
+                    world_pow.__name__
+                    + "--a-"
+                    + str(a_tmp)
+                    + "--op_min-"
+                    + str(op_min)
+                    + "--N-"
+                    + str(N)
+                    + "--r-"
+                    + str(r)
+                )
+
 
 for N in [1.5, 2.5, 3.5]:
     for r in [0.1, 1, 10]:
@@ -70,14 +82,15 @@ for N in [1.5, 2.5, 3.5]:
                     logpdf=st.norm(loc=0, scale=5).logpdf,
                     N_bins=len(input0["log_priors"]),
                     range=input0["sample_opinion_range"],
-
                 )
                 variations.append(dict(N_nodes=int(10**N), log_priors=small_prior, r=r))
+                var_string.append("N-" + str(N) + "--r-" + str(r) + "--small-prior")
             else:
                 variations.append(dict(N_nodes=int(10**N), r=r))
+                var_string.append("N-" + str(N) + "--r-" + str(r) + "--uniform-prior")
 
 
-model_runs(input0, variations)
+model_runs(input0, variations, var_string)
 
-with open("input0", "wb") as f:
-    pickle.dump(input0)
+with open("input0.pkl", "wb") as f:
+    pickle.dump(input0, f)
