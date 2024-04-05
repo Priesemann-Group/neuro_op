@@ -14,7 +14,7 @@ rng = np.random.default_rng(RANDOM_SEED)
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_standard = dict(
     N_nodes=100,
-    N_neighbours=11,    # JZ: powers of 12 ~ typcial group sizes
+    N_neighbours=11,  # JZ: powers of 12 ~ typcial group sizes
     N_beliefs=500,
     belief_min=-50,
     belief_max=50,
@@ -35,7 +35,7 @@ input_standard = dict(
 
 class Node:
     """
-    Nodes with belief-holding, -sampling, and -updating behavior.
+    Nodes with grid-wise belief-holding, -sampling, and -updating behavior.
 
     Attributes:
     beliefs -- Numpy array of possible parameter values into which a Node may hold belief
@@ -54,7 +54,7 @@ class Node:
         diary_out=[],
     ):
         """
-        Initialize a Node capable of updating and sampling of a world model (= beliefs & log-probabilities of each belief).
+        Initialize a Node capable of updating and sampling of a grid-stored world model (= beliefs & log-probabilities of each belief).
         """
 
         assert len(beliefs) == len(log_priors)
@@ -77,6 +77,50 @@ class Node:
         probs = logpdf_to_pdf(self.log_probs)
         sample = np.random.choice(self.beliefs, size=size, p=probs)
         self.diary_out = np.append(self.diary_out, sample)
+
+        return sample
+
+    def __repr__(self):
+        """Return a string representation of the Node."""
+
+        return f"Node(beliefs={self.beliefs}, log_probs={self.log_probs}, llh_logpdf={self.llh_logpdf}, diary_in={self.diary_in}, diary_out={self.diary_out})"
+
+
+class LaplaceNode:
+    """
+    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
+    """
+
+    def __init__(
+        self,
+        node_id,
+        mu_init=0,
+        sigma_init=50,
+        diary_in=[],
+        diary_out=[],
+    ):
+        """
+        Initialize a Node capable of updating and sampling of a parameterized world model (= beliefs & log-probabilities of each belief).
+        """
+
+        self.node_id = node_id
+        self.mu = mu_init
+        self.sigma = sigma_init
+        self.diary_in = diary_in
+        self.diary_out = diary_out
+
+    def set_updated_belief(self, id_in, info_in, t_sys):
+        """Bayesian-like (parameterized) belief update."""
+        self.diary_in += [[id_in, info_in, t_sys]]
+        self.mu = (self.mu + info_in) / 2
+        variance = np.array(self.diary_in).T[0].var()
+        self.sigma = 1 / (1 / self.sigma**2 + 1 / variance)
+
+    def get_belief_sample(self, t_sys):
+        """Sample a belief according to world model."""
+
+        sample = st.norm(loc=self.mu, scale=self.sigma).rvs(size=1)
+        self.diary_out += [[sample, t_sys]]
 
         return sample
 
@@ -139,7 +183,7 @@ def dist_binning(logpdf, N_bins=50, range=(-20, 20)):
 
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
     Q = np.exp(logpdf(Q_bins[:-1])) + np.exp(logpdf(Q_bins[1:]))
-    
+
     return Q / np.sum(Q)
 
 
@@ -357,7 +401,7 @@ def network_dynamics(
         N_events += 1
         event = rng.uniform()
 
-#        if event < N_nodes * h / (N_nodes * h + N_edges * r):
+        #        if event < N_nodes * h / (N_nodes * h + N_edges * r):
         if event < h / (h + r):
             # external information draw event
             node = random.choice(nodes)
@@ -491,6 +535,10 @@ def run_model(
 
     beliefs = np.linspace(belief_min, belief_max, N_beliefs)
     nodes = [Node(beliefs, log_priors, llh_logpdf) for i in range(N_nodes)]
+    # = {
+    #    i: ParameterizedNode(node_id=i, prior_belief=prior_mu, llh_logpdf=llh_logpdf)
+    #    for i in range(N_nodes)
+    # }
     G = build_random_network(N_nodes, N_neighbours)
     world = Node(beliefs=beliefs, log_priors=world_logpdf(x=beliefs))
 
