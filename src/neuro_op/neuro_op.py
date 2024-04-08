@@ -80,11 +80,6 @@ class Node:
 
         return sample
 
-    def __repr__(self):
-        """Return a string representation of the Node."""
-
-        return f"Node(beliefs={self.beliefs}, log_probs={self.log_probs}, llh_logpdf={self.llh_logpdf}, diary_in={self.diary_in}, diary_out={self.diary_out})"
-
 
 class LaplaceNode:
     """
@@ -94,8 +89,8 @@ class LaplaceNode:
     def __init__(
         self,
         node_id,
-        mu_init=0,
-        sigma_init=50,
+        mu_init=0,      # Prior mean
+        sigma_init=50,  # Prior standard deviation
         diary_in=[],
         diary_out=[],
     ):
@@ -110,24 +105,23 @@ class LaplaceNode:
         self.diary_out = diary_out
 
     def set_updated_belief(self, id_in, info_in, t_sys):
-        """Bayesian-like (parameterized) belief update."""
-        self.diary_in += [[id_in, info_in, t_sys]]
-        self.mu = (self.mu + info_in) / 2
-        variance = np.array(self.diary_in).T[0].var()
-        self.sigma = 1 / (1 / self.sigma**2 + 1 / variance)
+        """Naive Bayesian-like (parameterized) belief update."""
+        self.diary_in += [[info_in, id_in, t_sys]]
+        sigma_data = np.sqrt(np.array(self.diary_in)[:,0].var())
+        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (sigma_data**2 + self.sigma**2)
+        self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
 
     def get_belief_sample(self, t_sys):
         """Sample a belief according to world model."""
 
-        sample = st.norm(loc=self.mu, scale=self.sigma).rvs(size=1)
-        self.diary_out += [[sample, t_sys]]
+        sample = [
+            st.norm(loc=self.mu, scale=self.sigma).rvs(size=1),
+            self.node_id,
+            t_sys,
+        ]
+        self.diary_out += [sample]
 
         return sample
-
-    def __repr__(self):
-        """Return a string representation of the Node."""
-
-        return f"Node(beliefs={self.beliefs}, log_probs={self.log_probs}, llh_logpdf={self.llh_logpdf}, diary_in={self.diary_in}, diary_out={self.diary_out})"
 
 
 def build_random_network(N_nodes, N_neighbours):
@@ -238,7 +232,7 @@ def get_p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
     return np.sum(np.abs(mu_nodes - mu_ref) ** p) ** p_inv
 
 
-def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
+def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
     """
     Simulate predictions using the whole posterior, with the underlying likelihood logprobability funtion (llh_logpdf) being Gaussian.
 
@@ -259,7 +253,7 @@ def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     parameter_samples = np.random.choice(beliefs, p=probs, size=N_samples)
 
     # Generate predictions using the llh_logpdf method.
-    return st.norm.rvs(loc=parameter_samples, scale=5, size=N_samples)
+    return st.norm.rvs(loc=parameter_samples, scale=sigma, size=N_samples)
 
 
 def system_ppd_distances(
@@ -285,13 +279,13 @@ def system_ppd_distances(
 
     # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
     ppd_samples = [
-        ppd_Gaussian_mu(node.beliefs, node.log_probs, N_samples=1000) for node in nodes
+        ppd_Gaussian_mu(node.beliefs, node.log_probs, node.sigma, N_samples=1000) for node in nodes
     ]
     ppds = [
         np.histogram(i, bins=N_bins, range=opinion_range)[0] for i in ppd_samples
     ]  # create PPD approximations via sampling and binning into histograms
     ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
-        world.diary_out, bins=N_bins, range=opinion_range
+        world.diary_out[:,0], bins=N_bins, range=opinion_range
     )
     ppd_bins = ppd_world_out[1]
     ppd_world_out = ppd_world_out[0] / np.sum(
