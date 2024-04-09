@@ -13,11 +13,11 @@ rng = np.random.default_rng(RANDOM_SEED)
 
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_standard = dict(
+    laplace=False
     N_nodes=100,
     N_neighbours=11,  # JZ: powers of 12 ~ typcial group sizes
     N_beliefs=500,
-    belief_min=-50,
-    belief_max=50,
+    belief_range = (-50, 50),
     log_priors=np.zeros(500),
     llh_logpdf=st.norm(loc=0, scale=5).logpdf,
     world_logpdf=st.norm(loc=0, scale=5).logpdf,
@@ -47,6 +47,7 @@ class Node:
 
     def __init__(
         self,
+        node_id,
         beliefs,
         log_priors,
         llh_logpdf=st.norm(loc=0, scale=5).logpdf,
@@ -58,11 +59,12 @@ class Node:
         """
 
         assert len(beliefs) == len(log_priors)
+        self.node_id = node_id
         self.beliefs = np.copy(beliefs)
         self.log_probs = np.copy(log_priors)
         self.llh_logpdf = llh_logpdf
-        self.diary_in = np.array(diary_in)
-        self.diary_out = np.array(diary_out)
+        self.diary_in = np.array(diary_in.copy())
+        self.diary_out = np.array(diary_out.copy())
 
     def set_updated_belief(self, incoming_info):
         """Bayesian update of the Node's belief."""
@@ -101,8 +103,8 @@ class LaplaceNode:
         self.node_id = node_id
         self.mu = mu_init
         self.sigma = sigma_init
-        self.diary_in = diary_in
-        self.diary_out = diary_out
+        self.diary_in = diary_in.copy()
+        self.diary_out = diary_out.copy()
 
     def set_updated_belief(self, id_in, info_in, t_sys):
         """Naive Bayesian-like (parameterized) belief update."""
@@ -442,11 +444,11 @@ def network_dynamics(
 
 
 def run_model(
+    laplace,
     N_nodes,
     N_neighbours,
     N_beliefs,
-    belief_min,
-    belief_max,
+    belief_range = (-50, 50),
     log_priors,
     llh_logpdf,
     world_logpdf,
@@ -527,14 +529,15 @@ def run_model(
 
     assert N_beliefs == len(log_priors)
 
-    beliefs = np.linspace(belief_min, belief_max, N_beliefs)
-    nodes = [Node(beliefs, log_priors, llh_logpdf) for i in range(N_nodes)]
-    # = {
-    #    i: ParameterizedNode(node_id=i, prior_belief=prior_mu, llh_logpdf=llh_logpdf)
-    #    for i in range(N_nodes)
-    # }
+    beliefs = np.linspace(belief_range[0], belief_range[1], N_beliefs)
+
     G = build_random_network(N_nodes, N_neighbours)
-    world = Node(beliefs=beliefs, log_priors=world_logpdf(x=beliefs))
+    if laplace:
+        nodes = [LaplaceNode(note_id=i) for i in range(N_nodes)]
+        world = LaplaceNode(note_id=-1)
+    else:
+        nodes = [Node(node_id=i, beliefs, log_priors, llh_logpdf) for i in range(N_nodes)]
+        world = Node(node_id=-1, beliefs, log_priors=world_logpdf(x=beliefs))
 
     # Renormalize rates to keep rate per node constant
     h = h * N_nodes
