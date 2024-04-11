@@ -13,19 +13,19 @@ rng = np.random.default_rng(RANDOM_SEED)
 
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_standard = dict(
-    laplace=False
+    laplace=False,
     N_nodes=100,
     N_neighbours=11,  # JZ: powers of 12 ~ typcial group sizes
     N_beliefs=500,
-    belief_range = (-50, 50),
+    belief_range=(-50, 50),
     log_priors=np.zeros(500),
-    llh_logpdf=st.norm(loc=0, scale=5).logpdf,
-    world_logpdf=st.norm(loc=0, scale=5).logpdf,
+    llh=st.norm(loc=0, scale=5),
+    world_llh=st.norm(loc=0, scale=5),
     h=1,
     r=1,
     t0=0,
     t_max=100,
-    t_sample=2.5,
+    t_sample=2,
     sample_bins=50,
     sample_opinion_range=(-20, 20),
     sample_p_distance_params=[(1, 1), (2, 1)],
@@ -50,7 +50,7 @@ class Node:
         node_id,
         beliefs,
         log_priors,
-        llh_logpdf=st.norm(loc=0, scale=5).logpdf,
+        llh=st.norm(loc=0, scale=5),
         diary_in=[],
         diary_out=[],
     ):
@@ -62,7 +62,7 @@ class Node:
         self.node_id = node_id
         self.beliefs = np.copy(beliefs)
         self.log_probs = np.copy(log_priors)
-        self.llh_logpdf = llh_logpdf
+        self.llh = llh
         self.diary_in = np.array(diary_in.copy())
         self.diary_out = np.array(diary_out.copy())
 
@@ -70,7 +70,7 @@ class Node:
         """Bayesian update of the Node's belief."""
 
         self.diary_in = np.append(self.diary_in, incoming_info)
-        self.log_probs += self.llh_logpdf(x=self.beliefs - incoming_info)
+        self.log_probs += self.llh.logpdf(x=self.beliefs - incoming_info)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
 
     def get_belief_sample(self, size=1):
@@ -91,7 +91,7 @@ class LaplaceNode:
     def __init__(
         self,
         node_id,
-        mu_init=0,      # Prior mean
+        mu_init=0,  # Prior mean
         sigma_init=50,  # Prior standard deviation
         diary_in=[],
         diary_out=[],
@@ -103,23 +103,30 @@ class LaplaceNode:
         self.node_id = node_id
         self.mu = mu_init
         self.sigma = sigma_init
+        self.llh = st.norm(loc=self.mu, scale=self.sigma)
         self.diary_in = diary_in.copy()
         self.diary_out = diary_out.copy()
 
-    def set_updated_belief(self, id_in, info_in, t_sys):
+    def set_updated_belief(self, info_in, id_in, t_sys):
         """Naive Bayesian-like (parameterized) belief update."""
         self.diary_in += [[info_in, id_in, t_sys]]
-        sigma_data = np.sqrt(np.array(self.diary_in)[:,0].var())
-        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (sigma_data**2 + self.sigma**2)
+        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
+        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (
+            sigma_data**2 + self.sigma**2
+        )
         self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
+        self.llh = st.norm(loc=self.mu, scale=self.sigma)
 
-    def get_belief_sample(self, t_sys):
-        """Sample a belief according to world model."""
+    def get_belief_sample(self, t_sys, size=1):
+        """
+        Sample beliefs proportional to relative plausabilities.
+
+        Returns a list of 'int(size)' times [sample, node_id, t_sys].
+        """
 
         sample = [
-            st.norm(loc=self.mu, scale=self.sigma).rvs(size=1),
-            self.node_id,
-            t_sys,
+            [i, self.node_id, t_sys]
+            for i in st.norm(loc=self.mu, scale=self.sigma).rvs(size=size)
         ]
         self.diary_out += [sample]
 
@@ -234,7 +241,7 @@ def get_p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
     return np.sum(np.abs(mu_nodes - mu_ref) ** p) ** p_inv
 
 
-def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
+def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     """
     Simulate predictions using the whole posterior, with the underlying likelihood logprobability funtion (llh_logpdf) being Gaussian.
 
@@ -252,13 +259,14 @@ def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
     probs = logpdf_to_pdf(logprobs)
 
     # Sample parameter values proportional to the posterior.
-    parameter_samples = np.random.choice(beliefs, p=probs, size=N_samples)
+    mu_samples = np.random.choice(beliefs, p=probs, size=N_samples)
 
     # Generate predictions using the llh_logpdf method.
-    return st.norm.rvs(loc=parameter_samples, scale=sigma, size=N_samples)
+    return st.norm.rvs(loc=mu_samples)
 
 
-def system_ppd_distances(
+def ppd_distances_Gaussian(
+    beliefs,
     nodes,
     world,
     N_bins=50,
@@ -281,13 +289,14 @@ def system_ppd_distances(
 
     # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
     ppd_samples = [
-        ppd_Gaussian_mu(node.beliefs, node.log_probs, node.sigma, N_samples=1000) for node in nodes
+        ppd_Gaussian_mu(beliefs, node.log_probs, N_samples=1000)
+        for node in nodes
     ]
     ppds = [
         np.histogram(i, bins=N_bins, range=opinion_range)[0] for i in ppd_samples
     ]  # create PPD approximations via sampling and binning into histograms
     ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
-        world.diary_out[:,0], bins=N_bins, range=opinion_range
+        world.diary_out[:, 0], bins=N_bins, range=opinion_range
     )
     ppd_bins = ppd_world_out[1]
     ppd_world_out = ppd_world_out[0] / np.sum(
@@ -296,7 +305,10 @@ def system_ppd_distances(
     ppd_world_true = dist_binning(world.llh_logpdf, N_bins, opinion_range)
 
     # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
-    argmax = [np.argmax(i) for i in ppds]
+    argmax = [np.where(i == np.max(i)) for i in ppds]
+    argmax = [i[len(i) // 2] for i in argmax]
+
+
     mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
 
     # Get KL-divergences of each node's PPD
@@ -337,6 +349,7 @@ def system_ppd_distances(
 
 
 def network_dynamics(
+    beliefs,
     nodes,
     G,
     world,
@@ -383,7 +396,8 @@ def network_dynamics(
             if progress:
                 print("Sampling at t=", t)
             sample_counter += 1
-            sample_mu_nodes, sample_kl_div, sample_p_distances = system_ppd_distances(
+            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
+                beliefs,
                 nodes,
                 world,
                 sample_bins,
@@ -420,7 +434,7 @@ def network_dynamics(
         if progress:
             print("Sampling at t=", t)
         sample_counter += 1
-        sample_mu_nodes, sample_kl_div, sample_p_distances = system_ppd_distances(
+        sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
             nodes,
             world,
             sample_bins,
@@ -448,7 +462,7 @@ def run_model(
     N_nodes,
     N_neighbours,
     N_beliefs,
-    belief_range = (-50, 50),
+    belief_range,
     log_priors,
     llh_logpdf,
     world_logpdf,
@@ -474,7 +488,7 @@ def run_model(
         Wished expected number of neighbours per node.
     N_beliefs : int
         Number of beliefs (i.e., grid points) to consider.
-    belief_min, belief_max : float
+    belief_range : float
         Lower/Upper bound for which to consider 'belief > 0'.
     log_priors : numpy.ndarray
         Array of node's prior log-probabilities.
@@ -533,17 +547,18 @@ def run_model(
 
     G = build_random_network(N_nodes, N_neighbours)
     if laplace:
-        nodes = [LaplaceNode(note_id=i) for i in range(N_nodes)]
-        world = LaplaceNode(note_id=-1)
+        nodes = [LaplaceNode(node_id=i) for i in range(N_nodes)]
+        world = LaplaceNode(node_id=-1)
     else:
-        nodes = [Node(node_id=i, beliefs, log_priors, llh_logpdf) for i in range(N_nodes)]
-        world = Node(node_id=-1, beliefs, log_priors=world_logpdf(x=beliefs))
+        nodes = [Node(i, beliefs, log_priors, llh_logpdf) for i in range(N_nodes)]
+        world = Node(-1, beliefs, log_priors=world_logpdf(x=beliefs))
 
     # Renormalize rates to keep rate per node constant
     h = h * N_nodes
     r = r * N_nodes
 
     nodes, G, world, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
+        beliefs,
         nodes,
         G,
         world,
