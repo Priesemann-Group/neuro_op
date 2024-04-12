@@ -12,45 +12,28 @@ rng = np.random.default_rng(RANDOM_SEED)
 
 
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
-
-
 input_standard = dict(
-    # networkx graph object
-    G=build_random_network(N_nodes=100, N_neighbours=11),
-    # beliefs considered by each node
-    beliefs=np.linspace(
-        start=-50,  # min. considered belief value
-        stop=50,  # max. considered belief value
-        num=500,  # number of considered belief values
-    ),
-    # Likelihood function (llf) parameters of nodes and world, Gaussian by default
-    llf_params=dict(
-        mu=0,
-        sigma=5,
-    ),
-    world_params=dict(
-        mu=0,
-        sigma=5,
-    ),
-    # Prior log-probabilities of nodes
+    laplace=False,
+    N_nodes=100,
+    N_neighbours=11,  # JZ: powers of 12 ~ typcial group sizes
+    N_beliefs=500,
+    belief_range=(-50, 50),
     log_priors=np.zeros(500),
-    # Dynamics parameters (rates, simulation times)
+    llh=st.norm(loc=0, scale=5),
+    world_llh=st.norm(loc=0, scale=5),
     h=1,
     r=1,
     t0=0,
     t_max=100,
-    # Sampling parameters)
     t_sample=2,
     sample_bins=50,
     sample_range=(-20, 20),
     p_distance_params=[(1, 1), (2, 1)],
-    # Switches
     progress=False,
-    laplace=False,
 )
 
 
-class Node_Normal:
+class Node:
     """
     Nodes with grid-wise belief-holding, -sampling, and -updating behavior.
 
@@ -65,10 +48,9 @@ class Node_Normal:
     def __init__(
         self,
         node_id,
+        beliefs,
         log_priors,
-        llf_params=dict(  # Parameters defining the likelihood function (llf), normal distribution by default
-            mu=0, sigma=5
-        ),
+        llh=st.norm(loc=0, scale=5),
         diary_in=[],
         diary_out=[],
     ):
@@ -76,126 +58,102 @@ class Node_Normal:
         Initialize a Node capable of updating and sampling of a grid-stored world model (= beliefs & log-probabilities of each belief).
         """
 
+        assert len(beliefs) == len(log_priors)
         self.node_id = node_id
+        self.beliefs = np.copy(beliefs)
         self.log_probs = np.copy(log_priors)
-        self.llf_params = llf_params
+        self.llh = llh
+        self.diary_in = np.array(diary_in.copy())
+        self.diary_out = np.array(diary_out.copy())
+
+    def set_updated_belief(self, incoming_info):
+        """Bayesian update of the Node's belief."""
+
+        self.diary_in = np.append(self.diary_in, incoming_info)
+        self.log_probs += self.llh.logpdf(x=self.beliefs - incoming_info)
+        self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
+
+    def get_belief_sample(self, size=1):
+        """Sample a belief according to world model."""
+
+        probs = logpdf_to_pdf(self.log_probs)
+        sample = np.random.choice(self.beliefs, size=size, p=probs)
+        self.diary_out = np.append(self.diary_out, sample)
+
+        return sample
+
+
+class LaplaceNode:
+    """
+    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
+    """
+
+    def __init__(
+        self,
+        node_id,
+        mu_init=0,  # Prior mean
+        sigma_init=50,  # Prior standard deviation
+        diary_in=[],
+        diary_out=[],
+    ):
+        """
+        Initialize a Node capable of updating and sampling of a parameterized world model (= beliefs & log-probabilities of each belief).
+        """
+
+        self.node_id = node_id
+        self.mu = mu_init
+        self.sigma = sigma_init
+        self.llh = st.norm(loc=self.mu, scale=self.sigma)
         self.diary_in = diary_in.copy()
         self.diary_out = diary_out.copy()
 
-    def set_updated_belief(self, beliefs, info_in, id_in, t_sys):
-        """Bayesian update of the Node's belief, based on incoming info 'info_in' from node with id 'id_in' at system time 't_sys'."""
-
+    def set_updated_belief(self, info_in, id_in, t_sys):
+        """Naive Bayesian-like (parameterized) belief update."""
         self.diary_in += [[info_in, id_in, t_sys]]
-        log_llf = st.norm(
-            loc=self.llf_params["mu"], scale=self.llf_params["sigma"]
-        ).logpdf
-        self.log_probs += log_llf(x=beliefs - info_in)
-        self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
+        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
+        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (
+            sigma_data**2 + self.sigma**2
+        )
+        self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
+        self.llh = st.norm(loc=self.mu, scale=self.sigma)
 
-    def get_belief_sample(self, beliefs, t_sys):
+    def get_belief_sample(self, t_sys, size=1):
         """
-        Sample a belief value with probabilities proportional to relative plausabilities.
+        Sample beliefs proportional to relative plausabilities.
+
+        Returns a list of 'int(size)' times [sample, node_id, t_sys].
         """
 
-        probs = logpdf_to_pdf(self.log_probs)
-        info_out = np.random.choice(beliefs, p=probs, size=1)
-        self.diary_out += [[info_out, t_sys]]
-        return info_out
+        sample = [
+            [i, self.node_id, t_sys]
+            for i in st.norm(loc=self.mu, scale=self.sigma).rvs(size=size)
+        ]
+        self.diary_out += [sample]
 
-
-#class LaplaceNode:
-#    """
-#    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
-#    """
-#
-#
-#    def __init__(
-#        self,
-#        node_id,
-#        mu_init=0,  # Prior mean
-#        sigma_init=50,  # Prior standard deviation
-#        diary_in=[],
-#        diary_out=[],
-#    ):
-#        """
-#        Initialize a Node capable of updating and sampling of a parameterized world model (= beliefs & log-probabilities of each belief).
-#        """
-#
-#        self.node_id = node_id
-#        self.mu = mu_init
-#        self.sigma = sigma_init
-#        self.llh = st.norm(loc=self.mu, scale=self.sigma)
-#        self.diary_in = diary_in.copy()
-#        self.diary_out = diary_out.copy()
-#
-#    def set_updated_belief(self, info_in, id_in, t_sys):
-#        """Naive Bayesian-like (parameterized) belief update."""
-#        self.diary_in += [[info_in, id_in, t_sys]]
-#        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
-#        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (
-#            sigma_data**2 + self.sigma**2
-#        )
-#        self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
-#        self.llh = st.norm(loc=self.mu, scale=self.sigma)
-#
-#    def get_belief_sample(self, t_sys, size=1):
-#        """
-#        Sample beliefs proportional to relative plausabilities.
-#
-#        Returns a list of 'int(size)' times [sample, node_id, t_sys].
-#        """
-#
-#        sample = [
-#            [i, self.node_id, t_sys]
-#            for i in st.norm(loc=self.mu, scale=self.sigma).rvs(size=size)
-#        ]
-#        self.diary_out += [sample]
-#
-#        return sample
-#
+        return sample
 
 
 def build_random_network(N_nodes, N_neighbours):
     """
-    Return directed graph of N_nodes with random connections.
-    At the start, each node has, on average, N_neighbours connections, each connection is bidirectional and of weight 1.
+    Build adjacency matrix of a weighted graph of N_nodes, with random connections.
+    At the start, each node has, on average, 3 connections, each connection is bidirectional and of weight 1.
     """
 
     p = N_neighbours / (
         N_nodes - 1
     )  # probability of connection; '-1' to exclude self-connections
 
+    # size = (N_nodes, N_nodes)
+    # network = rng.uniform(size=size)
+    # network = np.where(network < p, 1, 0)
+    # network = np.triu(network, k=1)   # remove self-connections
+    # network2 = network + network.T
+    #
+    # return network2
+
     G = nx.gnp_random_graph(N_nodes, p).to_directed()
 
-    return G
-
-
-def build_stochastic_block_model(N_nodes, N_blocks, N_neighbours, p_in=0.5, p_out=0.1):
-    """
-    Build and return a directed stochastic block model graph.
-
-    Build a graph of N_blocks equally-sized blocks with p_in probability of connection within a block and p_out probability of connection between blocks.
-    """
-
-    block_sizes = [N_nodes // N_blocks] * N_blocks
-    block_sizes[-1] += N_nodes % N_blocks  # add remainder to last block
-    p = []
-    for i in range(N_blocks):
-        p += [[p_out] * N_blocks]
-        p[i][i] = p_in
-    p = np.array(p) / np.sum(p)
-
-    # Adjust p to match desired mean degree
-    G_tmp = nx.stochastic_block_model(block_sizes, p, directed=True)
-    mean_degree = np.sum([G_tmp.degree(n) for n in G_tmp.nodes()]) / (2 * len(G_tmp))
-    p = p * N_neighbours / mean_degree
-
-    G = nx.stochastic_block_model(block_sizes, p, directed=True)
-
-    # Small plausibility checks
-    assert len(G) == N_nodes
-    print("Mean degree: ", np.sum([G.degree(n) for n in G.nodes()]) / (2 * len(G)))
-    return G
+    return G  # nx.adjacency_matrix(G).todense()
 
 
 def logpdf_to_pdf(logprobs):
@@ -331,7 +289,8 @@ def ppd_distances_Gaussian(
 
     # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
     ppd_samples = [
-        ppd_Gaussian_mu(beliefs, node.log_probs, N_samples=1000) for node in nodes
+        ppd_Gaussian_mu(beliefs, node.log_probs, N_samples=1000)
+        for node in nodes
     ]
     ppds = [
         np.histogram(i, bins=N_bins, range=opinion_range)[0] for i in ppd_samples
@@ -348,6 +307,7 @@ def ppd_distances_Gaussian(
     # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
     argmax = [np.where(i == np.max(i)) for i in ppds]
     argmax = [i[len(i) // 2] for i in argmax]
+
 
     mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
 
@@ -581,7 +541,7 @@ def run_model(
         '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
     """
 
-    assert beliefs == len(log_priors)
+    assert N_beliefs == len(log_priors)
 
     beliefs = np.linspace(belief_range[0], belief_range[1], N_beliefs)
 
