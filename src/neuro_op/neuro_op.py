@@ -15,51 +15,52 @@ rng = np.random.default_rng(RANDOM_SEED)
 
 
 input_standard = dict(
-    # networkx graph object
-    G=build_random_network(N_nodes=100, N_neighbours=11),
-    # beliefs considered by each node
-    beliefs=np.linspace(
+    G=build_random_network(N_nodes=100, N_neighbours=11),  # networkx graph object
+    beliefs=np.linspace(  # beliefs considered by each node
         start=-50,  # min. considered belief value
         stop=50,  # max. considered belief value
         num=500,  # number of considered belief values
     ),
-    # Likelihood function (llf) parameters of nodes and world, Gaussian by default
-    llf_params=dict(
+    llf_params=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
         mu=0,
         sigma=5,
     ),
-    world_params=dict(
+    world_params=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
         mu=0,
         sigma=5,
     ),
-    # Prior log-probabilities of nodes
-    log_priors=np.zeros(500),
+    log_priors=np.zeros(500),  # Prior log-probabilities of nodes
     # Dynamics parameters (rates, simulation times)
     h=1,
     r=1,
     t0=0,
     t_max=100,
-    # Sampling parameters)
+    # Sampling parameters
     t_sample=2,
     sample_bins=50,
     sample_range=(-20, 20),
     p_distance_params=[(1, 1), (2, 1)],
-    # Switches
+    # Switches...
     progress=False,
     laplace=False,
 )
 
 
-class Node_Normal:
+class NodeNormal:
     """
     Nodes with grid-wise belief-holding, -sampling, and -updating behavior.
 
     Attributes:
-    beliefs -- Numpy array of possible parameter values into which a Node may hold belief
-    log_probs -- Numpy array current relative log-probabilities of each belief
-    llh -- method to return Bayesian log-likelihood p(data|parameters); supposed to take as first argument x=<data>
-    diary_in -- Array of past incoming information
-    diary_out -- Array of past outgoing information
+    node_id : int
+        Supposedly unique identifier of the node
+    log_probs : array
+        Unnormalized log-probabilities, corresponding to external 'beliefs' array
+    llh_params : dict
+        Necessary paramters for the node's model (==likelihood function p(data|parameters) )
+    diary_in : list
+        Past incoming information & metadata, structured [ [info_in_0, id_in_0, t_sys_0], [info_in_1, id_in_1, t_sys_1], ... ]
+    diary_out : list
+        Shared own information & metadata, structured [ [info_out_0, t_sys_0], [info_out_1, t_sys_1], ... ]
     """
 
     def __init__(
@@ -94,7 +95,7 @@ class Node_Normal:
 
     def get_belief_sample(self, beliefs, t_sys):
         """
-        Sample a belief value with probabilities proportional to relative plausabilities.
+        Sample a belief "mu == <belief value>', proportional to relative plausabilities 'probs'.
         """
 
         probs = logpdf_to_pdf(self.log_probs)
@@ -103,7 +104,7 @@ class Node_Normal:
         return info_out
 
 
-#class LaplaceNode:
+# class LaplaceNode:
 #    """
 #    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
 #    """
@@ -203,7 +204,8 @@ def logpdf_to_pdf(logprobs):
     Returns array of relative log probabilities as normalized relative probabilities.
 
     Keyword arguments:
-    logprobs -- array of log probabilities
+    logprobs : iterable
+        array of log probabilities
     """
 
     probs = np.exp(
@@ -221,9 +223,12 @@ def dist_binning(logpdf, N_bins=50, range=(-20, 20)):
     'Integrates' the logpdf function by summing over exponentiated logpdf values at bin margins.
 
     Keyword arguments:
-    dist -- scipy distribution
-    N_bins -- number of bins to be returned
-    range -- interval for which binning is performed
+    logpdf : iterable
+        discrete log-probabilities to be binned
+    N_bins : int
+        number of bins to be returned
+    range : tuple
+        interval over which binning is performed
     """
 
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
@@ -244,9 +249,15 @@ def kl_divergence(P, Q):
     > inputs = inputs[0] / np.sum(inputs[0])
 
     Keyword arguments:
-    P -- array of recorded discrete probability distribution
-    Q -- array of reference discrete probability distribution
+    P : iterable
+        recorded discrete probability distribution
+    Q : iterable
+        reference discrete probability distribution
     """
+
+    # Normalize P and Q
+    P = P / np.sum(P)
+    Q = Q / np.sum(Q)
 
     # kind of wackily add machine epsilon to all elements of Q to avoid 'divided by zero' errors
     epsilon = 7.0 / 3 - 4.0 / 3 - 1
@@ -259,7 +270,7 @@ def kl_divergence(P, Q):
     return np.sum(terms)
 
 
-def get_p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
+def get_p_distances(param_node, param_ref, p=1, p_inv=1):
     """
     Returns an average distance between an array of nodes' inferred parameters and a reference parameter.
 
@@ -274,16 +285,18 @@ def get_p_distances(mu_nodes, mu_ref, p=1, p_inv=1):
     For sum of quadratic distances, choose p = 2, p_inv = 1  .
 
     Keyword arguments:
-    mu_nodes -- array of values
-    mu_ref -- reference value to which mu_nodes values are compared
-    p -- value by which each difference is raised, usually 1 (linear distance) or 2 (squared distance)
-    p_inv -- value by which the sum of differences is raised.
+    praram_node : iterable
+        array of nodes' inferred parameters
+    p : float
+        value by which each difference is raised, usually 1 (linear distance) or 2 (squared distance)
+    p_inv : float
+        value by which the sum of differences is raised, usually 1 (mean) or 1/p (p-norm)
     """
 
-    return np.sum(np.abs(mu_nodes - mu_ref) ** p) ** p_inv
+    return np.sum(np.abs(param_node - param_ref) ** p) ** p_inv
 
 
-def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
+def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
     """
     Simulate predictions using the whole posterior, with the underlying likelihood logprobability funtion (llh) being Gaussian.
 
@@ -292,9 +305,14 @@ def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     Thereby, the PPD includes all the uncertainty (i.e., model parameter value uncertainty (from posterior) & generative uncertainty (model with given parameter values creating data stochastically).
 
     Keyword arguments:
-    beliefs -- array of possible parameter values into which an node may hold belief
-    logprobs -- array of log probabilities corresponding to 'beliefs' array
-    N_samples -- number of to-be-drawn likelihood (llh) parameter values and then-sampled predictions; can in principle be split up into two separate parameters (one for parameter sampling, one for prediction sampling)
+    beliefs : iterable
+        possible parameter values into which a node may hold belief
+    logprobs : iterable
+        log probabilities, corresponding to 'beliefs' array
+    sigma : float
+        Node-supplied standard deviation of the Gaussian likelihood function
+    N_samples : int
+        number of to-be-drawn likelihood (llh) parameter values and then-sampled predictions; can in principle be split up into two separate parameters (one for parameter sampling, one for prediction sampling)
     """
 
     # Transform potentially non-normalized log probabilities to normalized probabilities.
@@ -304,15 +322,15 @@ def ppd_Gaussian_mu(beliefs, logprobs, N_samples=1000):
     mu_samples = np.random.choice(beliefs, p=probs, size=N_samples)
 
     # Generate predictions using the llh method.
-    return st.norm.rvs(loc=mu_samples)
+    return st.norm.rvs(loc=mu_samples, scale=sigma)
 
 
 def ppd_distances_Gaussian(
     beliefs,
     nodes,
     world,
-    N_bins=50,
-    opinion_range=(-20, 20),
+    sample_bins=50,
+    sample_range=(-20, 20),
     p_distances_params=[],
 ):
     """
@@ -323,30 +341,39 @@ def ppd_distances_Gaussian(
     Then, the wanted distance (KL divergence or p-distance) is calculated between each node distribution and the world distribution.
 
     Keyword arguments:
-    nodes -- object(s) of class 'Node'
-    world -- "real state" representing object of class 'Node'
-    N_bins -- number of bins used in histogram binning of posterior predictive samples
-    opinion_range -- interval over which binning is performed
+    beliefs : iterable
+        Possible parameter values into which a node may hold belief
+    nodes : list of Node objects
+        Objects for which to calculate distances
+    world : Node object
+        Node stroing & providing the actual/"real" state of the world
+    sample_bins : int
+        Number of bins used in histogram binning of posterior predictive samples
+    samlpe_range : tuple
+        Interval over which binning is performed
     """
 
     # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
     ppd_samples = [
-        ppd_Gaussian_mu(beliefs, node.log_probs, N_samples=1000) for node in nodes
+        ppd_Gaussian_mu(
+            beliefs, node.log_probs, node.llf_params["sigma"], N_samples=1000
+        )
+        for node in nodes
     ]
     ppds = [
-        np.histogram(i, bins=N_bins, range=opinion_range)[0] for i in ppd_samples
+        np.histogram(i, bins=sample_bins, range=sample_range)[0] for i in ppd_samples
     ]  # create PPD approximations via sampling and binning into histograms
     ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
-        world.diary_out[:, 0], bins=N_bins, range=opinion_range
+        world.diary_out[:, 0], bins=sample_bins, range=sample_range
     )
     ppd_bins = ppd_world_out[1]
     ppd_world_out = ppd_world_out[0] / np.sum(
         ppd_world_out[0]
     )  # normalize world_out PPD
-    ppd_world_true = dist_binning(world.llh, N_bins, opinion_range)
+    ppd_world_true = dist_binning(world.log_probs, sample_bins, sample_range)
 
     # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
-    argmax = [np.where(i == np.max(i)) for i in ppds]
+    argmax = [np.where(i == np.max(i))[0] for i in ppds]
     argmax = [i[len(i) // 2] for i in argmax]
 
     mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
@@ -389,10 +416,10 @@ def ppd_distances_Gaussian(
 
 
 def network_dynamics(
-    beliefs,
     nodes,
-    G,
     world,
+    G,
+    beliefs,
     h,
     r,
     t0,
@@ -410,17 +437,32 @@ def network_dynamics(
     Runtime order of magnitude ~ 1s/1000 events (on Dell XPS 13 9370)
 
     Keyword arguments:
-    nodes -- list of nodes, each having beliefs and nodes
-    G -- networkx graph object (formerly adjacency matrix)
-    world -- distribution providing stochastically blurred actual world state
-    h -- rate of external information draw events
-    r -- rate of edge information exchange events
-    t0 -- start time of simulation
-    t_max -- end time of simulation
-    t_sample -- periodicity for which distance measures (KL-div, p-distance) are taken
-    sample_bins -- number of bins used in distance measures
-    sample_range -- interval over which distance measure distributions are considered
-    progress -- boolean of whether or not to print sampling times
+    nodes : list of Node objects
+        Nodes inferring the world state
+    world : Node object
+        Node representing the world state
+    G : networkx graph object
+        Graph constraining node interactions
+    beliefs : iterable
+        Possible parameter values into which a node may hold belief
+    h : float
+        Graph size normalized rate of external information draw events
+    r : float
+        Graph size normalized rate of edge information exchange events
+    t0 : float
+        Start time of simulation
+    t_max : float
+        End time of simulation
+    t_sample : float
+        Periodicity for which samples and distance measures (KL-div, p-distance) are taken
+    sample_bins : int
+        Number of bins used in distance measures
+    sample_range : tuple
+        Interval over which distance measure distributions are considered
+    p_distance_params : list
+        List of tuples, each containing two floats, defining the p-distance parameters
+    progress : bool
+        Whether or not to print sampling times
     """
 
     N_events = 0
@@ -434,7 +476,7 @@ def network_dynamics(
         # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
         if int(t / t_sample) >= sample_counter:
             if progress:
-                print("Sampling at t=", t)
+                print("Sampling at t=", t, "\t, aka", (t/t_max), "\t of runtime.")
             sample_counter += 1
             sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
                 beliefs,
@@ -449,22 +491,18 @@ def network_dynamics(
             p_distances.append(sample_p_distances)
 
         N_events += 1
-        event = rng.uniform()
-
-        #        if event < N_nodes * h / (N_nodes * h + N_edges * r):
-        if event < h / (h + r):
+        if rng.uniform() < h / (h + r):
             # external information draw event
             node = random.choice(nodes)
             node.set_updated_belief(world.get_belief_sample(size=1))
-
         else:
             # edge event
             chatters = random.choice(list(G.edges()))
             # update each node's log-probabilities with sample of edge neighbour's beliefs
-            sample0 = nodes[chatters[0]].get_belief_sample(size=1)
-            sample1 = nodes[chatters[1]].get_belief_sample(size=1)
-            nodes[chatters[0]].set_updated_belief(sample1)
-            nodes[chatters[1]].set_updated_belief(sample0)
+            sample0 = nodes[chatters[0]].get_belief_sample(beliefs=beliefs, t_sys=t)
+            sample1 = nodes[chatters[1]].get_belief_sample(beliefs=beliefs, t_sys=t)
+            nodes[chatters[0]].set_updated_belief(beliefs, sample1, chatters[1], t)
+            nodes[chatters[1]].set_updated_belief(beliefs, sample0, chatters[0], t)
 
         dt = st.expon.rvs(scale=1 / (h + r))
         t = t + dt
@@ -475,6 +513,7 @@ def network_dynamics(
             print("Sampling at t=", t)
         sample_counter += 1
         sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
+            beliefs,
             nodes,
             world,
             sample_bins,
@@ -487,8 +526,8 @@ def network_dynamics(
 
     return (
         nodes,
-        G,
         world,
+        G,
         N_events,
         t,
         mu_nodes,
@@ -497,15 +536,12 @@ def network_dynamics(
     )
 
 
-def run_model(
-    laplace,
-    N_nodes,
-    N_neighbours,
-    N_beliefs,
-    belief_range,
+def run_model_Normal(
+    G,
+    beliefs,
+    llf_params,
+    world_params,
     log_priors,
-    llh,
-    world_llh,
     h,
     r,
     t0,
@@ -515,6 +551,7 @@ def run_model(
     sample_range,
     p_distance_params,
     progress,
+    laplace,
 ):
     """
     Execute program.
@@ -522,37 +559,37 @@ def run_model(
     Then, run simulation until t>=t_max and return simulation results.
 
     Keyword arguments:
-    N_nodes : int
-        Number of inference-performing network nodes.
-    N_neighbours : int
-        Wished expected number of neighbours per node.
-    N_beliefs : int
-        Number of beliefs (i.e., grid points) to consider.
-    belief_range : float
-        Lower/Upper bound for which to consider 'belief > 0'.
-    log_priors : numpy.ndarray
-        Array of node's prior log-probabilities.
-    llh : method
-        Method returning log-probabilities for given data & parameters.
-    world : Node
-        Node providing stochastically blurred actual world state.
+    G : networkx graph object
+        Graph of nodes and edges
+    beliefs : list (floats)
+        Possible parameter values into which a Node may hold beliefs in
+    llf_params : dict
+        Parameters defining the likelihood function (llf) of nodes, concerning a Gaussian by default
+    world_params : dict
+        Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
+    log_priors : list (floats)
+        Prior log-probabilities of nodes
     h : float
-        World distribution information sharing rate.
+        Rate of external information draw events
     r : float
-        Communication rate along edges (excludes 'world' node).
-    t_0, t_max : float
-        Starting/Ending time of simulation.
+        Rate of edge information exchange events
+    t0 : float
+        Start time of simulation
+    t_max : float
+        End time of simulation
     t_sample : float
-        Periodicity for which distances (KL-div, p-distance) between PPDs are estimated.
+        Periodicity for which samples and distance measures (KL-div, p-distance) are taken
     sample_bins : int
-        Number of bins used in distance estimation.
+        Number of bins used in distance measures
     sample_range : tuple
-        PPDs' intervals considered during distance estimation.
-    p_distance_params: list of tuples, optional
-        Tuples with which to call 'p_distances' during sampling.
-        If `bool(p_distance_params)` does not evaluate to true, only KL-divergences will be estimated.
-    progress: bool
-        Whether or not to print sampling times.
+        Interval over which distance measure distributions are considered
+    p_distance_params : list
+        List of tuples, each containing two floats, defining the p-distance parameters
+    progress : bool
+        Whether or not to print sampling times
+    laplace : bool
+        Whether or not to use Laplace-approximated nodes
+
 
     Returns:
     Dictioniary containing the following keys and according data after end of simulation:
@@ -581,23 +618,31 @@ def run_model(
         '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
     """
 
-    assert beliefs == len(log_priors)
+    assert len(beliefs) == len(log_priors)
 
-    beliefs = np.linspace(belief_range[0], belief_range[1], N_beliefs)
-
-    G = build_random_network(N_nodes, N_neighbours)
     if laplace:
-        nodes = [LaplaceNode(node_id=i) for i in range(N_nodes)]
+        nodes = [LaplaceNode(node_id=i) for i in range(len(G))]
         world = LaplaceNode(node_id=-1)
     else:
-        nodes = [Node(i, beliefs, log_priors, llh) for i in range(N_nodes)]
-        world = Node(-1, beliefs, log_priors=world_llh(x=beliefs))
+        nodes = [
+            NodeNormal(
+                note_id=i,
+                log_priors=log_priors,
+                llh_params=llf_params,
+            )
+            for i in range(len(G))
+        ]
+        world = NodeNormal(
+            note_id=-1,
+            log_priors = st.norm(loc=world_params["mu"], scale=world_params["sigma"]).logpdf(beliefs),
+            llh_params=world_params,
+        )
 
     # Renormalize rates to keep rate per node constant
-    h = h * N_nodes
-    r = r * N_nodes
+    h = h * len(G)
+    r = r * len(G)
 
-    nodes, G, world, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
+    nodes, world, G, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
         beliefs,
         nodes,
         G,
