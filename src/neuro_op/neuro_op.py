@@ -11,41 +11,6 @@ random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
 
 
-# Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
-
-
-input_standard = dict(
-    G=build_random_network(N_nodes=100, N_neighbours=11),  # networkx graph object
-    beliefs=np.linspace(  # beliefs considered by each node
-        start=-50,  # min. considered belief value
-        stop=50,  # max. considered belief value
-        num=500,  # number of considered belief values
-    ),
-    llf_params=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
-        mu=0,
-        sigma=5,
-    ),
-    world_params=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
-        mu=0,
-        sigma=5,
-    ),
-    log_priors=np.zeros(500),  # Prior log-probabilities of nodes
-    # Dynamics parameters (rates, simulation times)
-    h=1,
-    r=1,
-    t0=0,
-    t_max=100,
-    # Sampling parameters
-    t_sample=2,
-    sample_bins=50,
-    sample_range=(-20, 20),
-    p_distance_params=[(1, 1), (2, 1)],
-    # Switches...
-    progress=False,
-    laplace=False,
-)
-
-
 class NodeNormal:
     """
     Nodes with grid-wise belief-holding, -sampling, and -updating behavior.
@@ -99,7 +64,7 @@ class NodeNormal:
         """
 
         probs = logpdf_to_pdf(self.log_probs)
-        info_out = np.random.choice(beliefs, p=probs, size=1)
+        info_out = rng.choice(beliefs, p=probs)
         self.diary_out += [[info_out, t_sys]]
         return info_out
 
@@ -332,6 +297,7 @@ def ppd_distances_Gaussian(
     sample_bins=50,
     sample_range=(-20, 20),
     p_distances_params=[],
+    world_out=False,
 ):
     """
     Return approximated distances between system nodes' PPDs and world state's distribution and binning used during approximation.
@@ -353,6 +319,8 @@ def ppd_distances_Gaussian(
         Interval over which binning is performed
     """
 
+    ppd_bins = np.linspace(sample_range[0], sample_range[1], sample_bins + 1)
+
     # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
     ppd_samples = [
         ppd_Gaussian_mu(
@@ -360,22 +328,30 @@ def ppd_distances_Gaussian(
         )
         for node in nodes
     ]
+
     ppds = [
         np.histogram(i, bins=sample_bins, range=sample_range)[0] for i in ppd_samples
     ]  # create PPD approximations via sampling and binning into histograms
-    ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
-        world.diary_out[:, 0], bins=sample_bins, range=sample_range
+
+    if world.diary_out:
+        ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
+            np.array(world.diary_out)[:, 0], bins=sample_bins, range=sample_range
+        )
+        ppd_world_out = ppd_world_out[0] / np.sum(
+            ppd_world_out[0]
+        )  # normalize world_out PPD
+    else:
+        ppd_world_out = np.zeros(sample_bins)
+
+    ppd_world_true = dist_binning(
+        st.norm(loc=world.llf_params["mu"], scale=world.llf_params["sigma"]).logpdf,
+        sample_bins,
+        sample_range,
     )
-    ppd_bins = ppd_world_out[1]
-    ppd_world_out = ppd_world_out[0] / np.sum(
-        ppd_world_out[0]
-    )  # normalize world_out PPD
-    ppd_world_true = dist_binning(world.log_probs, sample_bins, sample_range)
 
     # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
     argmax = [np.where(i == np.max(i))[0] for i in ppds]
     argmax = [i[len(i) // 2] for i in argmax]
-
     mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
 
     # Get KL-divergences of each node's PPD
@@ -476,7 +452,7 @@ def network_dynamics(
         # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
         if int(t / t_sample) >= sample_counter:
             if progress:
-                print("Sampling at t=", t, "\t, aka", (t/t_max), "\t of runtime.")
+                print("Sampling at t=", t, "\t, aka", (t / t_max), "\t of runtime.")
             sample_counter += 1
             sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
                 beliefs,
@@ -494,7 +470,12 @@ def network_dynamics(
         if rng.uniform() < h / (h + r):
             # external information draw event
             node = random.choice(nodes)
-            node.set_updated_belief(world.get_belief_sample(size=1))
+            node.set_updated_belief(
+                beliefs=beliefs,
+                info_in=world.get_belief_sample(beliefs, t),
+                id_in=world.node_id,
+                t_sys=t,
+            )
         else:
             # edge event
             chatters = random.choice(list(G.edges()))
@@ -626,16 +607,18 @@ def run_model_Normal(
     else:
         nodes = [
             NodeNormal(
-                note_id=i,
+                node_id=i,
                 log_priors=log_priors,
-                llh_params=llf_params,
+                llf_params=llf_params,
             )
             for i in range(len(G))
         ]
         world = NodeNormal(
-            note_id=-1,
-            log_priors = st.norm(loc=world_params["mu"], scale=world_params["sigma"]).logpdf(beliefs),
-            llh_params=world_params,
+            node_id=-1,
+            log_priors=st.norm(
+                loc=world_params["mu"], scale=world_params["sigma"]
+            ).logpdf(beliefs),
+            llf_params=world_params,
         )
 
     # Renormalize rates to keep rate per node constant
@@ -643,10 +626,10 @@ def run_model_Normal(
     r = r * len(G)
 
     nodes, world, G, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
-        beliefs,
         nodes,
-        G,
         world,
+        G,
+        beliefs,
         h,
         r,
         t0,
@@ -670,3 +653,36 @@ def run_model_Normal(
         "p_distances": p_distances,
         "seed": RANDOM_SEED,
     }
+
+
+# Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
+input_standard = dict(
+    G=build_random_network(N_nodes=100, N_neighbours=11),  # networkx graph object
+    beliefs=np.linspace(  # beliefs considered by each node
+        start=-50,  # min. considered belief value
+        stop=50,  # max. considered belief value
+        num=500,  # number of considered belief values
+    ),
+    llf_params=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
+        mu=0,
+        sigma=5,
+    ),
+    world_params=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
+        mu=0,
+        sigma=5,
+    ),
+    log_priors=np.zeros(500),  # Prior log-probabilities of nodes
+    # Dynamics parameters (rates, simulation times)
+    h=1,
+    r=1,
+    t0=0,
+    t_max=100,
+    # Sampling parameters
+    t_sample=2,
+    sample_bins=50,
+    sample_range=(-20, 20),
+    p_distance_params=[(1, 1), (2, 1)],
+    # Switches...
+    progress=False,
+    laplace=False,
+)
