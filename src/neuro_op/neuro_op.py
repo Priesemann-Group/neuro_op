@@ -6,14 +6,16 @@ import random
 import scipy.stats as st
 
 # Import old files for pickle usability
-#import "./deprecated.py"
+# import "./deprecated.py"
 
 # Initialize randomness and RNGs
 RANDOM_SEED = np.random.SeedSequence().entropy
 random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
+np.random.default_rng()
 
 
+####################################################################################################
 class Node:
     """
     ! ! !
@@ -51,6 +53,7 @@ class Node:
         self.diary_in = np.array(diary_in.copy())
         self.diary_out = np.array(diary_out.copy())
 
+
 #    def set_updated_belief(self, incoming_info):
 #        """Bayesian update of the Node's belief."""
 #
@@ -64,6 +67,7 @@ class Node:
 #        probs = logpdf_to_pdf(self.log_probs)
 #        sample = np.random.choice(self.beliefs, size=size, p=probs)
 #        self.diary_out = np.append(self.diary_out, sample)
+####################################################################################################
 
 
 class NodeNormal:
@@ -88,7 +92,8 @@ class NodeNormal:
         node_id,
         log_priors,
         llf_params=dict(  # Parameters defining the likelihood function (llf), normal distribution by default
-            mu=0, sigma=5
+            mu=0,
+            sigma=5,
         ),
         diary_in=[],
         diary_out=[],
@@ -107,6 +112,7 @@ class NodeNormal:
         """Bayesian update of the Node's belief, based on incoming info 'info_in' from node with id 'id_in' at system time 't_sys'."""
 
         self.diary_in += [[info_in, id_in, t_sys]]
+        # TOP1
         log_llf = st.norm(
             loc=self.llf_params["mu"], scale=self.llf_params["sigma"]
         ).logpdf
@@ -124,56 +130,50 @@ class NodeNormal:
         return info_out
 
 
-# class LaplaceNode:
-#    """
-#    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
-#    """
-#
-#
-#    def __init__(
-#        self,
-#        node_id,
-#        mu_init=0,  # Prior mean
-#        sigma_init=50,  # Prior standard deviation
-#        diary_in=[],
-#        diary_out=[],
-#    ):
-#        """
-#        Initialize a Node capable of updating and sampling of a parameterized world model (= beliefs & log-probabilities of each belief).
-#        """
-#
-#        self.node_id = node_id
-#        self.mu = mu_init
-#        self.sigma = sigma_init
-#        self.llh = st.norm(loc=self.mu, scale=self.sigma)
-#        self.diary_in = diary_in.copy()
-#        self.diary_out = diary_out.copy()
-#
-#    def set_updated_belief(self, info_in, id_in, t_sys):
-#        """Naive Bayesian-like (parameterized) belief update."""
-#        self.diary_in += [[info_in, id_in, t_sys]]
-#        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
-#        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (
-#            sigma_data**2 + self.sigma**2
-#        )
-#        self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
-#        self.llh = st.norm(loc=self.mu, scale=self.sigma)
-#
-#    def get_belief_sample(self, t_sys, size=1):
-#        """
-#        Sample beliefs proportional to relative plausabilities.
-#
-#        Returns a list of 'int(size)' times [sample, node_id, t_sys].
-#        """
-#
-#        sample = [
-#            [i, self.node_id, t_sys]
-#            for i in st.norm(loc=self.mu, scale=self.sigma).rvs(size=size)
-#        ]
-#        self.diary_out += [sample]
-#
-#        return sample
-#
+class LaplaceNode:
+    """
+    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
+    """
+
+    def __init__(
+        self,
+        node_id,
+        llf_params=dict(
+            mu=0,  # Prior mean
+            sigma=5,  # Prior standard deviation
+        ),
+        diary_in=[],
+        diary_out=[],
+    ):
+        """
+        Initialize a Node capable of updating and sampling of a parameterized world model (= beliefs & log-probabilities of each belief).
+        """
+
+        self.node_id = node_id
+        self.llf_params = llf_params
+        self.diary_in = diary_in.copy()
+        self.diary_out = diary_out.copy()
+
+    def set_updated_belief(self, info_in, id_in, t_sys):
+        """Naive Bayesian-like (parameterized) belief update."""
+        self.diary_in += [[info_in, id_in, t_sys]]
+        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
+        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (
+            sigma_data**2 + self.sigma**2
+        )
+        self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
+
+    def get_belief_sample(self, t_sys):
+        """
+        Sample beliefs proportional to relative plausabilities.
+
+        Returns a list of format [sample, t_sys].
+        """
+
+        info_out = st.norm(loc=self.mu, scale=self.sigma).rvs()
+        self.diary_out += [[info_out, t_sys]]
+
+        return info_out
 
 
 def build_random_network(N_nodes, N_neighbours):
@@ -217,6 +217,17 @@ def build_stochastic_block_model(N_nodes, N_blocks, N_neighbours, p_in=0.5, p_ou
     assert len(G) == N_nodes
     print("Mean degree: ", np.sum([G.degree(n) for n in G.nodes()]) / (2 * len(G)))
     return G
+
+def llf_instance(st_function, dict_params):
+    """
+    Return a likelihood function instance of a given scipy.stats function.
+
+    Keyword arguments:
+    st_function : scipy.stats function
+        Likelihood function to be used for the model
+    """
+
+    return st_function(**dict_params)
 
 
 def logpdf_to_pdf(logprobs):
@@ -342,6 +353,7 @@ def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
     mu_samples = np.random.choice(beliefs, p=probs, size=N_samples)
 
     # Generate predictions using the llh method.
+    # TOP 1
     return st.norm.rvs(loc=mu_samples, scale=sigma)
 
 
@@ -398,6 +410,7 @@ def ppd_distances_Gaussian(
         ppd_world_out = np.zeros(sample_bins)
 
     ppd_world_true = dist_binning(
+        # TOP1
         st.norm(loc=world.llf_params["mu"], scale=world.llf_params["sigma"]).logpdf,
         sample_bins,
         sample_range,
@@ -662,9 +675,12 @@ def run_model_Normal(
         nodes = [LaplaceNode(node_id=i) for i in range(len(G))]
         world = LaplaceNode(node_id=-1)
     elif powerlaw:
+
         def p0(x):
-            return st.powerlaw(a=world_params["a"], scale=world_params["scale"]).logpdf(x=np.abs(x))
-        
+            return st.powerlaw(a=world_params["a"], scale=world_params["scale"]).logpdf(
+                x=np.abs(x)
+            )
+
         nodes = [
             NodeNormal(
                 node_id=i,
@@ -689,6 +705,7 @@ def run_model_Normal(
         ]
         world = NodeNormal(
             node_id=-1,
+            # TOP1
             log_priors=st.norm(
                 loc=world_params["mu"], scale=world_params["sigma"]
             ).logpdf(beliefs),
@@ -737,6 +754,7 @@ input_standard = dict(
         stop=50,  # max. considered belief value
         num=500,  # number of considered belief values
     ),
+    
     llf_params=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
         mu=0,
         sigma=5,
@@ -783,22 +801,21 @@ def export_hdf5_Normal(output, filename):
         Name of to-be-created HDF5 file
     """
 
-    with h5py.File(filename, 'w') as f:
+    with h5py.File(filename, "w") as f:
         # nodes, world
         nodes = f.create_group("nodes")
         for node in output["nodes"] + [output["world"]]:
             node_group = nodes.create_group("node_" + str(node.node_id))
-            print(node.node_id)
             node_group.create_dataset("node_id", data=node.node_id)
             node_group.create_dataset("log_probs", data=node.log_probs)
             for key, value in node.llf_params.items():
-                node_group.create_dataset(f'llf_params/{key}', data=value)
+                node_group.create_dataset(f"llf_params/{key}", data=value)
             node_group.create_dataset("diary_in", data=np.array(node.diary_in))
             node_group.create_dataset("diary_out", data=np.array(node.diary_out))
-        
+
         # G
         f.create_dataset("G_dict", data=nx.to_numpy_array(output["G"]))
-        
+
         # beliefs
         f.create_dataset("beliefs", data=output["beliefs"])
 
@@ -810,7 +827,7 @@ def export_hdf5_Normal(output, filename):
 
         # mu_nodes
         f.create_dataset("mu_nodes", data=np.array(output["mu_nodes"]))
-        
+
         # kl_divs
         f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
 
@@ -819,7 +836,7 @@ def export_hdf5_Normal(output, filename):
 
         # seed
         f.create_dataset("seed", data=str(output["seed"]))
-        
+
 
 def import_hdf5_Normal(filename):
     """
@@ -843,8 +860,8 @@ def import_hdf5_Normal(filename):
         seed        <class 'int'>
     """
 
-    with h5py.File(filename, 'r') as f:
-  
+    with h5py.File(filename, "r") as f:
+
         # nodes, world
         nodes = []
         world = None
@@ -854,15 +871,27 @@ def import_hdf5_Normal(filename):
                 world = NodeNormal(
                     node_group["node_id"][()],
                     node_group["log_probs"][()],
-                    {key: node_group[f'llf_params/{key}'][()] for key in node_group["llf_params"]}, node_group["diary_in"][()],
-                    node_group["diary_out"][()])
+                    {
+                        key: node_group[f"llf_params/{key}"][()]
+                        for key in node_group["llf_params"]
+                    },
+                    node_group["diary_in"][()],
+                    node_group["diary_out"][()],
+                )
             else:
-                nodes.append(NodeNormal(
-                    node_group["node_id"][()],
-                    node_group["log_probs"][()],
-                    {key: node_group[f'llf_params/{key}'][()] for key in node_group["llf_params"]}, node_group["diary_in"][()],
-                    node_group["diary_out"][()]))
-        
+                nodes.append(
+                    NodeNormal(
+                        node_group["node_id"][()],
+                        node_group["log_probs"][()],
+                        {
+                            key: node_group[f"llf_params/{key}"][()]
+                            for key in node_group["llf_params"]
+                        },
+                        node_group["diary_in"][()],
+                        node_group["diary_out"][()],
+                    )
+                )
+
         # G
         G = nx.from_numpy_array(f["G_dict"][()])
 
