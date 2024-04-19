@@ -218,6 +218,7 @@ def build_stochastic_block_model(N_nodes, N_blocks, N_neighbours, p_in=0.5, p_ou
     print("Mean degree: ", np.sum([G.degree(n) for n in G.nodes()]) / (2 * len(G)))
     return G
 
+
 def llf_instance(st_function, dict_params):
     """
     Return a likelihood function instance of a given scipy.stats function.
@@ -754,7 +755,6 @@ input_standard = dict(
         stop=50,  # max. considered belief value
         num=500,  # number of considered belief values
     ),
-    
     llf_params=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
         mu=0,
         sigma=5,
