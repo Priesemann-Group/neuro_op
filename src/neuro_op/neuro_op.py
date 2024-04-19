@@ -1,14 +1,69 @@
 # import matplotlib.pyplot as plt
+import h5py
 import networkx as nx
 import numpy as np
 import random
 import scipy.stats as st
 
+# Import old files for pickle usability
+#import "./deprecated.py"
 
 # Initialize randomness and RNGs
 RANDOM_SEED = np.random.SeedSequence().entropy
 random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
+
+
+class Node:
+    """
+    ! ! !
+    DEPRECATED
+    ! ! !
+
+    Nodes with grid-wise belief-holding, -sampling, and -updating behavior.
+
+    Attributes:
+    beliefs -- Numpy array of possible parameter values into which a Node may hold belief
+    log_probs -- Numpy array current relative log-probabilities of each belief
+    llh -- method to return Bayesian log-likelihood p(data|parameters); supposed to take as first argument x=<data>
+    diary_in -- Array of past incoming information
+    diary_out -- Array of past outgoing information
+    """
+
+    def __init__(
+        self,
+        node_id,
+        beliefs,
+        log_priors,
+        llh=st.norm(loc=0, scale=5),
+        diary_in=[],
+        diary_out=[],
+    ):
+        """
+        Initialize a Node capable of updating and sampling of a grid-stored world model (= beliefs & log-probabilities of each belief).
+        """
+
+        assert len(beliefs) == len(log_priors)
+        self.node_id = node_id
+        self.beliefs = np.copy(beliefs)
+        self.log_probs = np.copy(log_priors)
+        self.llh = llh
+        self.diary_in = np.array(diary_in.copy())
+        self.diary_out = np.array(diary_out.copy())
+
+#    def set_updated_belief(self, incoming_info):
+#        """Bayesian update of the Node's belief."""
+#
+#        self.diary_in = np.append(self.diary_in, incoming_info)
+#        self.log_probs += self.llh.logpdf(x=self.beliefs - incoming_info)
+#        self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
+#
+#    def get_belief_sample(self, size=1):
+#        """Sample a belief according to world model."""
+#
+#        probs = logpdf_to_pdf(self.log_probs)
+#        sample = np.random.choice(self.beliefs, size=size, p=probs)
+#        self.diary_out = np.append(self.diary_out, sample)
 
 
 class NodeNormal:
@@ -297,7 +352,6 @@ def ppd_distances_Gaussian(
     sample_bins=50,
     sample_range=(-20, 20),
     p_distances_params=[],
-    world_out=False,
 ):
     """
     Return approximated distances between system nodes' PPDs and world state's distribution and binning used during approximation.
@@ -533,6 +587,7 @@ def run_model_Normal(
     p_distance_params,
     progress,
     laplace,
+    powerlaw,
 ):
     """
     Execute program.
@@ -568,6 +623,8 @@ def run_model_Normal(
         List of tuples, each containing two floats, defining the p-distance parameters
     progress : bool
         Whether or not to print sampling times
+    powerlaw : bool
+        Whether or not world samples follow a powerlaw distribution
     laplace : bool
         Whether or not to use Laplace-approximated nodes
 
@@ -604,6 +661,23 @@ def run_model_Normal(
     if laplace:
         nodes = [LaplaceNode(node_id=i) for i in range(len(G))]
         world = LaplaceNode(node_id=-1)
+    elif powerlaw:
+        def p0(x):
+            return st.powerlaw(a=world_params["a"], scale=world_params["scale"]).logpdf(x=np.abs(x))
+        
+        nodes = [
+            NodeNormal(
+                node_id=i,
+                log_priors=log_priors,
+                llf_params=llf_params,
+            )
+            for i in range(len(G))
+        ]
+        world = NodeNormal(
+            node_id=-1,
+            log_priors=p0(beliefs),
+            llf_params=world_params,
+        )
     else:
         nodes = [
             NodeNormal(
@@ -686,3 +760,142 @@ input_standard = dict(
     progress=False,
     laplace=False,
 )
+
+
+def export_hdf5_Normal(output, filename):
+    """
+    Export returns of 'run_model_Normal' to HDF5 file.
+
+    Keyword arguments:
+    output : dict
+        Dictionary containing simulation results:
+            nodes       <class 'list'>
+            G           <class 'networkx.classes.digraph.DiGraph'>
+            beliefs     <class 'numpy.ndarray'>
+            world       <class 'neuro_op.neuro_op.NodeNormal'>
+            N_events    <class 'int'>
+            t_end       <class 'numpy.float64'>
+            mu_nodes    <class 'list'>
+            kl_divs     <class 'list'>
+            p_distances <class 'list'>
+            seed        <class 'int'>
+    filename : str
+        Name of to-be-created HDF5 file
+    """
+
+    with h5py.File(filename, 'w') as f:
+        # nodes, world
+        nodes = f.create_group("nodes")
+        for node in output["nodes"] + [output["world"]]:
+            node_group = nodes.create_group("node_" + str(node.node_id))
+            print(node.node_id)
+            node_group.create_dataset("node_id", data=node.node_id)
+            node_group.create_dataset("log_probs", data=node.log_probs)
+            for key, value in node.llf_params.items():
+                node_group.create_dataset(f'llf_params/{key}', data=value)
+            node_group.create_dataset("diary_in", data=np.array(node.diary_in))
+            node_group.create_dataset("diary_out", data=np.array(node.diary_out))
+        
+        # G
+        f.create_dataset("G_dict", data=nx.to_numpy_array(output["G"]))
+        
+        # beliefs
+        f.create_dataset("beliefs", data=output["beliefs"])
+
+        # N_events
+        f.create_dataset("N_events", data=output["N_events"])
+
+        # t_end
+        f.create_dataset("t_end", data=output["t_end"])
+
+        # mu_nodes
+        f.create_dataset("mu_nodes", data=np.array(output["mu_nodes"]))
+        
+        # kl_divs
+        f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
+
+        # p_distances
+        f.create_dataset("p_distances", data=np.array(output["p_distances"]))
+
+        # seed
+        f.create_dataset("seed", data=str(output["seed"]))
+        
+
+def import_hdf5_Normal(filename):
+    """
+    Import simulation results from HDF5 file.
+
+    Keyword arguments:
+    filename : str
+        Name of HDF5 file to be imported
+
+    Returns:
+    Dictionary containing simulation results:
+        nodes       <class 'list'>
+        G           <class 'networkx.classes.digraph.DiGraph'>
+        beliefs     <class 'numpy.ndarray'>
+        world       <class 'neuro_op.neuro_op.NodeNormal'>
+        N_events    <class 'int'>
+        t_end       <class 'numpy.float64'>
+        mu_nodes    <class 'list'>
+        kl_divs     <class 'list'>
+        p_distances <class 'list'>
+        seed        <class 'int'>
+    """
+
+    with h5py.File(filename, 'r') as f:
+  
+        # nodes, world
+        nodes = []
+        world = None
+        for node_name in f["nodes"]:
+            node_group = f["nodes"][node_name]
+            if node_group["node_id"][()] == -1:
+                world = NodeNormal(
+                    node_group["node_id"][()],
+                    node_group["log_probs"][()],
+                    {key: node_group[f'llf_params/{key}'][()] for key in node_group["llf_params"]}, node_group["diary_in"][()],
+                    node_group["diary_out"][()])
+            else:
+                nodes.append(NodeNormal(
+                    node_group["node_id"][()],
+                    node_group["log_probs"][()],
+                    {key: node_group[f'llf_params/{key}'][()] for key in node_group["llf_params"]}, node_group["diary_in"][()],
+                    node_group["diary_out"][()]))
+        
+        # G
+        G = nx.from_numpy_array(f["G_dict"][()])
+
+        # beliefs
+        beliefs = f["beliefs"][()]
+
+        # N_events
+        N_events = f["N_events"][()]
+
+        # t_end
+        t_end = f["t_end"][()]
+
+        # mu_nodes
+        mu_nodes = f["mu_nodes"][()]
+
+        # kl_divs
+        kl_divs = f["kl_divs"][()]
+
+        # p_distances
+        p_distances = f["p_distances"][()]
+
+        # seed
+        seed = f["seed"][()]
+
+    return {
+        "nodes": nodes,
+        "G": G,
+        "beliefs": beliefs,
+        "world": world,
+        "N_events": N_events,
+        "t_end": t_end,
+        "mu_nodes": mu_nodes,
+        "kl_divs": kl_divs,
+        "p_distances": p_distances,
+        "seed": seed,
+    }

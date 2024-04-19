@@ -83,56 +83,6 @@ class Node:
         return sample
 
 
-class LaplaceNode:
-    """
-    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
-    """
-
-    def __init__(
-        self,
-        node_id,
-        mu_init=0,  # Prior mean
-        sigma_init=50,  # Prior standard deviation
-        diary_in=[],
-        diary_out=[],
-    ):
-        """
-        Initialize a Node capable of updating and sampling of a parameterized world model (= beliefs & log-probabilities of each belief).
-        """
-
-        self.node_id = node_id
-        self.mu = mu_init
-        self.sigma = sigma_init
-        self.llh = st.norm(loc=self.mu, scale=self.sigma)
-        self.diary_in = diary_in.copy()
-        self.diary_out = diary_out.copy()
-
-    def set_updated_belief(self, info_in, id_in, t_sys):
-        """Naive Bayesian-like (parameterized) belief update."""
-        self.diary_in += [[info_in, id_in, t_sys]]
-        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
-        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (
-            sigma_data**2 + self.sigma**2
-        )
-        self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
-        self.llh = st.norm(loc=self.mu, scale=self.sigma)
-
-    def get_belief_sample(self, t_sys, size=1):
-        """
-        Sample beliefs proportional to relative plausabilities.
-
-        Returns a list of 'int(size)' times [sample, node_id, t_sys].
-        """
-
-        sample = [
-            [i, self.node_id, t_sys]
-            for i in st.norm(loc=self.mu, scale=self.sigma).rvs(size=size)
-        ]
-        self.diary_out += [sample]
-
-        return sample
-
-
 def build_random_network(N_nodes, N_neighbours):
     """
     Build adjacency matrix of a weighted graph of N_nodes, with random connections.
