@@ -79,8 +79,8 @@ class NodeNormal:
         Supposedly unique identifier of the node
     log_probs : array
         Unnormalized log-probabilities, corresponding to external 'beliefs' array
-    llh_params : dict
-        Necessary paramters for the node's model (==likelihood function p(data|parameters) )
+    params_node : dict
+        Likelihood function paramters of node's model
     diary_in : list
         Past incoming information & metadata, structured [ [info_in_0, id_in_0, t_sys_0], [info_in_1, id_in_1, t_sys_1], ... ]
     diary_out : list
@@ -91,9 +91,9 @@ class NodeNormal:
         self,
         node_id,
         log_priors,
-        llf_params=dict(  # Parameters defining the likelihood function (llf), normal distribution by default
-            mu=0,
-            sigma=5,
+        params_node=dict(  # Parameters defining the likelihood function (llf), normal distribution by default
+            loc=0,
+            scale=5,
         ),
         diary_in=[],
         diary_out=[],
@@ -104,18 +104,16 @@ class NodeNormal:
 
         self.node_id = node_id
         self.log_probs = np.copy(log_priors)
-        self.llf_params = llf_params
+        self.params_node = params_node.copy()
         self.diary_in = diary_in.copy()
         self.diary_out = diary_out.copy()
 
-    def set_updated_belief(self, beliefs, info_in, id_in, t_sys):
+    def set_updated_belief(self, llf_nodes, beliefs, info_in, id_in, t_sys):
         """Bayesian update of the Node's belief, based on incoming info 'info_in' from node with id 'id_in' at system time 't_sys'."""
 
         self.diary_in += [[info_in, id_in, t_sys]]
-        # TOP1
-        log_llf = st.norm(
-            loc=self.llf_params["mu"], scale=self.llf_params["sigma"]
-        ).logpdf
+        log_llf = llf_instance(
+            llf_nodes, self.params_node).logpdf
         self.log_probs += log_llf(x=beliefs - info_in)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
 
@@ -138,9 +136,9 @@ class LaplaceNode:
     def __init__(
         self,
         node_id,
-        llf_params=dict(
-            mu=0,  # Prior mean
-            sigma=5,  # Prior standard deviation
+        params_node=dict(
+            loc=0,  # Prior mean
+            scale=5,  # Prior standard deviation
         ),
         diary_in=[],
         diary_out=[],
@@ -150,7 +148,7 @@ class LaplaceNode:
         """
 
         self.node_id = node_id
-        self.llf_params = llf_params
+        self.params_node = params_node.copy()
         self.diary_in = diary_in.copy()
         self.diary_out = diary_out.copy()
 
@@ -158,10 +156,11 @@ class LaplaceNode:
         """Naive Bayesian-like (parameterized) belief update."""
         self.diary_in += [[info_in, id_in, t_sys]]
         sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
-        self.mu = (self.mu * sigma_data**2 + info_in * self.sigma**2) / (
-            sigma_data**2 + self.sigma**2
+        self.params_node["loc"] = (
+            self.params_node["loc"] * sigma_data**2 + info_in * self.params_node["scale"]**2) / (
+            sigma_data**2 + self.params_node["scale"]**2
         )
-        self.sigma = 1 / (1 / self.sigma**2 + 1 / sigma_data**2)
+        self.params_node["scale"] = 1 / (1 / self.params_node["scale"]**2 + 1 / sigma_data**2)
 
     def get_belief_sample(self, t_sys):
         """
@@ -170,7 +169,7 @@ class LaplaceNode:
         Returns a list of format [sample, t_sys].
         """
 
-        info_out = st.norm(loc=self.mu, scale=self.sigma).rvs()
+        info_out = llf_instance(st.norm, self.params_node).rvs()
         self.diary_out += [[info_out, t_sys]]
 
         return info_out
@@ -319,6 +318,8 @@ def get_p_distances(param_node, param_ref, p=1, p_inv=1):
     Keyword arguments:
     praram_node : iterable
         array of nodes' inferred parameters
+    param_ref : iterable
+        array of real parameter value(s)
     p : float
         value by which each difference is raised, usually 1 (linear distance) or 2 (squared distance)
     p_inv : float
@@ -328,7 +329,7 @@ def get_p_distances(param_node, param_ref, p=1, p_inv=1):
     return np.sum(np.abs(param_node - param_ref) ** p) ** p_inv
 
 
-def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
+def ppd_Gaussian_mu(llf_nodes, beliefs, logprobs, sigma, N_samples=1000):
     """
     Simulate predictions using the whole posterior, with the underlying likelihood logprobability funtion (llh) being Gaussian.
 
@@ -337,6 +338,8 @@ def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
     Thereby, the PPD includes all the uncertainty (i.e., model parameter value uncertainty (from posterior) & generative uncertainty (model with given parameter values creating data stochastically).
 
     Keyword arguments:
+    llf_nodes : scipy.stats function
+        Likelihood function (llf) of nodes
     beliefs : iterable
         possible parameter values into which a node may hold belief
     logprobs : iterable
@@ -350,15 +353,19 @@ def ppd_Gaussian_mu(beliefs, logprobs, sigma, N_samples=1000):
     # Transform potentially non-normalized log probabilities to normalized probabilities.
     probs = logpdf_to_pdf(logprobs)
 
-    # Sample parameter values proportional to the posterior.
-    mu_samples = np.random.choice(beliefs, p=probs, size=N_samples)
+    # Sample parameter values proportional to 'probs'.
+    params = dict(
+        loc=np.random.choice(beliefs, p=probs, size=N_samples),
+        scale=sigma,
+    )
 
     # Generate predictions using the llh method.
-    # TOP 1
-    return st.norm.rvs(loc=mu_samples, scale=sigma)
+    return llf_instance(llf_nodes, params).rvs()
 
 
 def ppd_distances_Gaussian(
+    llf_nodes,
+    llf_world,
     beliefs,
     nodes,
     world,
@@ -374,6 +381,10 @@ def ppd_distances_Gaussian(
     Then, the wanted distance (KL divergence or p-distance) is calculated between each node distribution and the world distribution.
 
     Keyword arguments:
+    llf_nodes : scipy.stats function
+        Likelihood function (llf) of nodes
+    llf_world : scipy.stats function
+        Likelihood function (llf) of world
     beliefs : iterable
         Possible parameter values into which a node may hold belief
     nodes : list of Node objects
@@ -391,7 +402,7 @@ def ppd_distances_Gaussian(
     # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
     ppd_samples = [
         ppd_Gaussian_mu(
-            beliefs, node.log_probs, node.llf_params["sigma"], N_samples=1000
+            llf_nodes, beliefs, node.log_probs, node.params_node["scale"], N_samples=1000
         )
         for node in nodes
     ]
@@ -411,8 +422,7 @@ def ppd_distances_Gaussian(
         ppd_world_out = np.zeros(sample_bins)
 
     ppd_world_true = dist_binning(
-        # TOP1
-        st.norm(loc=world.llf_params["mu"], scale=world.llf_params["sigma"]).logpdf,
+        llf_instance(llf_world, world.params_node).logpdf,
         sample_bins,
         sample_range,
     )
@@ -462,6 +472,8 @@ def ppd_distances_Gaussian(
 def network_dynamics(
     nodes,
     world,
+    llf_nodes,
+    llf_world,
     G,
     beliefs,
     h,
@@ -485,6 +497,10 @@ def network_dynamics(
         Nodes inferring the world state
     world : Node object
         Node representing the world state
+    llf_nodes : scipy.stats function
+        Likelihood function (llf) of nodes
+    llf_world : scipy.stats function
+        Likelihood function (llf) of world
     G : networkx graph object
         Graph constraining node interactions
     beliefs : iterable
@@ -523,6 +539,8 @@ def network_dynamics(
                 print("Sampling at t=", t, "\t, aka", (t / t_max), "\t of runtime.")
             sample_counter += 1
             sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
+                llf_nodes,
+                llf_world,
                 beliefs,
                 nodes,
                 world,
@@ -539,6 +557,7 @@ def network_dynamics(
             # external information draw event
             node = random.choice(nodes)
             node.set_updated_belief(
+                llf_nodes,
                 beliefs=beliefs,
                 info_in=world.get_belief_sample(beliefs, t),
                 id_in=world.node_id,
@@ -550,8 +569,8 @@ def network_dynamics(
             # update each node's log-probabilities with sample of edge neighbour's beliefs
             sample0 = nodes[chatters[0]].get_belief_sample(beliefs=beliefs, t_sys=t)
             sample1 = nodes[chatters[1]].get_belief_sample(beliefs=beliefs, t_sys=t)
-            nodes[chatters[0]].set_updated_belief(beliefs, sample1, chatters[1], t)
-            nodes[chatters[1]].set_updated_belief(beliefs, sample0, chatters[0], t)
+            nodes[chatters[0]].set_updated_belief(llf_nodes, beliefs, sample1, chatters[1], t)
+            nodes[chatters[1]].set_updated_belief(llf_nodes, beliefs, sample0, chatters[0], t)
 
         dt = st.expon.rvs(scale=1 / (h + r))
         t = t + dt
@@ -562,6 +581,8 @@ def network_dynamics(
             print("Sampling at t=", t)
         sample_counter += 1
         sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
+            llf_nodes,
+            llf_world,
             beliefs,
             nodes,
             world,
@@ -585,11 +606,13 @@ def network_dynamics(
     )
 
 
-def run_model_Normal(
+def run_model_Grid(
     G,
+    llf_nodes,
+    llf_world,
+    params_node,
+    params_world,
     beliefs,
-    llf_params,
-    world_params,
     log_priors,
     h,
     r,
@@ -601,7 +624,6 @@ def run_model_Normal(
     p_distance_params,
     progress,
     laplace,
-    powerlaw,
 ):
     """
     Execute program.
@@ -611,11 +633,19 @@ def run_model_Normal(
     Keyword arguments:
     G : networkx graph object
         Graph of nodes and edges
+    llf_nodes : scipy.stats function
+        Likelihood function (llf) of nodes
+    llf_world : scipy.stats function
+        Likelihood function (llf) of world
+    params_node : dict
+        Parameters defining the likelihood function (llf) of nodes, concerning a Gaussian by default
+    params_world : dict
+        Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
     beliefs : list (floats)
         Possible parameter values into which a Node may hold beliefs in
-    llf_params : dict
+    params_node : dict
         Parameters defining the likelihood function (llf) of nodes, concerning a Gaussian by default
-    world_params : dict
+    params_world : dict
         Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
     log_priors : list (floats)
         Prior log-probabilities of nodes
@@ -637,8 +667,6 @@ def run_model_Normal(
         List of tuples, each containing two floats, defining the p-distance parameters
     progress : bool
         Whether or not to print sampling times
-    powerlaw : bool
-        Whether or not world samples follow a powerlaw distribution
     laplace : bool
         Whether or not to use Laplace-approximated nodes
 
@@ -675,42 +703,19 @@ def run_model_Normal(
     if laplace:
         nodes = [LaplaceNode(node_id=i) for i in range(len(G))]
         world = LaplaceNode(node_id=-1)
-    elif powerlaw:
-
-        def p0(x):
-            return st.powerlaw(a=world_params["a"], scale=world_params["scale"]).logpdf(
-                x=np.abs(x)
-            )
-
-        nodes = [
-            NodeNormal(
-                node_id=i,
-                log_priors=log_priors,
-                llf_params=llf_params,
-            )
-            for i in range(len(G))
-        ]
-        world = NodeNormal(
-            node_id=-1,
-            log_priors=p0(beliefs),
-            llf_params=world_params,
-        )
     else:
         nodes = [
             NodeNormal(
                 node_id=i,
                 log_priors=log_priors,
-                llf_params=llf_params,
+                params_node=params_node,
             )
             for i in range(len(G))
         ]
         world = NodeNormal(
             node_id=-1,
-            # TOP1
-            log_priors=st.norm(
-                loc=world_params["mu"], scale=world_params["sigma"]
-            ).logpdf(beliefs),
-            llf_params=world_params,
+            log_priors=llf_instance(llf_world, params_world).logpdf(beliefs),
+            params_node=params_world,
         )
 
     # Renormalize rates to keep rate per node constant
@@ -720,6 +725,8 @@ def run_model_Normal(
     nodes, world, G, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
         nodes,
         world,
+        llf_nodes,
+        llf_world,
         G,
         beliefs,
         h,
@@ -746,35 +753,37 @@ def run_model_Normal(
         "seed": RANDOM_SEED,
     }
 
-
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_standard = dict(
-    G=build_random_network(N_nodes=100, N_neighbours=11),  # networkx graph object
-    beliefs=np.linspace(  # beliefs considered by each node
-        start=-50,  # min. considered belief value
-        stop=50,  # max. considered belief value
-        num=500,  # number of considered belief values
+    G=build_random_network(N_nodes=100, N_neighbours=11),
+                                # networkx graph object
+    llf_nodes = st.norm,        # Likelihood function (llf) of nodes, Gaussian by default
+    llf_world = st.norm,        # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
+    params_node=dict(           # Likelihood function (llf) parameters of nodes, Gaussian by default
+        loc=0,
+        scale=5,
     ),
-    llf_params=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
-        mu=0,
-        sigma=5,
+    params_world=dict(          # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
+        loc=0,
+        scale=5,
     ),
-    world_params=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
-        mu=0,
-        sigma=5,
+    beliefs=np.linspace(        # beliefs considered by each node
+        start=-50,              # min. considered belief value
+        stop=50,                # max. considered belief value
+        num=500,                # number of considered belief values
     ),
-    log_priors=np.zeros(500),  # Prior log-probabilities of nodes
-    # Dynamics parameters (rates, simulation times)
+    log_priors=np.zeros(500),   # Prior log-probabilities of nodes
+                                # Dynamics parameters (rates, simulation times)...
     h=1,
     r=1,
     t0=0,
-    t_max=100,
-    # Sampling parameters
+    t_max=50,
+                                # Sampling parameters...
     t_sample=2,
     sample_bins=50,
     sample_range=(-20, 20),
     p_distance_params=[(1, 1), (2, 1)],
-    # Switches...
+                                # Switches...
     progress=False,
     laplace=False,
 )
@@ -808,8 +817,8 @@ def export_hdf5_Normal(output, filename):
             node_group = nodes.create_group("node_" + str(node.node_id))
             node_group.create_dataset("node_id", data=node.node_id)
             node_group.create_dataset("log_probs", data=node.log_probs)
-            for key, value in node.llf_params.items():
-                node_group.create_dataset(f"llf_params/{key}", data=value)
+            for key, value in node.params_node.items():
+                node_group.create_dataset(f"params_node/{key}", data=value)
             node_group.create_dataset("diary_in", data=np.array(node.diary_in))
             node_group.create_dataset("diary_out", data=np.array(node.diary_out))
 
@@ -872,8 +881,8 @@ def import_hdf5_Normal(filename):
                     node_group["node_id"][()],
                     node_group["log_probs"][()],
                     {
-                        key: node_group[f"llf_params/{key}"][()]
-                        for key in node_group["llf_params"]
+                        key: node_group[f"params_node/{key}"][()]
+                        for key in node_group["params_node"]
                     },
                     node_group["diary_in"][()],
                     node_group["diary_out"][()],
@@ -884,8 +893,8 @@ def import_hdf5_Normal(filename):
                         node_group["node_id"][()],
                         node_group["log_probs"][()],
                         {
-                            key: node_group[f"llf_params/{key}"][()]
-                            for key in node_group["llf_params"]
+                            key: node_group[f"params_node/{key}"][()]
+                            for key in node_group["params_node"]
                         },
                         node_group["diary_in"][()],
                         node_group["diary_out"][()],
