@@ -112,8 +112,7 @@ class NodeNormal:
         """Bayesian update of the Node's belief, based on incoming info 'info_in' from node with id 'id_in' at system time 't_sys'."""
 
         self.diary_in += [[info_in, id_in, t_sys]]
-        log_llf = llf_instance(
-            llf_nodes, self.params_node).logpdf
+        log_llf = llf_instance(llf_nodes, self.params_node).logpdf
         self.log_probs += log_llf(x=beliefs - info_in)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
 
@@ -128,7 +127,7 @@ class NodeNormal:
         return info_out
 
 
-class LaplaceNode:
+class NodeLaplace:
     """
     Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
     """
@@ -138,7 +137,7 @@ class LaplaceNode:
         node_id,
         params_node=dict(
             loc=0,  # Prior mean
-            scale=5,  # Prior standard deviation
+            scale=20,  # Prior standard deviation
         ),
         diary_in=[],
         diary_out=[],
@@ -157,19 +156,21 @@ class LaplaceNode:
         self.diary_in += [[info_in, id_in, t_sys]]
         sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
         self.params_node["loc"] = (
-            self.params_node["loc"] * sigma_data**2 + info_in * self.params_node["scale"]**2) / (
-            sigma_data**2 + self.params_node["scale"]**2
+            self.params_node["loc"] * sigma_data**2
+            + info_in * self.params_node["scale"] ** 2
+        ) / (sigma_data**2 + self.params_node["scale"] ** 2)
+        self.params_node["scale"] = 1 / (
+            1 / self.params_node["scale"] ** 2 + 1 / sigma_data**2
         )
-        self.params_node["scale"] = 1 / (1 / self.params_node["scale"]**2 + 1 / sigma_data**2)
 
-    def get_belief_sample(self, t_sys):
+    def get_belief_sample(self, llf, t_sys):
         """
         Sample beliefs proportional to relative plausabilities.
 
         Returns a list of format [sample, t_sys].
         """
 
-        info_out = llf_instance(st.norm, self.params_node).rvs()
+        info_out = llf_instance(llf, self.params_node).rvs()
         self.diary_out += [[info_out, t_sys]]
 
         return info_out
@@ -402,7 +403,11 @@ def ppd_distances_Gaussian(
     # Generate posterior predictive distributions (PPDs) for each node by generating ppd samples and binning them into histograms
     ppd_samples = [
         ppd_Gaussian_mu(
-            llf_nodes, beliefs, node.log_probs, node.params_node["scale"], N_samples=1000
+            llf_nodes,
+            beliefs,
+            node.log_probs,
+            node.params_node["scale"],
+            N_samples=1000,
         )
         for node in nodes
     ]
@@ -444,6 +449,7 @@ def ppd_distances_Gaussian(
         )
 
     # If array for 'get_p_distances' function is not empty , calculate p-distances between each node's MLE and the world's MLE
+    p_distances = []
     if p_distances_params:
         # First approach: Go for MLE comparisons
         argmax = np.argmax(ppd_world_out)
@@ -451,159 +457,62 @@ def ppd_distances_Gaussian(
         argmax = np.argmax(ppd_world_true)
         mu_world_true = (ppd_bins[argmax] + ppd_bins[argmax + 1]) / 2
 
-    p_distances = []
-    for p in p_distances_params:
-        p_distances.append(
-            [
+        for p in p_distances_params:
+            p_distances.append(
                 [
-                    get_p_distances(mu_i, mu_world_out, p=p[0], p_inv=p[1])
-                    for mu_i in mu_nodes
-                ],
-                [
-                    get_p_distances(mu_i, mu_world_true, p=p[0], p_inv=p[1])
-                    for mu_i in mu_nodes
-                ],
-            ]
-        )
+                    [
+                        get_p_distances(mu_i, mu_world_out, p=p[0], p_inv=p[1])
+                        for mu_i in mu_nodes
+                    ],
+                    [
+                        get_p_distances(mu_i, mu_world_true, p=p[0], p_inv=p[1])
+                        for mu_i in mu_nodes
+                    ],
+                ]
+            )
 
     return (mu_nodes, kl_divs, p_distances)
 
 
-def network_dynamics(
-    nodes,
-    world,
+def ppd_distances_Laplace(
     llf_nodes,
     llf_world,
-    G,
-    beliefs,
-    h,
-    r,
-    t0,
-    t_max,
-    t_sample,
-    sample_bins,
-    sample_range,
-    p_distance_params,
-    progress,
+    nodes,
+    world,
+    sample_bins=50,
+    sample_range=(-20, 20),
+    p_distances_params=[],
 ):
-    """
-    Simulate the dynamics of Graph and sample distances between world state and node's beliefs via PPD comparisons.
-    As of now, weights are constant, only beliefs change.
+    """Sample MLEs, distance measures for NodeLaplace system."""
 
-    Runtime order of magnitude ~ 1s/1000 events (on Dell XPS 13 9370)
-
-    Keyword arguments:
-    nodes : list of Node objects
-        Nodes inferring the world state
-    world : Node object
-        Node representing the world state
-    llf_nodes : scipy.stats function
-        Likelihood function (llf) of nodes
-    llf_world : scipy.stats function
-        Likelihood function (llf) of world
-    G : networkx graph object
-        Graph constraining node interactions
-    beliefs : iterable
-        Possible parameter values into which a node may hold belief
-    h : float
-        Graph size normalized rate of external information draw events
-    r : float
-        Graph size normalized rate of edge information exchange events
-    t0 : float
-        Start time of simulation
-    t_max : float
-        End time of simulation
-    t_sample : float
-        Periodicity for which samples and distance measures (KL-div, p-distance) are taken
-    sample_bins : int
-        Number of bins used in distance measures
-    sample_range : tuple
-        Interval over which distance measure distributions are considered
-    p_distance_params : list
-        List of tuples, each containing two floats, defining the p-distance parameters
-    progress : bool
-        Whether or not to print sampling times
-    """
-
-    N_events = 0
-    t = t0
-    sample_counter = int(t0 / t_sample)
-    mu_nodes = []
-    kl_divs = []
-    p_distances = []
-
-    while t < t_max:
-        # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
-        if int(t / t_sample) >= sample_counter:
-            if progress:
-                print("Sampling at t=", t, "\t, aka", (t / t_max), "\t of runtime.")
-            sample_counter += 1
-            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
-                llf_nodes,
-                llf_world,
-                beliefs,
-                nodes,
-                world,
-                sample_bins,
-                sample_range,
-                p_distance_params,
-            )
-            mu_nodes.append(sample_mu_nodes)
-            kl_divs.append(sample_kl_div)
-            p_distances.append(sample_p_distances)
-
-        N_events += 1
-        if rng.uniform() < h / (h + r):
-            # external information draw event
-            node = random.choice(nodes)
-            node.set_updated_belief(
-                llf_nodes,
-                beliefs=beliefs,
-                info_in=world.get_belief_sample(beliefs, t),
-                id_in=world.node_id,
-                t_sys=t,
-            )
-        else:
-            # edge event
-            chatters = random.choice(list(G.edges()))
-            # update each node's log-probabilities with sample of edge neighbour's beliefs
-            sample0 = nodes[chatters[0]].get_belief_sample(beliefs=beliefs, t_sys=t)
-            sample1 = nodes[chatters[1]].get_belief_sample(beliefs=beliefs, t_sys=t)
-            nodes[chatters[0]].set_updated_belief(llf_nodes, beliefs, sample1, chatters[1], t)
-            nodes[chatters[1]].set_updated_belief(llf_nodes, beliefs, sample0, chatters[0], t)
-
-        dt = st.expon.rvs(scale=1 / (h + r))
-        t = t + dt
-
-    # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
-    if int(t / t_sample) >= sample_counter:
-        if progress:
-            print("Sampling at t=", t)
-        sample_counter += 1
-        sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_distances_Gaussian(
-            llf_nodes,
-            llf_world,
-            beliefs,
-            nodes,
-            world,
-            sample_bins,
-            sample_range,
-            p_distance_params,
+    # Create predictive distribution for each node and world
+    ppd_nodes = [
+        dist_binning(
+            llf_instance(llf_nodes, node.params_node).logpdf, sample_bins, sample_range
         )
-        mu_nodes.append(sample_mu_nodes)
-        kl_divs.append(sample_kl_div)
-        p_distances.append(sample_p_distances)
-
-    return (
-        nodes,
-        world,
-        G,
-        N_events,
-        t,
-        mu_nodes,
-        kl_divs,
-        p_distances,
+        for node in nodes
+    ]
+    ppd_world = dist_binning(
+        llf_instance(llf_world, world.params_node).logpdf, sample_bins, sample_range
     )
+
+    # Get MLEs of each node
+    mu_nodes = [node.params_node["loc"] for node in nodes]
+
+    # Get KL-divergences of each node's PPD
+    kl_divs = [kl_divergence(i, ppd_world) for i in ppd_nodes]
+
+    # If p_distance_params given, calculate p-distances
+    p_distances = []
+    if p_distances_params:
+        for p in p_distances_params:
+            p_distances.append(
+                [
+                    get_p_distances(mu_i, world.params_node["loc"], p=p[0], p_inv=p[1])
+                    for mu_i in mu_nodes
+                ]
+            )
+    return (mu_nodes, kl_divs, p_distances)
 
 
 def run_model_Grid(
@@ -623,7 +532,6 @@ def run_model_Grid(
     sample_range,
     p_distance_params,
     progress,
-    laplace,
 ):
     """
     Execute program.
@@ -643,10 +551,6 @@ def run_model_Grid(
         Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
     beliefs : list (floats)
         Possible parameter values into which a Node may hold beliefs in
-    params_node : dict
-        Parameters defining the likelihood function (llf) of nodes, concerning a Gaussian by default
-    params_world : dict
-        Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
     log_priors : list (floats)
         Prior log-probabilities of nodes
     h : float
@@ -667,8 +571,6 @@ def run_model_Grid(
         List of tuples, each containing two floats, defining the p-distance parameters
     progress : bool
         Whether or not to print sampling times
-    laplace : bool
-        Whether or not to use Laplace-approximated nodes
 
 
     Returns:
@@ -700,45 +602,90 @@ def run_model_Grid(
 
     assert len(beliefs) == len(log_priors)
 
-    if laplace:
-        nodes = [LaplaceNode(node_id=i) for i in range(len(G))]
-        world = LaplaceNode(node_id=-1)
-    else:
-        nodes = [
-            NodeNormal(
-                node_id=i,
-                log_priors=log_priors,
-                params_node=params_node,
-            )
-            for i in range(len(G))
-        ]
-        world = NodeNormal(
-            node_id=-1,
-            log_priors=llf_instance(llf_world, params_world).logpdf(beliefs),
-            params_node=params_world,
-        )
-
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
     r = r * len(G)
 
-    nodes, world, G, N_events, t_end, mu_nodes, kl_divs, p_distances = network_dynamics(
-        nodes,
-        world,
-        llf_nodes,
-        llf_world,
-        G,
-        beliefs,
-        h,
-        r,
-        t0,
-        t_max,
-        t_sample,
-        sample_bins,
-        sample_range,
-        p_distance_params,
-        progress,
+    nodes = [
+        NodeNormal(
+            node_id=i,
+            log_priors=log_priors,
+            params_node=params_node,
+        )
+        for i in range(len(G))
+    ]
+    world = NodeNormal(
+        node_id=-1,
+        log_priors=llf_instance(llf_world, params_world).logpdf(beliefs),
+        params_node=params_world,
     )
+    ppd_func = ppd_distances_Gaussian
+    ppd_in = dict(
+        llf_nodes=llf_nodes,
+        llf_world=llf_world,
+        beliefs=beliefs,
+        nodes=nodes,
+        world=world,
+        sample_bins=sample_bins,
+        sample_range=sample_range,
+        p_distance_params=p_distance_params,
+    )
+
+    # Simulate system...
+    N_events = 0
+    t = t0
+    sample_counter = int(t0 / t_sample)
+    mu_nodes = []
+    kl_divs = []
+    p_distances = []
+
+    while t < t_max:
+        # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
+        if int(t / t_sample) >= sample_counter:
+            if progress:
+                print("Sampling at t=", t, "\t, aka", (t / t_max), "\t of runtime.")
+            sample_counter += 1
+            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
+            mu_nodes.append(sample_mu_nodes)
+            kl_divs.append(sample_kl_div)
+            p_distances.append(sample_p_distances)
+
+        # Information exchange event...
+        N_events += 1
+        if rng.uniform() < h / (h + r):
+            # external information draw event
+            node = random.choice(nodes)
+            node.set_updated_belief(
+                llf_nodes,
+                beliefs=beliefs,
+                info_in=world.get_belief_sample(beliefs, t),
+                id_in=world.node_id,
+                t_sys=t,
+            )
+        else:
+            # edge event
+            chatters = random.choice(list(G.edges()))
+            sample0 = nodes[chatters[0]].get_belief_sample(beliefs=beliefs, t_sys=t)
+            sample1 = nodes[chatters[1]].get_belief_sample(beliefs=beliefs, t_sys=t)
+            nodes[chatters[0]].set_updated_belief(
+                llf_nodes, beliefs, sample1, chatters[1], t
+            )
+            nodes[chatters[1]].set_updated_belief(
+                llf_nodes, beliefs, sample0, chatters[0], t
+            )
+
+        dt = st.expon.rvs(scale=1 / (h + r))
+        t = t + dt
+
+    # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
+    if int(t / t_sample) >= sample_counter:
+        if progress:
+            print("Sampling at t=", t)
+        sample_counter += 1
+        sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
+        mu_nodes.append(sample_mu_nodes)
+        kl_divs.append(sample_kl_div)
+        p_distances.append(sample_p_distances)
 
     return {
         "nodes": nodes,
@@ -746,44 +693,45 @@ def run_model_Grid(
         "beliefs": beliefs,
         "world": world,
         "N_events": N_events,
-        "t_end": t_end,
+        "t_end": t,
         "mu_nodes": mu_nodes,
         "kl_divs": kl_divs,
         "p_distances": p_distances,
         "seed": RANDOM_SEED,
     }
 
+
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
-input_standard = dict(
+input_ref_Grid = dict(
     G=build_random_network(N_nodes=100, N_neighbours=11),
-                                # networkx graph object
-    llf_nodes = st.norm,        # Likelihood function (llf) of nodes, Gaussian by default
-    llf_world = st.norm,        # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
-    params_node=dict(           # Likelihood function (llf) parameters of nodes, Gaussian by default
+    # networkx graph object
+    llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
+    llf_world=st.norm,  # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
+    params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
         loc=0,
         scale=5,
     ),
-    params_world=dict(          # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
+    params_world=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
         loc=0,
         scale=5,
     ),
-    beliefs=np.linspace(        # beliefs considered by each node
-        start=-50,              # min. considered belief value
-        stop=50,                # max. considered belief value
-        num=500,                # number of considered belief values
+    beliefs=np.linspace(  # beliefs considered by each node
+        start=-50,  # min. considered belief value
+        stop=50,  # max. considered belief value
+        num=500,  # number of considered belief values
     ),
-    log_priors=np.zeros(500),   # Prior log-probabilities of nodes
-                                # Dynamics parameters (rates, simulation times)...
+    log_priors=np.zeros(500),  # Prior log-probabilities of nodes
+    # Dynamics parameters (rates, simulation times)...
     h=1,
     r=1,
     t0=0,
     t_max=50,
-                                # Sampling parameters...
+    # Sampling parameters...
     t_sample=2,
     sample_bins=50,
     sample_range=(-20, 20),
     p_distance_params=[(1, 1), (2, 1)],
-                                # Switches...
+    # Switches...
     progress=False,
     laplace=False,
 )
@@ -936,4 +884,160 @@ def import_hdf5_Normal(filename):
         "kl_divs": kl_divs,
         "p_distances": p_distances,
         "seed": seed,
+    }
+
+
+def run_model_Laplace(
+    G,
+    llf_nodes,
+    llf_world,
+    params_node,
+    params_world,
+    h,
+    r,
+    t0,
+    t_max,
+    t_sample,
+    sample_bins,
+    sample_range,
+    p_distance_params=[],
+    progress=False,
+):
+    """
+    Execute program.
+    Get all parameters and initialize nodes (w. belief and log-prior distributions), network graph, and world distribution.
+    Then, run simulation until t>=t_max and return simulation results.
+
+    Keyword arguments:
+    G : networkx graph object
+        Graph of nodes and edges
+    llf_nodes : scipy.stats function
+        Likelihood function (llf) of nodes
+    llf_world : scipy.stats function
+        Likelihood function (llf) of world
+    params_node : dict
+        Parameters defining the likelihood function (llf) of nodes, concerning a Gaussian by default
+    params_world : dict
+        Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
+    h : float
+        Rate of external information draw events
+    r : float
+        Rate of edge information exchange events
+    t0 : float
+        Start time of simulation
+    t_max : float
+        End time of simulation
+    t_sample : float
+        Periodicity for which samples and distance measures (KL-div, p-distance) are taken
+    sample_bins : int
+        Number of bins used in distance measures
+    sample_range : tuple
+        Interval over which distance measure distributions are considered
+    p_distance_params : list
+        List of tuples, each containing two floats, defining the p-distance parameters
+    progress : bool
+        Whether or not to print sampling times
+
+
+    Returns:
+    Dictioniary containing the following keys and according data after end of simulation:
+    nodes : list (Nodes)
+        All nodes of the network.
+    G : networkx graph object
+
+    beliefs : np.array (floats)
+        Array of possible parameter values into which a Node may hold beliefs in.
+    world : Node
+        Object representing the world.
+    N_events : int
+        Number of events executed during simulation.
+    t_end : float
+        End time of simulation.
+    mu_nodes : list
+        MAP estimates of each node's mu, sampled during run.
+        Shape: (#samples, #nodes)
+    kl_divs : list
+        KL-divergences between each node's PPD and the world's PPD, sampled during run.
+        Shape: (#samples, #nodes, 2)
+        '2' refers to world_out ([0]) and world_true ([1]) as reference distribution, respectively.
+    p_distances : list
+        p-distances between each node's MLE and the world's MLE, sampled during run.
+        Shape: (#samples, #(p_distance parameter tuples), 2)
+        '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
+    """
+
+    # Renormalize rates to keep rate per node constant
+    h = h * len(G)
+    r = r * len(G)
+
+    # Set up simulation environment (nodes, world, sampling function/inputs)
+    nodes = [NodeLaplace(node_id=i, params_node=params_node) for i in range(len(G))]
+    world = NodeLaplace(node_id=-1, params_node=params_world)
+    ppd_func = ppd_distances_Laplace
+    ppd_in = dict(
+        llf_nodes=llf_nodes,
+        llf_world=llf_world,
+        nodes=nodes,
+        world=world,
+        sample_bins=sample_bins,
+        sample_range=sample_range,
+        p_distances_params=p_distance_params,
+    )
+
+    # Run simulation...
+    N_events = 0
+    t = t0
+    sample_counter = int(t0 / t_sample)
+    mu_nodes = []
+    kl_divs = []
+    p_distances = []
+
+    while t < t_max:
+        # Sample MLEs, distance measures with periodicity t_sample
+        if int(t / t_sample) >= sample_counter:
+            if progress:
+                print("Sampling at t=", t, "\t, aka", (t / t_max), "\t of runtime.")
+            sample_counter += 1
+            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
+            mu_nodes.append(sample_mu_nodes)
+            kl_divs.append(sample_kl_div)
+            p_distances.append(sample_p_distances)
+
+        N_events += 1
+        if rng.uniform() < h / (h + r):
+            # external information draw event
+            node = random.choice(nodes)
+            node.set_updated_belief(
+                info_in=world.get_belief_sample(llf_world, t),
+                id_in=world.node_id,
+                t_sys=t,
+            )
+        else:
+            # edge event
+            chatters = random.choice(list(G.edges()))
+            sample0 = nodes[chatters[0]].get_belief_sample(llf_nodes, t)
+            sample1 = nodes[chatters[1]].get_belief_sample(llf_nodes, t)
+            nodes[chatters[0]].set_updated_belief(sample1, chatters[1], t)
+            nodes[chatters[1]].set_updated_belief(sample0, chatters[0], t)
+
+        # Sample post-run state
+        if int(t / t_sample) >= sample_counter:
+            if progress:
+                print("Sampling at t=", t)
+            sample_counter += 1
+            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
+            mu_nodes.append(sample_mu_nodes)
+            kl_divs.append(sample_kl_div)
+            p_distances.append(sample_p_distances)
+
+    return {
+        "nodes": nodes,
+        "G": G,
+        "world": world,
+        "N_events": N_events,
+        "t_end": t,
+        "mu_nodes": mu_nodes,
+        "kl_divs": kl_divs,
+        "p_distances": p_distances,
+        "seed": RANDOM_SEED,
     }
