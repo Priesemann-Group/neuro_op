@@ -137,7 +137,7 @@ class NodeLaplace:
         node_id,
         params_node=dict(
             loc=0,  # Prior mean
-            scale=20,  # Prior standard deviation
+            scale=10,  # Prior standard deviation
         ),
         diary_in=[],
         diary_out=[],
@@ -154,14 +154,12 @@ class NodeLaplace:
     def set_updated_belief(self, info_in, id_in, t_sys):
         """Naive Bayesian-like (parameterized) belief update."""
         self.diary_in += [[info_in, id_in, t_sys]]
-        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var())
+        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var()) + 1e-3
         self.params_node["loc"] = (
             self.params_node["loc"] * sigma_data**2
             + info_in * self.params_node["scale"] ** 2
         ) / (sigma_data**2 + self.params_node["scale"] ** 2)
-        self.params_node["scale"] = 1 / (
-            1 / self.params_node["scale"] ** 2 + 1 / sigma_data**2
-        )
+        self.params_node["scale"] = self.params_node["scale"]**2 * sigma_data**2 / (self.params_node["scale"]**2 + sigma_data**2)
 
     def get_belief_sample(self, llf, t_sys):
         """
@@ -372,7 +370,7 @@ def ppd_distances_Gaussian(
     world,
     sample_bins=50,
     sample_range=(-20, 20),
-    p_distances_params=[],
+    p_distance_params=[],
 ):
     """
     Return approximated distances between system nodes' PPDs and world state's distribution and binning used during approximation.
@@ -450,14 +448,14 @@ def ppd_distances_Gaussian(
 
     # If array for 'get_p_distances' function is not empty , calculate p-distances between each node's MLE and the world's MLE
     p_distances = []
-    if p_distances_params:
+    if p_distance_params:
         # First approach: Go for MLE comparisons
         argmax = np.argmax(ppd_world_out)
         mu_world_out = (ppd_bins[argmax] + ppd_bins[argmax + 1]) / 2
         argmax = np.argmax(ppd_world_true)
         mu_world_true = (ppd_bins[argmax] + ppd_bins[argmax + 1]) / 2
 
-        for p in p_distances_params:
+        for p in p_distance_params:
             p_distances.append(
                 [
                     [
@@ -481,7 +479,7 @@ def ppd_distances_Laplace(
     world,
     sample_bins=50,
     sample_range=(-20, 20),
-    p_distances_params=[],
+    p_distance_params=[],
 ):
     """Sample MLEs, distance measures for NodeLaplace system."""
 
@@ -504,8 +502,8 @@ def ppd_distances_Laplace(
 
     # If p_distance_params given, calculate p-distances
     p_distances = []
-    if p_distances_params:
-        for p in p_distances_params:
+    if p_distance_params:
+        for p in p_distance_params:
             p_distances.append(
                 [
                     get_p_distances(mu_i, world.params_node["loc"], p=p[0], p_inv=p[1])
@@ -631,7 +629,7 @@ def run_model_Grid(
         p_distance_params=p_distance_params,
     )
 
-    # Simulate system...
+    # Run simulation...
     N_events = 0
     t = t0
     sample_counter = int(t0 / t_sample)
@@ -674,8 +672,7 @@ def run_model_Grid(
                 llf_nodes, beliefs, sample0, chatters[0], t
             )
 
-        dt = st.expon.rvs(scale=1 / (h + r))
-        t = t + dt
+        t += st.expon.rvs(scale=1 / (h + r))
 
     # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
     if int(t / t_sample) >= sample_counter:
@@ -703,8 +700,7 @@ def run_model_Grid(
 
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_ref_Grid = dict(
-    G=build_random_network(N_nodes=100, N_neighbours=11),
-    # networkx graph object
+    G=build_random_network(N_nodes=100, N_neighbours=11),   # networkx graph object
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
     params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
@@ -733,7 +729,6 @@ input_ref_Grid = dict(
     p_distance_params=[(1, 1), (2, 1)],
     # Switches...
     progress=False,
-    laplace=False,
 )
 
 
@@ -981,7 +976,7 @@ def run_model_Laplace(
         world=world,
         sample_bins=sample_bins,
         sample_range=sample_range,
-        p_distances_params=p_distance_params,
+        p_distance_params=p_distance_params,
     )
 
     # Run simulation...
@@ -1019,6 +1014,8 @@ def run_model_Laplace(
             sample1 = nodes[chatters[1]].get_belief_sample(llf_nodes, t)
             nodes[chatters[0]].set_updated_belief(sample1, chatters[1], t)
             nodes[chatters[1]].set_updated_belief(sample0, chatters[0], t)
+        
+        t += st.expon.rvs(scale=1 / (h + r))
 
         # Sample post-run state
         if int(t / t_sample) >= sample_counter:
@@ -1041,3 +1038,27 @@ def run_model_Laplace(
         "p_distances": p_distances,
         "seed": RANDOM_SEED,
     }
+
+
+input_ref_Laplace = dict(
+    G=build_random_network(N_nodes=100, N_neighbours=11),   # networkx graph object
+    llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
+    llf_world=st.norm,  # Likelihood function (llf) of world, Gaussian by default
+    params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
+        loc=0,
+        scale=5,
+    ),
+    params_world=dict(  # Likelihood function (llf) parameters of world, Gaussian by default
+        loc=0,
+        scale=5,
+    ),
+    h=1,  # Rate of external information draw events
+    r=1,  # Rate of edge information exchange events
+    t0=0,  # Start time of simulation
+    t_max=50,  # End time of simulation
+    t_sample=2,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
+    sample_bins=50,  # Number of bins used in distance measures
+    sample_range=(-20, 20),  # Interval over which distance measure distributions are considered
+    p_distance_params=[(1, 1), (2, 1)],  # List of tuples, each containing two floats, defining the p-distance parameters
+    progress=False,  # Whether or not to print sampling times
+)
