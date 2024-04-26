@@ -33,7 +33,7 @@ def model_runs(input0, dict_list, numero=""):
 
 
 input0 = dict(
-    G=nop.build_random_network(N_nodes=100, N=5),  # networkx graph object
+    G=nop.build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
     params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
@@ -67,7 +67,7 @@ input0 = dict(
 for numero in range(5):
     variations = []
     for N in [1.5, 2.5]:
-        G = nop.build_random_network(N_nodes=10**N, N_neighbours=5)
+        G = nop.build_random_network(N_nodes=int(10**N), N_neighbours=5)
         input0["G"] = G
         for r_by_h in list(np.linspace(0.0, 1.0, 11)) + list(np.linspace(1.5, 5.0, 9)):
             variations.append(

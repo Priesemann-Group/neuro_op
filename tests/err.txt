@@ -1,5 +1,7 @@
 Traceback (most recent call last):
-  File "/home/jfriedel/Documents/Repos/neuro_op/tests/./testruns.py", line 36, in <module>
-    G=G,  # networkx graph object
-      ^
-NameError: name 'G' is not defined
+  File "/home/jfriedel/Documents/Repos/neuro_op/tests/testruns.py", line 76, in <module>
+    model_runs(input0, variations, numero)
+  File "/home/jfriedel/Documents/Repos/neuro_op/tests/testruns.py", line 25, in model_runs
+    output = dict(nop.run_model(**input))
+                  ^^^^^^^^^^^^^
+AttributeError: module 'neuro_op' has no attribute 'run_model'
