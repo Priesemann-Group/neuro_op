@@ -4,6 +4,7 @@ import networkx as nx
 import numpy as np
 import random
 import scipy.stats as st
+import time
 
 # Import old files for pickle usability
 # import "./deprecated.py"
@@ -159,7 +160,11 @@ class NodeLaplace:
             self.params_node["loc"] * sigma_data**2
             + info_in * self.params_node["scale"] ** 2
         ) / (sigma_data**2 + self.params_node["scale"] ** 2)
-        self.params_node["scale"] = self.params_node["scale"]**2 * sigma_data**2 / (self.params_node["scale"]**2 + sigma_data**2)
+        self.params_node["scale"] = (
+            self.params_node["scale"] ** 2
+            * sigma_data**2
+            / (self.params_node["scale"] ** 2 + sigma_data**2)
+        )
 
     def get_belief_sample(self, llf, t_sys):
         """
@@ -596,7 +601,14 @@ def run_model_Grid(
         p-distances between each node's MLE and the world's MLE, sampled during run.
         Shape: (#samples, #(p_distance parameter tuples), 2)
         '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
+    t_start : str
+        Start time and date of simulation.
+    t_exec : float
+        Simulation duration in seconds.
+    seed : int
+        Random seed used for simulation.
     """
+    starttime = time.time()
 
     assert len(beliefs) == len(log_priors)
 
@@ -694,26 +706,28 @@ def run_model_Grid(
         "mu_nodes": mu_nodes,
         "kl_divs": kl_divs,
         "p_distances": p_distances,
+        "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
+        "t_exec": time.time() - starttime,
         "seed": RANDOM_SEED,
     }
 
 
 # Reference input for 'run_model' function. For description of contents, see 'run_model' function docstring.
 input_ref_Grid = dict(
-    G=build_random_network(N_nodes=100, N_neighbours=11),   # networkx graph object
+    G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
     params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
         loc=0,
-        scale=5,
+        scale=1,
     ),
     params_world=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
         loc=0,
-        scale=5,
+        scale=1,
     ),
     beliefs=np.linspace(  # beliefs considered by each node
-        start=-50,  # min. considered belief value
-        stop=50,  # max. considered belief value
+        start=-10,  # min. considered belief value
+        stop=10,  # max. considered belief value
         num=500,  # number of considered belief values
     ),
     log_priors=np.zeros(500),  # Prior log-probabilities of nodes
@@ -723,16 +737,16 @@ input_ref_Grid = dict(
     t0=0,
     t_max=50,
     # Sampling parameters...
-    t_sample=2,
-    sample_bins=50,
-    sample_range=(-20, 20),
+    t_sample=0.5,
+    sample_bins=101,
+    sample_range=(-10, 10),
     p_distance_params=[(1, 1), (2, 1)],
     # Switches...
     progress=False,
 )
 
 
-def export_hdf5_Normal(output, filename):
+def export_hdf5_Grid(output, filename):
     """
     Export returns of 'run_model_Normal' to HDF5 file.
 
@@ -786,11 +800,17 @@ def export_hdf5_Normal(output, filename):
         # p_distances
         f.create_dataset("p_distances", data=np.array(output["p_distances"]))
 
+        # t_start
+        f.create_dataset("t_start", data=output["t_start"])
+
+        # t_exec
+        f.create_dataset("t_exec", data=output["t_exec"])
+
         # seed
         f.create_dataset("seed", data=str(output["seed"]))
 
 
-def import_hdf5_Normal(filename):
+def import_hdf5_Grid(filename):
     """
     Import simulation results from HDF5 file.
 
@@ -865,6 +885,12 @@ def import_hdf5_Normal(filename):
         # p_distances
         p_distances = f["p_distances"][()]
 
+        # t_start
+        t_start = f["t_start"][()]
+
+        # t_exec
+        t_exec = f["t_exec"][()]
+
         # seed
         seed = f["seed"][()]
 
@@ -878,6 +904,8 @@ def import_hdf5_Normal(filename):
         "mu_nodes": mu_nodes,
         "kl_divs": kl_divs,
         "p_distances": p_distances,
+        "t_start": t_start,
+        "t_exec": t_exec,
         "seed": seed,
     }
 
@@ -1014,7 +1042,7 @@ def run_model_Laplace(
             sample1 = nodes[chatters[1]].get_belief_sample(llf_nodes, t)
             nodes[chatters[0]].set_updated_belief(sample1, chatters[1], t)
             nodes[chatters[1]].set_updated_belief(sample0, chatters[0], t)
-        
+
         t += st.expon.rvs(scale=1 / (h + r))
 
         # Sample post-run state
@@ -1041,7 +1069,7 @@ def run_model_Laplace(
 
 
 input_ref_Laplace = dict(
-    G=build_random_network(N_nodes=100, N_neighbours=11),   # networkx graph object
+    G=build_random_network(N_nodes=100, N_neighbours=11),  # networkx graph object
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of world, Gaussian by default
     params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
@@ -1058,7 +1086,13 @@ input_ref_Laplace = dict(
     t_max=50,  # End time of simulation
     t_sample=2,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
     sample_bins=50,  # Number of bins used in distance measures
-    sample_range=(-20, 20),  # Interval over which distance measure distributions are considered
-    p_distance_params=[(1, 1), (2, 1)],  # List of tuples, each containing two floats, defining the p-distance parameters
+    sample_range=(
+        -20,
+        20,
+    ),  # Interval over which distance measure distributions are considered
+    p_distance_params=[
+        (1, 1),
+        (2, 1),
+    ],  # List of tuples, each containing two floats, defining the p-distance parameters
     progress=False,  # Whether or not to print sampling times
 )
