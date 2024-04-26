@@ -1,0 +1,108 @@
+Current adaptions:	 world_pow--a-10--op_min-0--N-1.5--r-0.1
+t_exec =  0.9227359294891357 s
+Current adaptions:	 world_pow--a-10--op_min--50--N-1.5--r-0.1
+t_exec =  0.9299356937408447 s
+Current adaptions:	 world_pow--a-10--op_min-0--N-1.5--r-1
+t_exec =  1.798915147781372 s
+Current adaptions:	 world_pow--a-10--op_min--50--N-1.5--r-1
+t_exec =  1.8528358936309814 s
+Current adaptions:	 world_pow--a-10--op_min-0--N-1.5--r-10
+t_exec =  11.154932260513306 s
+Current adaptions:	 world_pow--a-10--op_min--50--N-1.5--r-10
+t_exec =  11.401432752609253 s
+Current adaptions:	 world_pow--a-10--op_min-0--N-2.5--r-0.1
+t_exec =  10.480804681777954 s
+Current adaptions:	 world_pow--a-10--op_min--50--N-2.5--r-0.1
+t_exec =  10.497849941253662 s
+Current adaptions:	 world_pow--a-10--op_min-0--N-2.5--r-1
+t_exec =  26.771795988082886 s
+Current adaptions:	 world_pow--a-10--op_min--50--N-2.5--r-1
+t_exec =  26.553405284881592 s
+Current adaptions:	 world_pow--a-10--op_min-0--N-2.5--r-10
+t_exec =  192.48059725761414 s
+Current adaptions:	 world_pow--a-10--op_min--50--N-2.5--r-10
+t_exec =  185.4809911251068 s
+Current adaptions:	 world_pow--a-50--op_min-0--N-1.5--r-0.1
+t_exec =  0.9422464370727539 s
+Current adaptions:	 world_pow--a-50--op_min--50--N-1.5--r-0.1
+t_exec =  0.9183990955352783 s
+Current adaptions:	 world_pow--a-50--op_min-0--N-1.5--r-1
+t_exec =  1.808995246887207 s
+Current adaptions:	 world_pow--a-50--op_min--50--N-1.5--r-1
+t_exec =  1.846815586090088 s
+Current adaptions:	 world_pow--a-50--op_min-0--N-1.5--r-10
+t_exec =  10.959187984466553 s
+Current adaptions:	 world_pow--a-50--op_min--50--N-1.5--r-10
+t_exec =  10.78366494178772 s
+Current adaptions:	 world_pow--a-50--op_min-0--N-2.5--r-0.1
+t_exec =  10.30996584892273 s
+Current adaptions:	 world_pow--a-50--op_min--50--N-2.5--r-0.1
+t_exec =  10.200796365737915 s
+Current adaptions:	 world_pow--a-50--op_min-0--N-2.5--r-1
+t_exec =  26.04845929145813 s
+Current adaptions:	 world_pow--a-50--op_min--50--N-2.5--r-1
+t_exec =  27.446118354797363 s
+Current adaptions:	 world_pow--a-50--op_min-0--N-2.5--r-10
+t_exec =  190.0058262348175 s
+Current adaptions:	 world_pow--a-50--op_min--50--N-2.5--r-10
+t_exec =  190.09388184547424 s
+Current adaptions:	 world_pow--a-85--op_min-0--N-1.5--r-0.1
+t_exec =  0.9497287273406982 s
+Current adaptions:	 world_pow--a-85--op_min--50--N-1.5--r-0.1
+t_exec =  0.9325463771820068 s
+Current adaptions:	 world_pow--a-85--op_min-0--N-1.5--r-1
+t_exec =  1.8178465366363525 s
+Current adaptions:	 world_pow--a-85--op_min--50--N-1.5--r-1
+t_exec =  1.8420805931091309 s
+Current adaptions:	 world_pow--a-85--op_min-0--N-1.5--r-10
+t_exec =  10.816108465194702 s
+Current adaptions:	 world_pow--a-85--op_min--50--N-1.5--r-10
+t_exec =  11.034708261489868 s
+Current adaptions:	 world_pow--a-85--op_min-0--N-2.5--r-0.1
+t_exec =  10.299591779708862 s
+Current adaptions:	 world_pow--a-85--op_min--50--N-2.5--r-0.1
+t_exec =  10.215813398361206 s
+Current adaptions:	 world_pow--a-85--op_min-0--N-2.5--r-1
+t_exec =  26.798712491989136 s
+Current adaptions:	 world_pow--a-85--op_min--50--N-2.5--r-1
+t_exec =  26.679442405700684 s
+Current adaptions:	 world_pow--a-85--op_min-0--N-2.5--r-10
+t_exec =  192.2316153049469 s
+Current adaptions:	 world_pow--a-85--op_min--50--N-2.5--r-10
+t_exec =  191.0898940563202 s
+Current adaptions:	 N-1.5--r-0.1--uniform-prior
+t_exec =  0.9039444923400879 s
+Current adaptions:	 N-1.5--r-0.1--small-prior
+t_exec =  0.9137651920318604 s
+Current adaptions:	 N-1.5--r-1--uniform-prior
+t_exec =  1.8429069519042969 s
+Current adaptions:	 N-1.5--r-1--small-prior
+t_exec =  1.7967250347137451 s
+Current adaptions:	 N-1.5--r-10--uniform-prior
+t_exec =  10.917331457138062 s
+Current adaptions:	 N-1.5--r-10--small-prior
+t_exec =  11.739172220230103 s
+Current adaptions:	 N-2.5--r-0.1--uniform-prior
+t_exec =  10.959240674972534 s
+Current adaptions:	 N-2.5--r-0.1--small-prior
+t_exec =  10.991779088973999 s
+Current adaptions:	 N-2.5--r-1--uniform-prior
+t_exec =  28.534610986709595 s
+Current adaptions:	 N-2.5--r-1--small-prior
+t_exec =  27.88174033164978 s
+Current adaptions:	 N-2.5--r-10--uniform-prior
+t_exec =  195.27682423591614 s
+Current adaptions:	 N-2.5--r-10--small-prior
+t_exec =  193.8869664669037 s
+Current adaptions:	 N-3.5--r-0.1--uniform-prior
+t_exec =  198.73578453063965 s
+Current adaptions:	 N-3.5--r-0.1--small-prior
+t_exec =  199.32599592208862 s
+Current adaptions:	 N-3.5--r-1--uniform-prior
+t_exec =  1060.4578943252563 s
+Current adaptions:	 N-3.5--r-1--small-prior
+t_exec =  1026.6558668613434 s
+Current adaptions:	 N-3.5--r-10--uniform-prior
+t_exec =  10167.913915395737 s
+Current adaptions:	 N-3.5--r-10--small-prior
+t_exec =  9553.95033121109 s
