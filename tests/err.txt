@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/jfriedel/Documents/Repos/neuro_op/tests/./testruns.py", line 36, in <module>
+    G=G,  # networkx graph object
+      ^
+NameError: name 'G' is not defined
