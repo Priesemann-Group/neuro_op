@@ -22,7 +22,7 @@ def model_runs(input0, dict_list, numero=""):
             adaptions += "--" + str(key) + "-" + str(value)
         print("Current adaptions:\t", dic_tmp.items())
         t0 = time.time()
-        output = dict(nop.run_model(**input))
+        output = dict(nop.run_model_Grid(**input))
         t1 = time.time()
         print("For adaptions\t", dic_tmp.items(), " :\n\t t_exec = ", (t1 - t0))
         with open("in" + numero + adaptions + ".pkl", "wb") as f:
