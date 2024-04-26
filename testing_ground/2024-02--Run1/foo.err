@@ -1,0 +1,8 @@
+/home/jfriedel/Documents/Repos/neuro_op/src/neuro_op/neuro_op.py:253: RuntimeWarning: invalid value encountered in divide
+  ppd_world_out = ppd_world_out[0] / np.sum(
+/home/jfriedel/Documents/Repos/neuro_op/src/neuro_op/neuro_op.py:165: RuntimeWarning: divide by zero encountered in log
+  terms = P * np.log(P / Q)
+/home/jfriedel/Documents/Repos/neuro_op/src/neuro_op/neuro_op.py:165: RuntimeWarning: invalid value encountered in multiply
+  terms = P * np.log(P / Q)
+/home/jfriedel/Documents/Repos/neuro_op/src/neuro_op/neuro_op.py:265: RuntimeWarning: invalid value encountered in divide
+  node_ppd = i / np.sum(i)
