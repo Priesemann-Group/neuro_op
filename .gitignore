@@ -400,3 +400,4 @@ FodyWeavers.xsd
 
 # Personal additions
 *.pkl
+*.h5
