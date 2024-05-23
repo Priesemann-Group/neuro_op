@@ -19,11 +19,7 @@ np.random.default_rng()
 ####################################################################################################
 class Node:
     """
-    ! ! !
-    DEPRECATED
-    ! ! !
-
-    Nodes with grid-wise belief-holding, -sampling, and -updating behavior.
+    (Deprecated) nodes with grid-wise belief-holding, -sampling, and -updating behavior.
 
     Attributes:
     beliefs -- Numpy array of possible parameter values into which a Node may hold belief
@@ -128,7 +124,7 @@ class NodeNormal:
         return info_out
 
 
-class NodeLaplace:
+class NodeParam:
     """
     Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
     """
@@ -486,7 +482,7 @@ def ppd_distances_Laplace(
     sample_range=(-20, 20),
     p_distance_params=[],
 ):
-    """Sample MLEs, distance measures for NodeLaplace system."""
+    """Sample MLEs, distance measures for NodeParam system."""
 
     # Create predictive distribution for each node and world
     ppd_nodes = [
@@ -994,8 +990,8 @@ def run_model_Laplace(
     r = r * len(G)
 
     # Set up simulation environment (nodes, world, sampling function/inputs)
-    nodes = [NodeLaplace(node_id=i, params_node=params_node) for i in range(len(G))]
-    world = NodeLaplace(node_id=-1, params_node=params_world)
+    nodes = [NodeParam(node_id=i, params_node=params_node) for i in range(len(G))]
+    world = NodeParam(node_id=-1, params_node=params_world)
     ppd_func = ppd_distances_Laplace
     ppd_in = dict(
         llf_nodes=llf_nodes,
