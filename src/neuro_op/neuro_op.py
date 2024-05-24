@@ -124,18 +124,19 @@ class NodeNormal:
         return info_out
 
 
-class NodeParam:
+class NodeConjMu:
     """
-    Nodes with Laplace-approximated belief-holding, -sampling, and -updating behavior.
+    Nodes assuming Normal llf with known variance, able of belief-holding, -sampling, and -updating behavior via Normal conjugate prior.
     """
 
     def __init__(
         self,
         node_id,
         params_node=dict(
-            loc=0,  # Prior mean
-            scale=10,  # Prior standard deviation
+            loc=0,  # Current (prior) mean
+            scale=10,  # Current (prior) standard deviation
         ),
+        sd_llf=1,  # (Assumed known) standard deviation of llf
         diary_in=[],
         diary_out=[],
     ):
@@ -145,22 +146,20 @@ class NodeParam:
 
         self.node_id = node_id
         self.params_node = params_node.copy()
+        self.sd_llf = sd_llf
         self.diary_in = diary_in.copy()
         self.diary_out = diary_out.copy()
 
     def set_updated_belief(self, info_in, id_in, t_sys):
-        """Naive Bayesian-like (parameterized) belief update."""
+        """Closed-form update for Normal llf (known variance) and Normal conjugate prior."""
         self.diary_in += [[info_in, id_in, t_sys]]
-        sigma_data = np.sqrt(np.array(self.diary_in)[:, 0].var()) + 1e-3
         self.params_node["loc"] = (
-            self.params_node["loc"] * sigma_data**2
-            + info_in * self.params_node["scale"] ** 2
-        ) / (sigma_data**2 + self.params_node["scale"] ** 2)
+            self.params_node["scale"] ** 2 * info_in
+            + self.sd_llf**2 * self.params_node["loc"]
+        ) / (self.sd_llf**2 + self.params_node["scale"] ** 2)
         self.params_node["scale"] = (
-            self.params_node["scale"] ** 2
-            * sigma_data**2
-            / (self.params_node["scale"] ** 2 + sigma_data**2)
-        )
+            1 / self.params_node["scale"] ** 2 + 1 / self.sd_llf ** 2
+        )**(-0.5)
 
     def get_belief_sample(self, llf, t_sys):
         """
@@ -482,7 +481,7 @@ def ppd_distances_Laplace(
     sample_range=(-20, 20),
     p_distance_params=[],
 ):
-    """Sample MLEs, distance measures for NodeParam system."""
+    """Sample MLEs, distance measures for NodeConjMu system."""
 
     # Create predictive distribution for each node and world
     ppd_nodes = [
@@ -722,11 +721,11 @@ input_ref_Grid = dict(
         scale=1,
     ),
     beliefs=np.linspace(  # beliefs considered by each node
-        start=-10,  # min. considered belief value
-        stop=10,  # max. considered belief value
-        num=500,  # number of considered belief values
+        start=-5,  # min. considered belief value
+        stop=5,  # max. considered belief value
+        num=201,  # number of considered belief values
     ),
-    log_priors=np.zeros(500),  # Prior log-probabilities of nodes
+    log_priors=np.zeros(201),  # Prior log-probabilities of nodes
     # Dynamics parameters (rates, simulation times)...
     h=1,
     r=1,
@@ -734,8 +733,8 @@ input_ref_Grid = dict(
     t_max=50,
     # Sampling parameters...
     t_sample=0.5,
-    sample_bins=101,
-    sample_range=(-10, 10),
+    sample_bins=201,
+    sample_range=(-5, 5),
     p_distance_params=[(1, 1), (2, 1)],
     # Switches...
     progress=False,
@@ -906,11 +905,12 @@ def import_hdf5_Grid(filename):
     }
 
 
-def run_model_Laplace(
+def run_model_Param(
     G,
     llf_nodes,
     llf_world,
     params_node,
+    sd_llf,
     params_world,
     h,
     r,
@@ -990,8 +990,8 @@ def run_model_Laplace(
     r = r * len(G)
 
     # Set up simulation environment (nodes, world, sampling function/inputs)
-    nodes = [NodeParam(node_id=i, params_node=params_node) for i in range(len(G))]
-    world = NodeParam(node_id=-1, params_node=params_world)
+    nodes = [NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf) for i in range(len(G))]
+    world = NodeConjMu(node_id=-1, params_node=params_world)
     ppd_func = ppd_distances_Laplace
     ppd_in = dict(
         llf_nodes=llf_nodes,
@@ -1064,27 +1064,28 @@ def run_model_Laplace(
     }
 
 
-input_ref_Laplace = dict(
-    G=build_random_network(N_nodes=100, N_neighbours=11),  # networkx graph object
+input_ref_Param = dict(
+    G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of world, Gaussian by default
-    params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
+    params_node=dict(  # Parameter priors of nodes (mu and associated uncertainty (standard deviation)), Gaussian by default
         loc=0,
-        scale=5,
+        scale=10,
     ),
+    sd_llf=1,  # Standard deviation of the likelihood function (llf) of nodes, assumed known & static
     params_world=dict(  # Likelihood function (llf) parameters of world, Gaussian by default
         loc=0,
-        scale=5,
+        scale=1,
     ),
     h=1,  # Rate of external information draw events
     r=1,  # Rate of edge information exchange events
     t0=0,  # Start time of simulation
     t_max=50,  # End time of simulation
-    t_sample=2,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
-    sample_bins=50,  # Number of bins used in distance measures
+    t_sample=.5,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
+    sample_bins=201,  # Number of bins used in distance measures
     sample_range=(
-        -20,
-        20,
+        -5,
+        5,
     ),  # Interval over which distance measure distributions are considered
     p_distance_params=[
         (1, 1),
