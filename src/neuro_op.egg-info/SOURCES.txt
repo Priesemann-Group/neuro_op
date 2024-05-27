@@ -8,4 +8,3 @@ src/neuro_op.egg-info/SOURCES.txt
 src/neuro_op.egg-info/dependency_links.txt
 src/neuro_op.egg-info/requires.txt
 src/neuro_op.egg-info/top_level.txt
-tests/testruns.py

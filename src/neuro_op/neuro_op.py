@@ -13,7 +13,6 @@ import time
 RANDOM_SEED = np.random.SeedSequence().entropy
 random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
-np.random.default_rng()
 
 
 ####################################################################################################
@@ -109,8 +108,7 @@ class NodeNormal:
         """Bayesian update of the Node's belief, based on incoming info 'info_in' from node with id 'id_in' at system time 't_sys'."""
 
         self.diary_in += [[info_in, id_in, t_sys]]
-        log_llf = llf_instance(llf_nodes, self.params_node).logpdf
-        self.log_probs += log_llf(x=beliefs - info_in)
+        self.log_probs += llf_nodes.logpdf(**self.params_node, x=beliefs - info_in)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
 
     def get_belief_sample(self, beliefs, t_sys):
@@ -158,8 +156,8 @@ class NodeConjMu:
             + self.sd_llf**2 * self.params_node["loc"]
         ) / (self.sd_llf**2 + self.params_node["scale"] ** 2)
         self.params_node["scale"] = (
-            1 / self.params_node["scale"] ** 2 + 1 / self.sd_llf ** 2
-        )**(-0.5)
+            1 / self.params_node["scale"] ** 2 + 1 / self.sd_llf**2
+        ) ** (-0.5)
 
     def get_belief_sample(self, llf, t_sys):
         """
@@ -168,7 +166,8 @@ class NodeConjMu:
         Returns a list of format [sample, t_sys].
         """
 
-        info_out = llf_instance(llf, self.params_node).rvs()
+        # info_out = llf.rvs(**self.params_node)
+        info_out = rng.normal(**self.params_node)
         self.diary_out += [[info_out, t_sys]]
 
         return info_out
@@ -245,7 +244,7 @@ def logpdf_to_pdf(logprobs):
     return probs / np.sum(probs)
 
 
-def dist_binning(logpdf, N_bins=50, range=(-20, 20)):
+def dist_binning(llf, params, N_bins=50, range=(-20, 20)):
     """
     Returns a logpdf method's probability mass binned into N equally-spaced bins.
 
@@ -262,7 +261,11 @@ def dist_binning(logpdf, N_bins=50, range=(-20, 20)):
     """
 
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
-    Q = np.exp(logpdf(Q_bins[:-1])) + np.exp(logpdf(Q_bins[1:]))
+    Q_logpdf = llf.logpdf(**params, x=Q_bins)
+    Q = np.exp(Q_logpdf[:-1]) + np.exp(Q_logpdf[1:])
+
+    # Q_bins = np.linspace(range[0], range[1], N_bins + 1)
+    # Q = np.exp(logpdf(Q_bins[:-1])) + np.exp(logpdf(Q_bins[1:]))
 
     return Q / np.sum(Q)
 
@@ -359,7 +362,7 @@ def ppd_Gaussian_mu(llf_nodes, beliefs, logprobs, sigma, N_samples=1000):
     )
 
     # Generate predictions using the llh method.
-    return llf_instance(llf_nodes, params).rvs()
+    return llf_nodes.rvs(**params)
 
 
 def ppd_distances_Gaussian(
@@ -425,7 +428,8 @@ def ppd_distances_Gaussian(
         ppd_world_out = np.zeros(sample_bins)
 
     ppd_world_true = dist_binning(
-        llf_instance(llf_world, world.params_node).logpdf,
+        llf_world,
+        world.params_node,
         sample_bins,
         sample_range,
     )
@@ -486,12 +490,18 @@ def ppd_distances_Laplace(
     # Create predictive distribution for each node and world
     ppd_nodes = [
         dist_binning(
-            llf_instance(llf_nodes, node.params_node).logpdf, sample_bins, sample_range
+            llf_nodes,
+            node.params_node,
+            sample_bins,
+            sample_range,
         )
         for node in nodes
     ]
     ppd_world = dist_binning(
-        llf_instance(llf_world, world.params_node).logpdf, sample_bins, sample_range
+        llf_world,
+        world.params_node,
+        sample_bins,
+        sample_range,
     )
 
     # Get MLEs of each node
@@ -621,7 +631,7 @@ def run_model_Grid(
     ]
     world = NodeNormal(
         node_id=-1,
-        log_priors=llf_instance(llf_world, params_world).logpdf(beliefs),
+        log_priors=llf_world.logpdf(**params_world, x=beliefs),
         params_node=params_world,
     )
     ppd_func = ppd_distances_Gaussian
@@ -919,8 +929,8 @@ def run_model_Param(
     t_sample,
     sample_bins,
     sample_range,
-    p_distance_params=[],
-    progress=False,
+    p_distance_params,
+    progress,
 ):
     """
     Execute program.
@@ -990,7 +1000,10 @@ def run_model_Param(
     r = r * len(G)
 
     # Set up simulation environment (nodes, world, sampling function/inputs)
-    nodes = [NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf) for i in range(len(G))]
+    nodes = [
+        NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf)
+        for i in range(len(G))
+    ]
     world = NodeConjMu(node_id=-1, params_node=params_world)
     ppd_func = ppd_distances_Laplace
     ppd_in = dict(
@@ -1081,7 +1094,7 @@ input_ref_Param = dict(
     r=1,  # Rate of edge information exchange events
     t0=0,  # Start time of simulation
     t_max=50,  # End time of simulation
-    t_sample=.5,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
+    t_sample=0.5,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
     sample_bins=201,  # Number of bins used in distance measures
     sample_range=(
         -5,
