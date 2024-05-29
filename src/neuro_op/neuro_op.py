@@ -487,16 +487,19 @@ def ppd_distances_Laplace(
 ):
     """Sample MLEs, distance measures for NodeConjMu system."""
 
-    # Create predictive distribution for each node and world
+    # Create posterior predictive distribution for each node and world
     ppd_nodes = [
-        dist_binning(
-            llf_nodes,
-            node.params_node,
-            sample_bins,
-            sample_range,
-        )
+        np.histogram(
+            st.norm.rvs(
+                loc=llf_nodes.rvs(**node.params_node, size=1000),
+                scale=node.sd_llf,
+            ),
+            bins=sample_bins,
+            range=sample_range,
+        )[0]
         for node in nodes
     ]
+
     ppd_world = dist_binning(
         llf_world,
         world.params_node,
@@ -677,6 +680,7 @@ def run_model_Grid(
                 id_in=world.node_id,
                 t_sys=t,
             )
+
         else:
             # edge event
             chatters = random.choice(list(G.edges()))
@@ -748,6 +752,7 @@ input_ref_Grid = dict(
     p_distance_params=[(1, 1), (2, 1)],
     # Switches...
     progress=False,
+    h_sampling=False,
 )
 
 
