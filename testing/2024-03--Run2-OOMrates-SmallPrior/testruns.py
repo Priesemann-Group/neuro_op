@@ -16,7 +16,7 @@ def model_runs(input0, dict_list, string_list):
 
     assert len(dict_list) == len(string_list)
 
-    for i in range(len(dict_list)):
+    for i, _ in enumerate(dict_list):
         input = copy.deepcopy(input0)
         for key, value in dict_list[i].items():
             input[key] = value

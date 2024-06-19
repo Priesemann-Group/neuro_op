@@ -112,7 +112,7 @@ def run_model_Grid(
             log_priors=log_priors,
             params_node=params_node,
         )
-        for i in range(len(G))
+        for i in G.nodes()
     ]
     world = NodeNormal(
         node_id=-1,
@@ -289,8 +289,7 @@ def run_model_Param(
 
     # Set up simulation environment (nodes, world, sampling function/inputs)
     nodes = [
-        NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf)
-        for i in range(len(G))
+        NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf) for i in G.nodes()
     ]
     world = NodeConjMu(node_id=-1, params_node=params_world)
     #    ppd_func = ppd_distances_Laplace
