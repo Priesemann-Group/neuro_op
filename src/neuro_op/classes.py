@@ -27,9 +27,10 @@ class NodeNormal:
         self,
         node_id,
         log_priors,
+        sd_prior=1,
         params_node=dict(  # Parameters defining the likelihood function (llf), normal distribution by default
             loc=0,
-            scale=5,
+            scale=1,
         ),
         diary_in=[],
         diary_out=[],
@@ -40,6 +41,7 @@ class NodeNormal:
 
         self.node_id = node_id
         self.log_probs = np.copy(log_priors)
+        self.sd = sd_prior
         self.params_node = params_node.copy()
         self.diary_in = diary_in.copy()
         self.diary_out = diary_out.copy()
@@ -50,6 +52,7 @@ class NodeNormal:
         self.diary_in += [[info_in, id_in, t_sys]]
         self.log_probs += llf_nodes.logpdf(**self.params_node, x=beliefs - info_in)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
+        self.sd = np.sqrt(1 / (1 / self.sd**2 + 1 / self.params_node["scale"] ** 2))
 
     def get_belief_sample(self, beliefs, t_sys):
         """
@@ -95,9 +98,9 @@ class NodeConjMu:
             self.params_node["scale"] ** 2 * info_in
             + self.sd_llf**2 * self.params_node["loc"]
         ) / (self.sd_llf**2 + self.params_node["scale"] ** 2)
-        self.params_node["scale"] = (
-            1 / self.params_node["scale"] ** 2 + 1 / self.sd_llf**2
-        ) ** (-0.5)
+        self.params_node["scale"] = np.sqrt(
+            1 / (1 / self.params_node["scale"] ** 2 + 1 / self.sd_llf**2)
+        )
 
     def get_belief_sample(self, llf, t_sys):
         """

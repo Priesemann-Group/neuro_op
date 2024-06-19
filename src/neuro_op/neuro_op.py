@@ -16,6 +16,7 @@ def run_model_Grid(
     params_world,
     beliefs,
     log_priors,
+    sd_prior,
     h,
     r,
     t0,
@@ -110,6 +111,7 @@ def run_model_Grid(
         NodeNormal(
             node_id=i,
             log_priors=log_priors,
+            sd_prior=sd_prior,
             params_node=params_node,
         )
         for i in range(len(G))

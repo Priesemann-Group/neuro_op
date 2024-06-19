@@ -24,6 +24,7 @@ input_ref_Grid = dict(
         num=201,  # number of considered belief values
     ),
     log_priors=np.zeros(201),  # Prior log-probabilities of nodes
+    sd_prior=1,  # Nodes' standard deviation prior
     # Dynamics parameters (rates, simulation times)...
     h=1,
     r=1,
