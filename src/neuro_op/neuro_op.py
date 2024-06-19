@@ -10,20 +10,16 @@ from .utils import *
 
 def run_model_Grid(
     G,
-    llf_nodes,
-    llf_world,
     mu_arr,
     sd_arr,
-    params_world,
     log_priors,
+    llf_nodes,
+    llf_world,
+    params_world,
     h,
     r,
     t0,
     t_max,
-    t_sample,
-    sample_bins,
-    sample_range,
-    p_distance_params,
     progress,
 ):
     """
@@ -34,18 +30,18 @@ def run_model_Grid(
     Keyword arguments:
     G : networkx graph object
         Graph of nodes and edges
+    mu_arr : np.array (floats)
+        Array of mu values into which a Node may hold beliefs in.
+    sd_arr : np.array (floats)
+        Array of standard deviation values into which a Node may hold beliefs in.
+    log_priors : list (floats)
+        Prior log-probabilities of nodes
     llf_nodes : scipy.stats function
         Likelihood function (llf) of nodes
     llf_world : scipy.stats function
         Likelihood function (llf) of world
-    params_node : dict
-        Parameters defining the likelihood function (llf) of nodes, concerning a Gaussian by default
     params_world : dict
         Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
-    beliefs : list (floats)
-        Possible parameter values into which a Node may hold beliefs in
-    log_priors : list (floats)
-        Prior log-probabilities of nodes
     h : float
         Rate of external information draw events
     r : float
@@ -54,14 +50,6 @@ def run_model_Grid(
         Start time of simulation
     t_max : float
         End time of simulation
-    t_sample : float
-        Periodicity for which samples and distance measures (KL-div, p-distance) are taken
-    sample_bins : int
-        Number of bins used in distance measures
-    sample_range : tuple
-        Interval over which distance measure distributions are considered
-    p_distance_params : list
-        List of tuples, each containing two floats, defining the p-distance parameters
     progress : bool
         Whether or not to print sampling times
 
@@ -112,36 +100,20 @@ def run_model_Grid(
         )
         for i in G.nodes()
     ]
-    ppd_func = ppd_distances_Gaussian
-    ppd_in = dict(
-        llf_nodes=llf_nodes,
-        llf_world=llf_world,
-        beliefs=beliefs,
-        nodes=nodes,
-        world=world,
-        sample_bins=sample_bins,
-        sample_range=sample_range,
-        p_distance_params=p_distance_params,
-    )
 
     # Run simulation...
     N_events = 0
     t = t0
-    sample_counter = int(t0 / t_sample)
+    counter = int(t0 / 1)
     mu_nodes = []
     kl_divs = []
     p_distances = []
 
     while t < t_max:
         # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
-        if int(t / t_sample) >= sample_counter:
-            if progress:
-                print("Sampling at t=", t, "\t, aka", (t / t_max), "\t of runtime.")
-            sample_counter += 1
-            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
-            mu_nodes.append(sample_mu_nodes)
-            kl_divs.append(sample_kl_div)
-            p_distances.append(sample_p_distances)
+        if progress and t >= counter:
+            counter += 1
+            print("Currently at\t t = ", (t / t_max), "\t of runtime.")
 
         # Information exchange event...
         N_events += 1
@@ -172,25 +144,15 @@ def run_model_Grid(
         t += st.expon.rvs(scale=1 / (h + r))
 
     # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
-    if int(t / t_sample) >= sample_counter:
-        if progress:
-            print("Sampling at t=", t)
-        sample_counter += 1
-        sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
-        mu_nodes.append(sample_mu_nodes)
-        kl_divs.append(sample_kl_div)
-        p_distances.append(sample_p_distances)
 
     return {
         "nodes": nodes,
         "G": G,
-        "beliefs": mu_arr,
-        "world": sd_arr,
+        "mu_arr": mu_arr,
+        "sd_arr": sd_arr,
+        "world": params_world,
         "N_events": N_events,
         "t_end": t,
-        "mu_nodes": mu_nodes,
-        "kl_divs": kl_divs,
-        "p_distances": p_distances,
         "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
         "t_exec": time.time() - starttime,
         "seed": RANDOM_SEED,
