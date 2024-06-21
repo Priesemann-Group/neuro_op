@@ -3,26 +3,16 @@ import h5py
 import networkx as nx
 import numpy as np
 
-from .classes import NodeNormal
+from .classes import NodeGrid, NodeNormal, NodeConjMu
 
 
-def export_hdf5_Grid(output, filename):
+def export_hdf5(output, filename):
     """
     Export returns of 'run_model_Normal' to HDF5 file.
 
     Keyword arguments:
     output : dict
-        Dictionary containing simulation results:
-            nodes       <class 'list'>
-            G           <class 'networkx.classes.digraph.DiGraph'>
-            beliefs     <class 'numpy.ndarray'>
-            world       <class 'neuro_op.neuro_op.NodeNormal'>
-            N_events    <class 'int'>
-            t_end       <class 'numpy.float64'>
-            mu_nodes    <class 'list'>
-            kl_divs     <class 'list'>
-            p_distances <class 'list'>
-            seed        <class 'int'>
+        Dictionary containing simulation results
     filename : str
         Name of to-be-created HDF5 file
     """
@@ -33,32 +23,46 @@ def export_hdf5_Grid(output, filename):
             "nodesGrid",
             "nodesNormal",
             "nodesConj",
-        ] and n in output:
-            nodes = f.create_group(n)
-            for node in output[n]: # TODO!!! Add world node
-                node_group = nodes.create_group("node_" + str(node.node_id))
-                node_group.create_dataset("node_id", data=node.node_id)
-                if n in ["nodesGrid", "nodesNormal"]:
-                    node_group.create_dataset("log_probs", data=node.log_probs)
-                if n in ["nodesNormal", "nodesConj"]:
-                    for key, value in node.params_node.items():
-                        node_group.create_dataset(f"params_node/{key}", data=value)
-                if n in ["nodesConj"]:
-                    node_group.create_dataset("sd_llf", data=node.sd_llf)
-                node_group.create_dataset("diary_in", data=np.array(node.diary_in))
-                node_group.create_dataset("diary_out", data=np.array(node.diary_out))
+        ]:
+            if n in output:
+                nodes = f.create_group(n)
+                for node in output[n] + [output["world"]]:
+                    node_group = nodes.create_group("node_" + str(node.node_id))
+                    node_group.create_dataset("node_id", data=node.node_id)
+                    node_group.create_dataset("diary_in", data=np.array(node.diary_in))
+                    node_group.create_dataset(
+                        "diary_out", data=np.array(node.diary_out)
+                    )
+                    if n == "nodesGrid":
+                        node_group.create_dataset("log_probs", data=node.log_probs)
+                    if n == "nodesNormal":
+                        node_group.create_dataset("log_probs", data=node.log_probs)
+                        for key, value in node.params_node.items():
+                            node_group.create_dataset(f"params_node/{key}", data=value)
+                    if n == "nodesConj":
+                        node_group.create_dataset("sd_llf", data=node.sd_llf)
+                        for key, value in node.params_node.items():
+                            node_group.create_dataset(f"params_node/{key}", data=value)
 
         # rest of it, see key strings...
         f.create_dataset("G", data=nx.to_numpy_array(output["G"]))
-        f.create_dataset("beliefs", data=output["beliefs"])
         f.create_dataset("N_events", data=output["N_events"])
         f.create_dataset("t_end", data=output["t_end"])
-        f.create_dataset("mu_nodes", data=np.array(output["mu_nodes"]))
-        f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
-        f.create_dataset("p_distances", data=np.array(output["p_distances"]))
         f.create_dataset("t_start", data=output["t_start"])
         f.create_dataset("t_exec", data=output["t_exec"])
         f.create_dataset("seed", data=str(output["seed"]))
+        if "nodesGrid" in output:
+            f.create_dataset("mu_arr", data=output["mu_arr"])
+            f.create_dataset("sd_arr", data=output["sd_arr"])
+        if "nodesNormal" in output:
+            f.create_dataset("beliefs", data=output["beliefs"])
+        # if "nodesConj" in output: no further data to export :)
+
+
+#        f.create_dataset("mu_nodes", data=np.array(output["mu_nodes"]))
+#        f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
+#        f.create_dataset("p_distances", data=np.array(output["p_distances"]))
+# f.create_dataset("beliefs", data=output["beliefs"])
 
 
 def import_hdf5_Grid(filename):
@@ -70,40 +74,39 @@ def import_hdf5_Grid(filename):
         Name of HDF5 file to be imported
 
     Returns:
-    Dictionary containing simulation results:
-        nodes       <class 'list'>
-        G           <class 'networkx.classes.digraph.DiGraph'>
-        beliefs     <class 'numpy.ndarray'>
-        world       <class 'neuro_op.neuro_op.NodeNormal'>
-        N_events    <class 'int'>
-        t_end       <class 'numpy.float64'>
-        mu_nodes    <class 'list'>
-        kl_divs     <class 'list'>
-        p_distances <class 'list'>
-        seed        <class 'int'>
+    Dictionary containing simulation results
     """
 
     with h5py.File(filename, "r") as f:
-
         # nodes, world
         nodes = []
         world = None
-        for node_name in f["nodes"]:
-            node_group = f["nodes"][node_name]
-            if node_group["node_id"][()] == -1:
-                world = NodeNormal(
-                    node_group["node_id"][()],
-                    node_group["log_probs"][()],
-                    {
-                        key: node_group[f"params_node/{key}"][()]
-                        for key in node_group["params_node"]
-                    },
-                    node_group["diary_in"][()],
-                    node_group["diary_out"][()],
-                )
-            else:
-                nodes.append(
-                    NodeNormal(
+        if "nodesGrid" in f:
+            n = "nodesGrid"
+            for node_name in f[n]:
+                node_group = f[n][node_name]
+                if node_group["node_id"][()] == -1:
+                    world = NodeGrid(
+                        node_group["node_id"][()],
+                        node_group["log_probs"][()],
+                        node_group["diary_in"][()],
+                        node_group["diary_out"][()],
+                    )
+                else:
+                    nodes.append(
+                        NodeGrid(
+                            node_group["node_id"][()],
+                            node_group["log_probs"][()],
+                            node_group["diary_in"][()],
+                            node_group["diary_out"][()],
+                        )
+                    )
+        elif "nodesNormal" in f:
+            n = "nodesNormal"
+            for node_name in f[n]:
+                node_group = f[n][node_name]
+                if node_group["node_id"][()] == -1:
+                    world = NodeNormal(
                         node_group["node_id"][()],
                         node_group["log_probs"][()],
                         {
@@ -113,31 +116,77 @@ def import_hdf5_Grid(filename):
                         node_group["diary_in"][()],
                         node_group["diary_out"][()],
                     )
-                )
+                else:
+                    nodes.append(
+                        NodeNormal(
+                            node_group["node_id"][()],
+                            node_group["log_probs"][()],
+                            {
+                                key: node_group[f"params_node/{key}"][()]
+                                for key in node_group["params_node"]
+                            },
+                            node_group["diary_in"][()],
+                            node_group["diary_out"][()],
+                        )
+                    )
+        elif "nodesConj" in f:
+            n = "nodesConj"
+            for node_name in f[n]:
+                node_group = f[n][node_name]
+                if node_group["node_id"][()] == -1:
+                    world = NodeConjMu(
+                        node_group["node_id"][()],
+                        {
+                            key: node_group[f"params_node/{key}"][()]
+                            for key in node_group["params_node"]
+                        },
+                        node_group["sd_llf"][()],
+                        node_group["diary_in"][()],
+                        node_group["diary_out"][()],
+                    )
+                else:
+                    nodes.append(
+                        NodeConjMu(
+                            node_group["node_id"][()],
+                            {
+                                key: node_group[f"params_node/{key}"][()]
+                                for key in node_group["params_node"]
+                            },
+                            node_group["sd_llf"][()],
+                            node_group["diary_in"][()],
+                            node_group["diary_out"][()],
+                        )
+                    )
+        else:
+            print("No known node class referenced")
 
         # Rest of it, see key strings...
-        G = nx.from_numpy_array(f["G_dict"][()])
-        beliefs = f["beliefs"][()]
-        N_events = f["N_events"][()]
-        t_end = f["t_end"][()]
-        mu_nodes = f["mu_nodes"][()]
-        kl_divs = f["kl_divs"][()]
-        p_distances = f["p_distances"][()]
-        t_start = f["t_start"][()]
-        t_exec = f["t_exec"][()]
-        seed = f["seed"][()]
+        dict_out = dict(
+            # nodes added below these
+            world=world,
+            G=nx.from_numpy_array(f["G"][()]),
+            N_events=f["N_events"][()],
+            t_end=f["t_end"][()],
+            t_start=f["t_start"][()],
+            t_exec=f["t_exec"][()],
+            seed=f["seed"][()],
+        )
+        if "nodesGrid" in f:
+            dict_out["nodesGrid"] = nodes
+            dict_out["mu_arr"] = f["mu_arr"][()]
+            dict_out["sd_arr"] = f["sd_arr"][()]
+        elif "nodesNormal" in f:
+            dict_out["nodesNormal"] = nodes
+            dict_out["beliefs"] = f["beliefs"][()]
+        elif "nodesConj" in f:
+            dict_out["nodesConj"] = nodes
+        else:
+            print(
+                "As no nodes were given, the returned dictionary has no nodes as well."
+            )
 
-    return {
-        "nodes": nodes,
-        "G": G,
-        "beliefs": beliefs,
-        "world": world,
-        "N_events": N_events,
-        "t_end": t_end,
-        "mu_nodes": mu_nodes,
-        "kl_divs": kl_divs,
-        "p_distances": p_distances,
-        "t_start": t_start,
-        "t_exec": t_exec,
-        "seed": seed,
-    }
+        #        mu_nodes = f["mu_nodes"][()]
+        #        kl_divs = f["kl_divs"][()]
+        #        p_distances = f["p_distances"][()]
+
+        return dict_out

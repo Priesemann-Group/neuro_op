@@ -118,13 +118,13 @@ def run_model_Grid(
         "nodesGrid": nodesGrid,
         "world": world,
         "G": G,
-        "mu_arr": mu_arr,
-        "sd_arr": sd_arr,
         "N_events": N_events,
         "t_end": t,
         "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
         "t_exec": time.time() - starttime,
         "seed": RANDOM_SEED,
+        "mu_arr": mu_arr,
+        "sd_arr": sd_arr,
     }
 
     return dict_out
@@ -317,15 +317,15 @@ def run_model_singleGrid(
         "nodesNormal": nodesNormal,
         "world": world,
         "G": G,
-        "beliefs": beliefs,
         "N_events": N_events,
         "t_end": t,
-        "mu_nodes": mu_nodes,
-        "kl_divs": kl_divs,
-        "p_distances": p_distances,
         "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
         "t_exec": time.time() - starttime,
         "seed": RANDOM_SEED,
+        "beliefs": beliefs,
+        "mu_nodes": mu_nodes,
+        "kl_divs": kl_divs,
+        "p_distances": p_distances,
     }
 
     return dict_out
@@ -412,6 +412,8 @@ def run_model_Param(
         '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
     """
 
+    starttime = time.time()
+
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
     r = r * len(G)
@@ -447,7 +449,7 @@ def run_model_Param(
         # Show progress
         if progress and t >= counter:
             counter += 1
-            print("Currently\t t = ", t, " ,\t t/t_max = "(t / t_max))
+            print("Currently\t t = ", t, " ,\t t/t_max = ", (t / t_max))
 
         # Sample MLEs, distance measures with periodicity t_sample
         if sampling and int(t / t_sample) >= sample_counter:
@@ -490,6 +492,8 @@ def run_model_Param(
             "G": G,
             "N_events": N_events,
             "t_end": t,
+            "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
+            "t_exec": time.time() - starttime,
             "seed": RANDOM_SEED,
         }
         if sampling:
