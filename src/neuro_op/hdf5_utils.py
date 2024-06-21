@@ -34,12 +34,11 @@ def export_hdf5_Grid(output, filename):
             "nodesNormal",
             "nodesConj",
         ] and n in output:
-            #### HERE WE ARE ... #################################
             nodes = f.create_group(n)
-            for node in nodelist:
+            for node in output[n]: # TODO!!! Add world node
                 node_group = nodes.create_group("node_" + str(node.node_id))
                 node_group.create_dataset("node_id", data=node.node_id)
-                if n in ["nodesGrid, nodesNormal"]:
+                if n in ["nodesGrid", "nodesNormal"]:
                     node_group.create_dataset("log_probs", data=node.log_probs)
                 if n in ["nodesNormal", "nodesConj"]:
                     for key, value in node.params_node.items():
