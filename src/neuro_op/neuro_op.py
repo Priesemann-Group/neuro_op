@@ -52,40 +52,8 @@ def run_model_Grid(
         End time of simulation
     progress : bool
         Whether or not to print sampling times
-
-
-    Returns:
-    Dictioniary containing the following keys and according data after end of simulation:
-    nodes : list (Nodes)
-        All nodes of the network.
-    G : networkx graph object
-
-    beliefs : np.array (floats)
-        Array of possible parameter values into which a Node may hold beliefs in.
-    world : Node
-        Object representing the world.
-    N_events : int
-        Number of events executed during simulation.
-    t_end : float
-        End time of simulation.
-    mu_nodes : list
-        MAP estimates of each node's mu, sampled during run.
-        Shape: (#samples, #nodes)
-    kl_divs : list
-        KL-divergences between each node's PPD and the world's PPD, sampled during run.
-        Shape: (#samples, #nodes, 2)
-        '2' refers to world_out ([0]) and world_true ([1]) as reference distribution, respectively.
-    p_distances : list
-        p-distances between each node's MLE and the world's MLE, sampled during run.
-        Shape: (#samples, #(p_distance parameter tuples), 2)
-        '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
-    t_start : str
-        Start time and date of simulation.
-    t_exec : float
-        Simulation duration in seconds.
-    seed : int
-        Random seed used for simulation.
     """
+
     starttime = time.time()
     assert (len(mu_arr), len(sd_arr)) == log_priors.shape
 
@@ -93,38 +61,39 @@ def run_model_Grid(
     h = h * len(G)
     r = r * len(G)
 
-    nodes = [
+    nodesGrid = [
         NodeGrid(
             node_id=i,
             log_priors=log_priors,
         )
         for i in G.nodes()
     ]
+    world = NodeGrid(
+        node_id=-1,
+        log_priors=llf_world.logpdf(**params_world, x=mu_arr),
+    )
 
     # Run simulation...
     N_events = 0
     t = t0
-    counter = int(t0 / 1)
-    mu_nodes = []
-    kl_divs = []
-    p_distances = []
+    counter = int(t / 1)
 
     while t < t_max:
-        # Sample system PPDs, distance measures (KL-div, p-distance) with periodicity t_sample
+        # Show progress
         if progress and t >= counter:
             counter += 1
-            print("Currently at\t t = ", (t / t_max), "\t of runtime.")
+            print("Currently\t t = ", t, " ,\t t/t_max = "(t / t_max))
 
         # Information exchange event...
         N_events += 1
         if rng.uniform() < h / (h + r):
             # external information draw event
-            node = rng0.choice(nodes)
+            node = rng0.choice(nodesGrid)
             node.set_updated_belief(
                 llf_nodes,
                 mu_arr,
                 sd_arr,
-                info_in=st.norm.rvs(**params_world),
+                info_in=world.get_belief_sample(mu_arr, list(params_world["scale"]), t),
                 id_in=-1,
                 t_sys=t,
             )
@@ -132,12 +101,12 @@ def run_model_Grid(
         else:
             # edge event
             chatters = rng0.choice(list(G.edges()))
-            sample0 = nodes[chatters[0]].get_belief_sample(mu_arr, sd_arr, t)
-            sample1 = nodes[chatters[1]].get_belief_sample(mu_arr, sd_arr, t)
-            nodes[chatters[0]].set_updated_belief(
+            sample0 = nodesGrid[chatters[0]].get_belief_sample(mu_arr, sd_arr, t)
+            sample1 = nodesGrid[chatters[1]].get_belief_sample(mu_arr, sd_arr, t)
+            nodesGrid[chatters[0]].set_updated_belief(
                 llf_nodes, mu_arr, sd_arr, sample1, chatters[1], t
             )
-            nodes[chatters[1]].set_updated_belief(
+            nodesGrid[chatters[1]].set_updated_belief(
                 llf_nodes, mu_arr, sd_arr, sample0, chatters[0], t
             )
 
@@ -145,18 +114,20 @@ def run_model_Grid(
 
     # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
 
-    return {
-        "nodes": nodes,
+    dict_out = {
+        "nodesGrid": nodesGrid,
+        "world": world,
         "G": G,
         "mu_arr": mu_arr,
         "sd_arr": sd_arr,
-        "world": params_world,
         "N_events": N_events,
         "t_end": t,
         "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
         "t_exec": time.time() - starttime,
         "seed": RANDOM_SEED,
     }
+
+    return dict_out
 
 
 def run_model_singleGrid(
@@ -257,7 +228,7 @@ def run_model_singleGrid(
     h = h * len(G)
     r = r * len(G)
 
-    nodes = [
+    nodesNormal = [
         NodeNormal(
             node_id=i,
             log_priors=log_priors,
@@ -275,7 +246,7 @@ def run_model_singleGrid(
         llf_nodes=llf_nodes,
         llf_world=llf_world,
         beliefs=beliefs,
-        nodes=nodes,
+        nodes=nodesNormal,
         world=world,
         sample_bins=sample_bins,
         sample_range=sample_range,
@@ -305,7 +276,7 @@ def run_model_singleGrid(
         N_events += 1
         if rng.uniform() < h / (h + r):
             # external information draw event
-            node = rng0.choice(nodes)
+            node = rng0.choice(nodesNormal)
             node.set_updated_belief(
                 llf_nodes,
                 beliefs=beliefs,
@@ -317,12 +288,16 @@ def run_model_singleGrid(
         else:
             # edge event
             chatters = rng0.choice(list(G.edges()))
-            sample0 = nodes[chatters[0]].get_belief_sample(beliefs=beliefs, t_sys=t)
-            sample1 = nodes[chatters[1]].get_belief_sample(beliefs=beliefs, t_sys=t)
-            nodes[chatters[0]].set_updated_belief(
+            sample0 = nodesNormal[chatters[0]].get_belief_sample(
+                beliefs=beliefs, t_sys=t
+            )
+            sample1 = nodesNormal[chatters[1]].get_belief_sample(
+                beliefs=beliefs, t_sys=t
+            )
+            nodesNormal[chatters[0]].set_updated_belief(
                 llf_nodes, beliefs, sample1, chatters[1], t
             )
-            nodes[chatters[1]].set_updated_belief(
+            nodesNormal[chatters[1]].set_updated_belief(
                 llf_nodes, beliefs, sample0, chatters[0], t
             )
 
@@ -338,11 +313,11 @@ def run_model_singleGrid(
         kl_divs.append(sample_kl_div)
         p_distances.append(sample_p_distances)
 
-    return {
-        "nodes": nodes,
+    dict_out = {
+        "nodesNormal": nodesNormal,
+        "world": world,
         "G": G,
         "beliefs": beliefs,
-        "world": world,
         "N_events": N_events,
         "t_end": t,
         "mu_nodes": mu_nodes,
@@ -352,6 +327,8 @@ def run_model_singleGrid(
         "t_exec": time.time() - starttime,
         "seed": RANDOM_SEED,
     }
+
+    return dict_out
 
 
 def run_model_Param(
@@ -370,6 +347,7 @@ def run_model_Param(
     sample_range,
     p_distance_params,
     progress,
+    sampling,
 ):
     """
     Execute program.
@@ -439,20 +417,23 @@ def run_model_Param(
     r = r * len(G)
 
     # Set up simulation environment (nodes, world, sampling function/inputs)
-    nodes = [
+    nodesConj = [
         NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf) for i in G.nodes()
     ]
     world = NodeConjMu(node_id=-1, params_node=params_world)
-    ppd_func = ppd_distances_Laplace
-    ppd_in = dict(
-        llf_nodes=llf_nodes,
-        llf_world=llf_world,
-        nodes=nodes,
-        world=world,
-        sample_bins=sample_bins,
-        sample_range=sample_range,
-        p_distance_params=p_distance_params,
-    )
+
+    # Sampling setup
+    if sampling:
+        ppd_func = ppd_distances_Laplace
+        ppd_in = dict(
+            llf_nodes=llf_nodes,
+            llf_world=llf_world,
+            nodes=nodesConj,
+            world=world,
+            sample_bins=sample_bins,
+            sample_range=sample_range,
+            p_distance_params=p_distance_params,
+        )
 
     # Run simulation...
     N_events = 0
@@ -463,10 +444,13 @@ def run_model_Param(
     p_distances = []
 
     while t < t_max:
+        # Show progress
+        if progress and t >= counter:
+            counter += 1
+            print("Currently\t t = ", t, " ,\t t/t_max = "(t / t_max))
+
         # Sample MLEs, distance measures with periodicity t_sample
-        if int(t / t_sample) >= sample_counter:
-            if progress:
-                print("Sampling at t=", t, "\t, aka", (t / t_max), "\t of runtime.")
+        if sampling and int(t / t_sample) >= sample_counter:
             sample_counter += 1
             sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
             mu_nodes.append(sample_mu_nodes)
@@ -476,7 +460,7 @@ def run_model_Param(
         N_events += 1
         if rng.uniform() < h / (h + r):
             # external information draw event
-            node = rng0.choice(nodes)
+            node = rng0.choice(nodesConj)
             node.set_updated_belief(
                 info_in=world.get_belief_sample(llf_world, t),
                 id_in=world.node_id,
@@ -485,31 +469,32 @@ def run_model_Param(
         else:
             # edge event
             chatters = rng0.choice(list(G.edges()))
-            sample0 = nodes[chatters[0]].get_belief_sample(llf_nodes, t)
-            sample1 = nodes[chatters[1]].get_belief_sample(llf_nodes, t)
-            nodes[chatters[0]].set_updated_belief(sample1, chatters[1], t)
-            nodes[chatters[1]].set_updated_belief(sample0, chatters[0], t)
+            sample0 = nodesConj[chatters[0]].get_belief_sample(llf_nodes, t)
+            sample1 = nodesConj[chatters[1]].get_belief_sample(llf_nodes, t)
+            nodesConj[chatters[0]].set_updated_belief(sample1, chatters[1], t)
+            nodesConj[chatters[1]].set_updated_belief(sample0, chatters[0], t)
 
         t += st.expon.rvs(scale=1 / (h + r))
 
         # Sample post-run state
-        if int(t / t_sample) >= sample_counter:
-            if progress:
-                print("Sampling at t=", t)
+        if sampling and int(t / t_sample) >= sample_counter:
             sample_counter += 1
             sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
             mu_nodes.append(sample_mu_nodes)
             kl_divs.append(sample_kl_div)
             p_distances.append(sample_p_distances)
 
-    return {
-        "nodes": nodes,
-        "G": G,
-        "world": world,
-        "N_events": N_events,
-        "t_end": t,
-        "mu_nodes": mu_nodes,
-        "kl_divs": kl_divs,
-        "p_distances": p_distances,
-        "seed": RANDOM_SEED,
-    }
+        dict_out = {
+            "nodesConj": nodesConj,
+            "world": world,
+            "G": G,
+            "N_events": N_events,
+            "t_end": t,
+            "seed": RANDOM_SEED,
+        }
+        if sampling:
+            dict_out["mu_nodes"] = mu_nodes
+            dict_out["kl_divs"] = kl_divs
+            dict_out["p_distances"] = p_distances
+
+    return dict_out

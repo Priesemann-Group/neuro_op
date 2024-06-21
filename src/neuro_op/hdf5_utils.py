@@ -29,18 +29,28 @@ def export_hdf5_Grid(output, filename):
 
     with h5py.File(filename, "w") as f:
         # nodes, world
-        nodes = f.create_group("nodes")
-        for node in output["nodes"] + [output["world"]]:
-            node_group = nodes.create_group("node_" + str(node.node_id))
-            node_group.create_dataset("node_id", data=node.node_id)
-            node_group.create_dataset("log_probs", data=node.log_probs)
-            for key, value in node.params_node.items():
-                node_group.create_dataset(f"params_node/{key}", data=value)
-            node_group.create_dataset("diary_in", data=np.array(node.diary_in))
-            node_group.create_dataset("diary_out", data=np.array(node.diary_out))
+        for n in [
+            "nodesGrid",
+            "nodesNormal",
+            "nodesConj",
+        ] and n in output:
+            #### HERE WE ARE ... #################################
+            nodes = f.create_group(n)
+            for node in nodelist:
+                node_group = nodes.create_group("node_" + str(node.node_id))
+                node_group.create_dataset("node_id", data=node.node_id)
+                if n in ["nodesGrid, nodesNormal"]:
+                    node_group.create_dataset("log_probs", data=node.log_probs)
+                if n in ["nodesNormal", "nodesConj"]:
+                    for key, value in node.params_node.items():
+                        node_group.create_dataset(f"params_node/{key}", data=value)
+                if n in ["nodesConj"]:
+                    node_group.create_dataset("sd_llf", data=node.sd_llf)
+                node_group.create_dataset("diary_in", data=np.array(node.diary_in))
+                node_group.create_dataset("diary_out", data=np.array(node.diary_out))
 
         # rest of it, see key strings...
-        f.create_dataset("G_dict", data=nx.to_numpy_array(output["G"]))
+        f.create_dataset("G", data=nx.to_numpy_array(output["G"]))
         f.create_dataset("beliefs", data=output["beliefs"])
         f.create_dataset("N_events", data=output["N_events"])
         f.create_dataset("t_end", data=output["t_end"])
