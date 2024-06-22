@@ -407,20 +407,20 @@ def run_model_Param(
         # Sample MLEs, distance measures with periodicity t_sample
         if sampling and int(t / t_sample) >= sample_counter:
             sample_counter += 1
-            mu_nodes.append(node.params_node["loc"] for node in nodesConj)
+            mu_nodes.append([node.params_node["loc"] for node in nodesConj])
             kl_divs.append(
                 [
                     kl_divergence(
-                        dist_binning(
+                        P=dist_binning(
                             llf_nodes,
                             node.params_node,
-                            N_bins=sample_bins,
-                            range=sample_range,
+                            sample_bins,
+                            sample_range,
                         ),
-                        world_binned,
+                        Q=world_binned,
                     )
+                    for node in nodesConj
                 ]
-                for node in nodesConj
             )
 
         N_events += 1
@@ -445,20 +445,20 @@ def run_model_Param(
         # Sample post-run state
         if sampling and int(t / t_sample) >= sample_counter:
             sample_counter += 1
-            mu_nodes.append(node.params_node["loc"] for node in nodesConj)
+            mu_nodes.append([node.params_node["loc"] for node in nodesConj])
             kl_divs.append(
                 [
                     kl_divergence(
-                        dist_binning(
+                        P=dist_binning(
                             llf_nodes,
                             node.params_node,
-                            N_bins=sample_bins,
-                            range=sample_range,
+                            sample_bins,
+                            sample_range,
                         ),
-                        world_binned,
+                        Q=world_binned,
                     )
+                    for node in nodesConj
                 ]
-                for node in nodesConj
             )
 
         dict_out = {
