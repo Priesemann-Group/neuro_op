@@ -40,7 +40,7 @@ def model_run(input0, name=""):
     Serially run multiple model parameter sets, safe output to hdf5 file, garbage collect memory.
     """
 
-    input = copy.deepcpy(input0)
+    input = copy.deepcopy(input0)
     print("Current run:\t", name)
     output = dict(nop.run_model_Param(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
