@@ -82,7 +82,7 @@ def run_model_Grid(
         # Show progress
         if progress and t >= counter:
             counter += 1
-            print("Currently\t t = ", t, " ,\t t/t_max = "(t / t_max))
+            print("Currently\t t = ", t, " ,\t t/t_max = ",(t / t_max))
 
         # Information exchange event...
         N_events += 1
