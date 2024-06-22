@@ -56,9 +56,9 @@ for sd in [10, 0.5, 1.0, 1.5, 2.0]:
     input0["params_node"]["scale"] = sd
     for mu in np.arange(0.0, 2.51, 0.5):
         input0["params_node"]["loc"] = mu
-    for r_by_h in np.arange(0.0, 5.01, 0.25):
-        input0["r"] = r_by_h
-        name = str(
-            "--mu-" + str(mu) + "--sd-" + str(sd) + "--r-" + str(round(r_by_h, 2))
-        )
-        model_run(input0, name)
+        for r_by_h in np.arange(0.0, 5.01, 0.25):
+            input0["r"] = r_by_h
+            name = str(
+                "--mu-" + str(mu) + "--sd-" + str(sd) + "--r-" + str(round(r_by_h, 2))
+            )
+            model_run(input0, name)

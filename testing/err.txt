@@ -1,7 +1,4 @@
-nohup: appending output to 'nohup.out'
-/home/jfriedel/Documents/Repos/neuro_op/src/neuro_op/neuro_op.py:295: RuntimeWarning: invalid value encountered in divide
-  Q = Q / np.sum(Q)
-/home/jfriedel/Documents/Repos/neuro_op/src/neuro_op/neuro_op.py:300: RuntimeWarning: divide by zero encountered in log
+/data.nst/jfriedel/projects/neuro_op/src/neuro_op/utils.py:129: RuntimeWarning: divide by zero encountered in log
   terms = P * np.log(P / Q)
-/home/jfriedel/Documents/Repos/neuro_op/src/neuro_op/neuro_op.py:300: RuntimeWarning: invalid value encountered in multiply
+/data.nst/jfriedel/projects/neuro_op/src/neuro_op/utils.py:129: RuntimeWarning: invalid value encountered in multiply
   terms = P * np.log(P / Q)
