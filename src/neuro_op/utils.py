@@ -133,6 +133,28 @@ def kl_divergence(P, Q):
     return np.sum(terms)
 
 
+def postrun_Mu_ConjMu(
+    mu_prior,
+    sd_prior,
+    sd_llf,
+    diary_in,
+    t_max=1e7,
+):
+    """Calculate posterior param.s of a NodeConjMu with some diary_in as input."""
+    x_in = np.array(diary_in)[:,0]
+    t_in = np.array(diary_in)[:,2]
+    mu_post = np.zeros_like(x_in)
+    sd_post = np.zeros_like(x_in)
+    mu_post[-1], sd_post[-1] = mu_prior, sd_prior
+    for i, _ in enumerate(mu_post):
+        mu_post[i] = (x_in[i] * sd_post[i - 1] ** 2 + mu_post[i - 1] * sd_llf**2) / (
+            sd_post[i - 1] ** 2 + sd_llf**2
+        )
+        sd_post[i] = (1 / sd_post[i - 1] ** 2 + 1 / sd_llf**2) ** (-0.5)
+    
+    return x_in, t_in, mu_post, sd_post
+
+
 def get_p_distances(param_node, param_ref, p=1, p_inv=1):
     """
     Returns an average distance between an array of nodes' inferred parameters and a reference parameter.
