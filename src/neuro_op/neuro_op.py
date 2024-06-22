@@ -345,8 +345,6 @@ def run_model_Param(
     t_sample,
     sample_bins,
     sample_range,
-    p_distance_params,
-    progress,
     sampling,
 ):
     """
@@ -383,81 +381,47 @@ def run_model_Param(
         List of tuples, each containing two floats, defining the p-distance parameters
     progress : bool
         Whether or not to print sampling times
-
-
-    Returns:
-    Dictioniary containing the following keys and according data after end of simulation:
-    nodes : list (Nodes)
-        All nodes of the network.
-    G : networkx graph object
-
-    beliefs : np.array (floats)
-        Array of possible parameter values into which a Node may hold beliefs in.
-    world : Node
-        Object representing the world.
-    N_events : int
-        Number of events executed during simulation.
-    t_end : float
-        End time of simulation.
-    mu_nodes : list
-        MAP estimates of each node's mu, sampled during run.
-        Shape: (#samples, #nodes)
-    kl_divs : list
-        KL-divergences between each node's PPD and the world's PPD, sampled during run.
-        Shape: (#samples, #nodes, 2)
-        '2' refers to world_out ([0]) and world_true ([1]) as reference distribution, respectively.
-    p_distances : list
-        p-distances between each node's MLE and the world's MLE, sampled during run.
-        Shape: (#samples, #(p_distance parameter tuples), 2)
-        '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
     """
 
     starttime = time.time()
-
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
     r = r * len(G)
-
     # Set up simulation environment (nodes, world, sampling function/inputs)
     nodesConj = [
         NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf) for i in G.nodes()
     ]
     world = NodeConjMu(node_id=-1, params_node=params_world)
-
-    # Sampling setup
     if sampling:
-        ppd_func = ppd_distances_Laplace
-        ppd_in = dict(
-            llf_nodes=llf_nodes,
-            llf_world=llf_world,
-            nodes=nodesConj,
-            world=world,
-            sample_bins=sample_bins,
-            sample_range=sample_range,
-            p_distance_params=p_distance_params,
+        world_binned = dist_binning(
+            llf_world, params_world, N_bins=sample_bins, range=sample_range
         )
-
-    # Run simulation...
     N_events = 0
     t = t0
     sample_counter = int(t0 / t_sample)
     mu_nodes = []
     kl_divs = []
-    p_distances = []
 
+    # Run simulation...
     while t < t_max:
-        # Show progress
-        if progress and t >= counter:
-            counter += 1
-            print("Currently\t t = ", t, " ,\t t/t_max = ", (t / t_max))
-
         # Sample MLEs, distance measures with periodicity t_sample
         if sampling and int(t / t_sample) >= sample_counter:
             sample_counter += 1
-            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
-            mu_nodes.append(sample_mu_nodes)
-            kl_divs.append(sample_kl_div)
-            p_distances.append(sample_p_distances)
+            mu_nodes.append(node.params_node["loc"] for node in nodesConj)
+            kl_divs.append(
+                [
+                    kl_divergence(
+                        dist_binning(
+                            llf_nodes,
+                            node.params_node,
+                            N_bins=sample_bins,
+                            range=sample_range,
+                        ),
+                        world_binned,
+                    )
+                ]
+                for node in nodesConj
+            )
 
         N_events += 1
         if rng.uniform() < h / (h + r):
@@ -481,10 +445,21 @@ def run_model_Param(
         # Sample post-run state
         if sampling and int(t / t_sample) >= sample_counter:
             sample_counter += 1
-            sample_mu_nodes, sample_kl_div, sample_p_distances = ppd_func(**ppd_in)
-            mu_nodes.append(sample_mu_nodes)
-            kl_divs.append(sample_kl_div)
-            p_distances.append(sample_p_distances)
+            mu_nodes.append(node.params_node["loc"] for node in nodesConj)
+            kl_divs.append(
+                [
+                    kl_divergence(
+                        dist_binning(
+                            llf_nodes,
+                            node.params_node,
+                            N_bins=sample_bins,
+                            range=sample_range,
+                        ),
+                        world_binned,
+                    )
+                ]
+                for node in nodesConj
+            )
 
         dict_out = {
             "nodesConj": nodesConj,
@@ -499,6 +474,5 @@ def run_model_Param(
         if sampling:
             dict_out["mu_nodes"] = mu_nodes
             dict_out["kl_divs"] = kl_divs
-            dict_out["p_distances"] = p_distances
 
     return dict_out

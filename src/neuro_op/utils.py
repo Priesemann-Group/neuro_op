@@ -1,6 +1,7 @@
 # Useful functions for neuro_op dynamics implementation
 import networkx as nx
 import numpy as np
+import scipy.stats as st
 
 
 def build_random_network(N_nodes, N_neighbours):
@@ -133,28 +134,6 @@ def kl_divergence(P, Q):
     return np.sum(terms)
 
 
-def postrun_Mu_ConjMu(
-    mu_prior,
-    sd_prior,
-    sd_llf,
-    diary_in,
-    t_max=1e7,
-):
-    """Calculate posterior param.s of a NodeConjMu with some diary_in as input."""
-    x_in = np.array(diary_in)[:,0]
-    t_in = np.array(diary_in)[:,2]
-    mu_post = np.zeros_like(x_in)
-    sd_post = np.zeros_like(x_in)
-    mu_post[-1], sd_post[-1] = mu_prior, sd_prior
-    for i, _ in enumerate(mu_post):
-        mu_post[i] = (x_in[i] * sd_post[i - 1] ** 2 + mu_post[i - 1] * sd_llf**2) / (
-            sd_post[i - 1] ** 2 + sd_llf**2
-        )
-        sd_post[i] = (1 / sd_post[i - 1] ** 2 + 1 / sd_llf**2) ** (-0.5)
-    
-    return x_in, t_in, mu_post, sd_post
-
-
 def get_p_distances(param_node, param_ref, p=1, p_inv=1):
     """
     Returns an average distance between an array of nodes' inferred parameters and a reference parameter.
@@ -181,3 +160,36 @@ def get_p_distances(param_node, param_ref, p=1, p_inv=1):
     """
 
     return np.sum(np.abs(param_node - param_ref) ** p) ** p_inv
+
+
+def postrun_Mu_ConjMu(
+    mu_prior,
+    sd_prior,
+    sd_llf,
+    diary_in,
+):
+    """Calculate posterior param.s of a NodeConjMu with some diary_in as input."""
+    x_in = np.array(diary_in)[:, 0]
+    t_in = np.array(diary_in)[:, 2]
+    mu_post = np.zeros_like(x_in)
+    sd_post = np.zeros_like(x_in)
+    mu_post[-1], sd_post[-1] = mu_prior, sd_prior
+    for i, _ in enumerate(mu_post):
+        mu_post[i] = (x_in[i] * sd_post[i - 1] ** 2 + mu_post[i - 1] * sd_llf**2) / (
+            sd_post[i - 1] ** 2 + sd_llf**2
+        )
+        sd_post[i] = (1 / sd_post[i - 1] ** 2 + 1 / sd_llf**2) ** (-0.5)
+
+    return x_in, t_in, mu_post, sd_post
+
+
+def postrun_kld_ConjMu(mu_est, sd_est, mu_real=0, sd_real=1, N_bins=201, range=(-5, 5)):
+    """Calculate Kullback-Leibler divergences between normal distributions of estimated and real parameter values."""
+    Q = dist_binning(st.norm, {"loc": mu_real, "scale": sd_real}, N_bins, range)
+    kl_divs = [
+        kl_divergence(
+            P=dist_binning(st.norm, {"loc": mu, "scale": sd}, N_bins, range), Q=Q
+        )
+        for mu, sd in zip(mu_est, sd_est)
+    ]
+    return kl_divs

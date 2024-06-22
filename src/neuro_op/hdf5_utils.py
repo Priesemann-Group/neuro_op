@@ -58,11 +58,10 @@ def export_hdf5(output, filename):
             f.create_dataset("beliefs", data=output["beliefs"])
         # if "nodesConj" in output: no further data to export :)
 
-
-#        f.create_dataset("mu_nodes", data=np.array(output["mu_nodes"]))
-#        f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
-#        f.create_dataset("p_distances", data=np.array(output["p_distances"]))
-# f.create_dataset("beliefs", data=output["beliefs"])
+        if "mu_nodes" in output:
+            f.create_dataset("mu_nodes", data=np.array(output["mu_nodes"]))
+        if "kl_divs" in output:
+            f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
 
 
 def import_hdf5_Grid(filename):
@@ -185,8 +184,9 @@ def import_hdf5_Grid(filename):
                 "As no nodes were given, the returned dictionary has no nodes as well."
             )
 
-        #        mu_nodes = f["mu_nodes"][()]
-        #        kl_divs = f["kl_divs"][()]
-        #        p_distances = f["p_distances"][()]
+        if "mu_nodes" in f:
+            dict_out["mu_nodes"] = f["mu_nodes"][()]
+        if "kl_divs" in f:
+            dict_out["kl_divs"] = f["kl_divs"][()]
 
         return dict_out
