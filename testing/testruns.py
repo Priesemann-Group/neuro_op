@@ -2,12 +2,13 @@ import copy  # deep-copying of input dictionary (which includes mutable objects)
 import gc  # explicit garbace collection calling after each run
 import pickle  # saving input dictionary to file
 import neuro_op as nop  # project's main module
+import networkx as nx  # graph library
 import numpy as np
 import scipy.stats as st
 
 
 input_ref = dict(
-    G=nop.build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
+    G=nx.empty_graph(1).to_directed(),
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of world, Gaussian by default
     params_node=dict(  # Parameter priors of nodes (mu and associated uncertainty (standard deviation)), Gaussian by default
@@ -56,9 +57,9 @@ for sd in [10, 0.5, 1.0, 1.5, 2.0]:
     input0["params_node"]["scale"] = sd
     for mu in np.arange(0.0, 2.51, 0.5):
         input0["params_node"]["loc"] = mu
-        for r_by_h in np.arange(0.0, 5.01, 0.25):
+        for r_by_h in [0]:
             input0["r"] = r_by_h
             name = str(
-                "--mu-" + str(mu) + "--sd-" + str(sd) + "--r-" + str(round(r_by_h, 2))
+                "--N-1--mu-" + str(mu) + "--sd-" + str(sd) + "--r-" + str(round(r_by_h, 2))
             )
             model_run(input0, name)
