@@ -1,0 +1,2520 @@
+Current run:	 --mu-0.0--sd-10--r-0.0
+
+	 t_exec =  1.2320349216461182 s
+
+Current run:	 --mu-0.0--sd-10--r-0.25
+
+	 t_exec =  1.3467862606048584 s
+
+Current run:	 --mu-0.0--sd-10--r-0.5
+
+	 t_exec =  1.445375680923462 s
+
+Current run:	 --mu-0.0--sd-10--r-0.75
+
+	 t_exec =  1.5458216667175293 s
+
+Current run:	 --mu-0.0--sd-10--r-1.0
+
+	 t_exec =  1.619788646697998 s
+
+Current run:	 --mu-0.0--sd-10--r-1.25
+
+	 t_exec =  1.7088353633880615 s
+
+Current run:	 --mu-0.0--sd-10--r-1.5
+
+	 t_exec =  1.828028678894043 s
+
+Current run:	 --mu-0.0--sd-10--r-1.75
+
+	 t_exec =  1.884667158126831 s
+
+Current run:	 --mu-0.0--sd-10--r-2.0
+
+	 t_exec =  1.9763379096984863 s
+
+Current run:	 --mu-0.0--sd-10--r-2.25
+
+	 t_exec =  2.0437302589416504 s
+
+Current run:	 --mu-0.0--sd-10--r-2.5
+
+	 t_exec =  2.1234586238861084 s
+
+Current run:	 --mu-0.0--sd-10--r-2.75
+
+	 t_exec =  2.223883867263794 s
+
+Current run:	 --mu-0.0--sd-10--r-3.0
+
+	 t_exec =  2.274594783782959 s
+
+Current run:	 --mu-0.0--sd-10--r-3.25
+
+	 t_exec =  2.3746256828308105 s
+
+Current run:	 --mu-0.0--sd-10--r-3.5
+
+	 t_exec =  2.4590513706207275 s
+
+Current run:	 --mu-0.0--sd-10--r-3.75
+
+	 t_exec =  2.5411975383758545 s
+
+Current run:	 --mu-0.0--sd-10--r-4.0
+
+	 t_exec =  2.593587875366211 s
+
+Current run:	 --mu-0.0--sd-10--r-4.25
+
+	 t_exec =  2.741032838821411 s
+
+Current run:	 --mu-0.0--sd-10--r-4.5
+
+	 t_exec =  2.823076009750366 s
+
+Current run:	 --mu-0.0--sd-10--r-4.75
+
+	 t_exec =  2.884617805480957 s
+
+Current run:	 --mu-0.0--sd-10--r-5.0
+
+	 t_exec =  2.9534292221069336 s
+
+Current run:	 --mu-0.5--sd-10--r-0.0
+
+	 t_exec =  1.2275302410125732 s
+
+Current run:	 --mu-0.5--sd-10--r-0.25
+
+	 t_exec =  1.3318562507629395 s
+
+Current run:	 --mu-0.5--sd-10--r-0.5
+
+	 t_exec =  1.4477641582489014 s
+
+Current run:	 --mu-0.5--sd-10--r-0.75
+
+	 t_exec =  1.5526721477508545 s
+
+Current run:	 --mu-0.5--sd-10--r-1.0
+
+	 t_exec =  1.6122534275054932 s
+
+Current run:	 --mu-0.5--sd-10--r-1.25
+
+	 t_exec =  1.7144315242767334 s
+
+Current run:	 --mu-0.5--sd-10--r-1.5
+
+	 t_exec =  1.7848589420318604 s
+
+Current run:	 --mu-0.5--sd-10--r-1.75
+
+	 t_exec =  1.8780269622802734 s
+
+Current run:	 --mu-0.5--sd-10--r-2.0
+
+	 t_exec =  1.9665982723236084 s
+
+Current run:	 --mu-0.5--sd-10--r-2.25
+
+	 t_exec =  2.0594334602355957 s
+
+Current run:	 --mu-0.5--sd-10--r-2.5
+
+	 t_exec =  2.1164705753326416 s
+
+Current run:	 --mu-0.5--sd-10--r-2.75
+
+	 t_exec =  2.2129955291748047 s
+
+Current run:	 --mu-0.5--sd-10--r-3.0
+
+	 t_exec =  2.2794816493988037 s
+
+Current run:	 --mu-0.5--sd-10--r-3.25
+
+	 t_exec =  2.3800909519195557 s
+
+Current run:	 --mu-0.5--sd-10--r-3.5
+
+	 t_exec =  2.4665257930755615 s
+
+Current run:	 --mu-0.5--sd-10--r-3.75
+
+	 t_exec =  2.5120158195495605 s
+
+Current run:	 --mu-0.5--sd-10--r-4.0
+
+	 t_exec =  2.596371650695801 s
+
+Current run:	 --mu-0.5--sd-10--r-4.25
+
+	 t_exec =  2.7259249687194824 s
+
+Current run:	 --mu-0.5--sd-10--r-4.5
+
+	 t_exec =  2.800743818283081 s
+
+Current run:	 --mu-0.5--sd-10--r-4.75
+
+	 t_exec =  2.890587568283081 s
+
+Current run:	 --mu-0.5--sd-10--r-5.0
+
+	 t_exec =  3.020092725753784 s
+
+Current run:	 --mu-1.0--sd-10--r-0.0
+
+	 t_exec =  1.221726417541504 s
+
+Current run:	 --mu-1.0--sd-10--r-0.25
+
+	 t_exec =  1.3421878814697266 s
+
+Current run:	 --mu-1.0--sd-10--r-0.5
+
+	 t_exec =  1.4362845420837402 s
+
+Current run:	 --mu-1.0--sd-10--r-0.75
+
+	 t_exec =  1.53696870803833 s
+
+Current run:	 --mu-1.0--sd-10--r-1.0
+
+	 t_exec =  1.6226460933685303 s
+
+Current run:	 --mu-1.0--sd-10--r-1.25
+
+	 t_exec =  1.7108650207519531 s
+
+Current run:	 --mu-1.0--sd-10--r-1.5
+
+	 t_exec =  1.7897768020629883 s
+
+Current run:	 --mu-1.0--sd-10--r-1.75
+
+	 t_exec =  1.870490550994873 s
+
+Current run:	 --mu-1.0--sd-10--r-2.0
+
+	 t_exec =  1.9653582572937012 s
+
+Current run:	 --mu-1.0--sd-10--r-2.25
+
+	 t_exec =  2.0643296241760254 s
+
+Current run:	 --mu-1.0--sd-10--r-2.5
+
+	 t_exec =  2.1022698879241943 s
+
+Current run:	 --mu-1.0--sd-10--r-2.75
+
+	 t_exec =  2.1853907108306885 s
+
+Current run:	 --mu-1.0--sd-10--r-3.0
+
+	 t_exec =  2.282552480697632 s
+
+Current run:	 --mu-1.0--sd-10--r-3.25
+
+	 t_exec =  2.3585877418518066 s
+
+Current run:	 --mu-1.0--sd-10--r-3.5
+
+	 t_exec =  2.4445383548736572 s
+
+Current run:	 --mu-1.0--sd-10--r-3.75
+
+	 t_exec =  2.5404415130615234 s
+
+Current run:	 --mu-1.0--sd-10--r-4.0
+
+	 t_exec =  2.5938520431518555 s
+
+Current run:	 --mu-1.0--sd-10--r-4.25
+
+	 t_exec =  2.710103988647461 s
+
+Current run:	 --mu-1.0--sd-10--r-4.5
+
+	 t_exec =  2.8158254623413086 s
+
+Current run:	 --mu-1.0--sd-10--r-4.75
+
+	 t_exec =  2.8733232021331787 s
+
+Current run:	 --mu-1.0--sd-10--r-5.0
+
+	 t_exec =  2.950058937072754 s
+
+Current run:	 --mu-1.5--sd-10--r-0.0
+
+	 t_exec =  1.2322044372558594 s
+
+Current run:	 --mu-1.5--sd-10--r-0.25
+
+	 t_exec =  1.3305706977844238 s
+
+Current run:	 --mu-1.5--sd-10--r-0.5
+
+	 t_exec =  1.4352524280548096 s
+
+Current run:	 --mu-1.5--sd-10--r-0.75
+
+	 t_exec =  1.5196223258972168 s
+
+Current run:	 --mu-1.5--sd-10--r-1.0
+
+	 t_exec =  1.623035192489624 s
+
+Current run:	 --mu-1.5--sd-10--r-1.25
+
+	 t_exec =  1.7074730396270752 s
+
+Current run:	 --mu-1.5--sd-10--r-1.5
+
+	 t_exec =  1.7740273475646973 s
+
+Current run:	 --mu-1.5--sd-10--r-1.75
+
+	 t_exec =  1.873638391494751 s
+
+Current run:	 --mu-1.5--sd-10--r-2.0
+
+	 t_exec =  1.9669115543365479 s
+
+Current run:	 --mu-1.5--sd-10--r-2.25
+
+	 t_exec =  2.034700632095337 s
+
+Current run:	 --mu-1.5--sd-10--r-2.5
+
+	 t_exec =  2.1252012252807617 s
+
+Current run:	 --mu-1.5--sd-10--r-2.75
+
+	 t_exec =  2.210258722305298 s
+
+Current run:	 --mu-1.5--sd-10--r-3.0
+
+	 t_exec =  2.276782274246216 s
+
+Current run:	 --mu-1.5--sd-10--r-3.25
+
+	 t_exec =  2.3801543712615967 s
+
+Current run:	 --mu-1.5--sd-10--r-3.5
+
+	 t_exec =  2.482701539993286 s
+
+Current run:	 --mu-1.5--sd-10--r-3.75
+
+	 t_exec =  2.5505404472351074 s
+
+Current run:	 --mu-1.5--sd-10--r-4.0
+
+	 t_exec =  2.601998805999756 s
+
+Current run:	 --mu-1.5--sd-10--r-4.25
+
+	 t_exec =  2.734884023666382 s
+
+Current run:	 --mu-1.5--sd-10--r-4.5
+
+	 t_exec =  2.798701286315918 s
+
+Current run:	 --mu-1.5--sd-10--r-4.75
+
+	 t_exec =  2.891460418701172 s
+
+Current run:	 --mu-1.5--sd-10--r-5.0
+
+	 t_exec =  2.969717502593994 s
+
+Current run:	 --mu-2.0--sd-10--r-0.0
+
+	 t_exec =  1.2269721031188965 s
+
+Current run:	 --mu-2.0--sd-10--r-0.25
+
+	 t_exec =  1.3320598602294922 s
+
+Current run:	 --mu-2.0--sd-10--r-0.5
+
+	 t_exec =  1.4317703247070312 s
+
+Current run:	 --mu-2.0--sd-10--r-0.75
+
+	 t_exec =  1.5413916110992432 s
+
+Current run:	 --mu-2.0--sd-10--r-1.0
+
+	 t_exec =  1.6152520179748535 s
+
+Current run:	 --mu-2.0--sd-10--r-1.25
+
+	 t_exec =  1.7169697284698486 s
+
+Current run:	 --mu-2.0--sd-10--r-1.5
+
+	 t_exec =  1.8002703189849854 s
+
+Current run:	 --mu-2.0--sd-10--r-1.75
+
+	 t_exec =  1.8829700946807861 s
+
+Current run:	 --mu-2.0--sd-10--r-2.0
+
+	 t_exec =  1.9654691219329834 s
+
+Current run:	 --mu-2.0--sd-10--r-2.25
+
+	 t_exec =  2.049100875854492 s
+
+Current run:	 --mu-2.0--sd-10--r-2.5
+
+	 t_exec =  2.1129603385925293 s
+
+Current run:	 --mu-2.0--sd-10--r-2.75
+
+	 t_exec =  2.2094032764434814 s
+
+Current run:	 --mu-2.0--sd-10--r-3.0
+
+	 t_exec =  2.287465810775757 s
+
+Current run:	 --mu-2.0--sd-10--r-3.25
+
+	 t_exec =  2.3756628036499023 s
+
+Current run:	 --mu-2.0--sd-10--r-3.5
+
+	 t_exec =  2.447333574295044 s
+
+Current run:	 --mu-2.0--sd-10--r-3.75
+
+	 t_exec =  2.5155675411224365 s
+
+Current run:	 --mu-2.0--sd-10--r-4.0
+
+	 t_exec =  2.633298635482788 s
+
+Current run:	 --mu-2.0--sd-10--r-4.25
+
+	 t_exec =  2.7014036178588867 s
+
+Current run:	 --mu-2.0--sd-10--r-4.5
+
+	 t_exec =  2.807687282562256 s
+
+Current run:	 --mu-2.0--sd-10--r-4.75
+
+	 t_exec =  2.8906099796295166 s
+
+Current run:	 --mu-2.0--sd-10--r-5.0
+
+	 t_exec =  2.957104444503784 s
+
+Current run:	 --mu-2.5--sd-10--r-0.0
+
+	 t_exec =  1.2168748378753662 s
+
+Current run:	 --mu-2.5--sd-10--r-0.25
+
+	 t_exec =  1.343820333480835 s
+
+Current run:	 --mu-2.5--sd-10--r-0.5
+
+	 t_exec =  1.4333772659301758 s
+
+Current run:	 --mu-2.5--sd-10--r-0.75
+
+	 t_exec =  1.5297279357910156 s
+
+Current run:	 --mu-2.5--sd-10--r-1.0
+
+	 t_exec =  1.617234230041504 s
+
+Current run:	 --mu-2.5--sd-10--r-1.25
+
+	 t_exec =  1.721665620803833 s
+
+Current run:	 --mu-2.5--sd-10--r-1.5
+
+	 t_exec =  1.8083598613739014 s
+
+Current run:	 --mu-2.5--sd-10--r-1.75
+
+	 t_exec =  1.8947515487670898 s
+
+Current run:	 --mu-2.5--sd-10--r-2.0
+
+	 t_exec =  1.9761805534362793 s
+
+Current run:	 --mu-2.5--sd-10--r-2.25
+
+	 t_exec =  2.0630648136138916 s
+
+Current run:	 --mu-2.5--sd-10--r-2.5
+
+	 t_exec =  2.1659064292907715 s
+
+Current run:	 --mu-2.5--sd-10--r-2.75
+
+	 t_exec =  2.2341833114624023 s
+
+Current run:	 --mu-2.5--sd-10--r-3.0
+
+	 t_exec =  2.3154869079589844 s
+
+Current run:	 --mu-2.5--sd-10--r-3.25
+
+	 t_exec =  2.401801347732544 s
+
+Current run:	 --mu-2.5--sd-10--r-3.5
+
+	 t_exec =  2.4983437061309814 s
+
+Current run:	 --mu-2.5--sd-10--r-3.75
+
+	 t_exec =  2.5650196075439453 s
+
+Current run:	 --mu-2.5--sd-10--r-4.0
+
+	 t_exec =  2.6243338584899902 s
+
+Current run:	 --mu-2.5--sd-10--r-4.25
+
+	 t_exec =  2.754387140274048 s
+
+Current run:	 --mu-2.5--sd-10--r-4.5
+
+	 t_exec =  2.8518948554992676 s
+
+Current run:	 --mu-2.5--sd-10--r-4.75
+
+	 t_exec =  2.907482385635376 s
+
+Current run:	 --mu-2.5--sd-10--r-5.0
+
+	 t_exec =  2.9946300983428955 s
+
+Current run:	 --mu-0.0--sd-0.5--r-0.0
+
+	 t_exec =  1.2483744621276855 s
+
+Current run:	 --mu-0.0--sd-0.5--r-0.25
+
+	 t_exec =  1.3547797203063965 s
+
+Current run:	 --mu-0.0--sd-0.5--r-0.5
+
+	 t_exec =  1.4765849113464355 s
+
+Current run:	 --mu-0.0--sd-0.5--r-0.75
+
+	 t_exec =  1.555725336074829 s
+
+Current run:	 --mu-0.0--sd-0.5--r-1.0
+
+	 t_exec =  1.6354882717132568 s
+
+Current run:	 --mu-0.0--sd-0.5--r-1.25
+
+	 t_exec =  1.729886531829834 s
+
+Current run:	 --mu-0.0--sd-0.5--r-1.5
+
+	 t_exec =  1.799185037612915 s
+
+Current run:	 --mu-0.0--sd-0.5--r-1.75
+
+	 t_exec =  1.9149785041809082 s
+
+Current run:	 --mu-0.0--sd-0.5--r-2.0
+
+	 t_exec =  1.9675865173339844 s
+
+Current run:	 --mu-0.0--sd-0.5--r-2.25
+
+	 t_exec =  2.0437562465667725 s
+
+Current run:	 --mu-0.0--sd-0.5--r-2.5
+
+	 t_exec =  2.139216423034668 s
+
+Current run:	 --mu-0.0--sd-0.5--r-2.75
+
+	 t_exec =  2.2183997631073 s
+
+Current run:	 --mu-0.0--sd-0.5--r-3.0
+
+	 t_exec =  2.3209493160247803 s
+
+Current run:	 --mu-0.0--sd-0.5--r-3.25
+
+	 t_exec =  2.3646960258483887 s
+
+Current run:	 --mu-0.0--sd-0.5--r-3.5
+
+	 t_exec =  2.46429443359375 s
+
+Current run:	 --mu-0.0--sd-0.5--r-3.75
+
+	 t_exec =  2.5688767433166504 s
+
+Current run:	 --mu-0.0--sd-0.5--r-4.0
+
+	 t_exec =  2.6261887550354004 s
+
+Current run:	 --mu-0.0--sd-0.5--r-4.25
+
+	 t_exec =  2.736572742462158 s
+
+Current run:	 --mu-0.0--sd-0.5--r-4.5
+
+	 t_exec =  2.822599172592163 s
+
+Current run:	 --mu-0.0--sd-0.5--r-4.75
+
+	 t_exec =  2.9319071769714355 s
+
+Current run:	 --mu-0.0--sd-0.5--r-5.0
+
+	 t_exec =  2.9904568195343018 s
+
+Current run:	 --mu-0.5--sd-0.5--r-0.0
+
+	 t_exec =  1.2358307838439941 s
+
+Current run:	 --mu-0.5--sd-0.5--r-0.25
+
+	 t_exec =  1.352693796157837 s
+
+Current run:	 --mu-0.5--sd-0.5--r-0.5
+
+	 t_exec =  1.448230266571045 s
+
+Current run:	 --mu-0.5--sd-0.5--r-0.75
+
+	 t_exec =  1.5564050674438477 s
+
+Current run:	 --mu-0.5--sd-0.5--r-1.0
+
+	 t_exec =  1.6375603675842285 s
+
+Current run:	 --mu-0.5--sd-0.5--r-1.25
+
+	 t_exec =  1.7325811386108398 s
+
+Current run:	 --mu-0.5--sd-0.5--r-1.5
+
+	 t_exec =  1.798391580581665 s
+
+Current run:	 --mu-0.5--sd-0.5--r-1.75
+
+	 t_exec =  1.9014413356781006 s
+
+Current run:	 --mu-0.5--sd-0.5--r-2.0
+
+	 t_exec =  1.9708542823791504 s
+
+Current run:	 --mu-0.5--sd-0.5--r-2.25
+
+	 t_exec =  2.0497028827667236 s
+
+Current run:	 --mu-0.5--sd-0.5--r-2.5
+
+	 t_exec =  2.1534996032714844 s
+
+Current run:	 --mu-0.5--sd-0.5--r-2.75
+
+	 t_exec =  2.2414376735687256 s
+
+Current run:	 --mu-0.5--sd-0.5--r-3.0
+
+	 t_exec =  2.3105132579803467 s
+
+Current run:	 --mu-0.5--sd-0.5--r-3.25
+
+	 t_exec =  2.384026288986206 s
+
+Current run:	 --mu-0.5--sd-0.5--r-3.5
+
+	 t_exec =  2.485704183578491 s
+
+Current run:	 --mu-0.5--sd-0.5--r-3.75
+
+	 t_exec =  2.564852476119995 s
+
+Current run:	 --mu-0.5--sd-0.5--r-4.0
+
+	 t_exec =  2.677133083343506 s
+
+Current run:	 --mu-0.5--sd-0.5--r-4.25
+
+	 t_exec =  2.748387575149536 s
+
+Current run:	 --mu-0.5--sd-0.5--r-4.5
+
+	 t_exec =  2.825737953186035 s
+
+Current run:	 --mu-0.5--sd-0.5--r-4.75
+
+	 t_exec =  3.1300783157348633 s
+
+Current run:	 --mu-0.5--sd-0.5--r-5.0
+
+	 t_exec =  3.1781270503997803 s
+
+Current run:	 --mu-1.0--sd-0.5--r-0.0
+
+	 t_exec =  1.3324298858642578 s
+
+Current run:	 --mu-1.0--sd-0.5--r-0.25
+
+	 t_exec =  1.4505455493927002 s
+
+Current run:	 --mu-1.0--sd-0.5--r-0.5
+
+	 t_exec =  1.5664875507354736 s
+
+Current run:	 --mu-1.0--sd-0.5--r-0.75
+
+	 t_exec =  1.6466565132141113 s
+
+Current run:	 --mu-1.0--sd-0.5--r-1.0
+
+	 t_exec =  1.7365131378173828 s
+
+Current run:	 --mu-1.0--sd-0.5--r-1.25
+
+	 t_exec =  1.8491299152374268 s
+
+Current run:	 --mu-1.0--sd-0.5--r-1.5
+
+	 t_exec =  1.92954421043396 s
+
+Current run:	 --mu-1.0--sd-0.5--r-1.75
+
+	 t_exec =  2.0111587047576904 s
+
+Current run:	 --mu-1.0--sd-0.5--r-2.0
+
+	 t_exec =  2.151520252227783 s
+
+Current run:	 --mu-1.0--sd-0.5--r-2.25
+
+	 t_exec =  2.1545042991638184 s
+
+Current run:	 --mu-1.0--sd-0.5--r-2.5
+
+	 t_exec =  2.2854208946228027 s
+
+Current run:	 --mu-1.0--sd-0.5--r-2.75
+
+	 t_exec =  2.3618602752685547 s
+
+Current run:	 --mu-1.0--sd-0.5--r-3.0
+
+	 t_exec =  2.4507029056549072 s
+
+Current run:	 --mu-1.0--sd-0.5--r-3.25
+
+	 t_exec =  2.518299102783203 s
+
+Current run:	 --mu-1.0--sd-0.5--r-3.5
+
+	 t_exec =  2.6120872497558594 s
+
+Current run:	 --mu-1.0--sd-0.5--r-3.75
+
+	 t_exec =  2.654024124145508 s
+
+Current run:	 --mu-1.0--sd-0.5--r-4.0
+
+	 t_exec =  2.9012837409973145 s
+
+Current run:	 --mu-1.0--sd-0.5--r-4.25
+
+	 t_exec =  2.973628044128418 s
+
+Current run:	 --mu-1.0--sd-0.5--r-4.5
+
+	 t_exec =  2.987974166870117 s
+
+Current run:	 --mu-1.0--sd-0.5--r-4.75
+
+	 t_exec =  3.100771188735962 s
+
+Current run:	 --mu-1.0--sd-0.5--r-5.0
+
+	 t_exec =  3.195342540740967 s
+
+Current run:	 --mu-1.5--sd-0.5--r-0.0
+
+	 t_exec =  1.3136141300201416 s
+
+Current run:	 --mu-1.5--sd-0.5--r-0.25
+
+	 t_exec =  1.4385547637939453 s
+
+Current run:	 --mu-1.5--sd-0.5--r-0.5
+
+	 t_exec =  1.5424985885620117 s
+
+Current run:	 --mu-1.5--sd-0.5--r-0.75
+
+	 t_exec =  1.6909399032592773 s
+
+Current run:	 --mu-1.5--sd-0.5--r-1.0
+
+	 t_exec =  1.7845056056976318 s
+
+Current run:	 --mu-1.5--sd-0.5--r-1.25
+
+	 t_exec =  1.7095437049865723 s
+
+Current run:	 --mu-1.5--sd-0.5--r-1.5
+
+	 t_exec =  1.7863428592681885 s
+
+Current run:	 --mu-1.5--sd-0.5--r-1.75
+
+	 t_exec =  1.876523733139038 s
+
+Current run:	 --mu-1.5--sd-0.5--r-2.0
+
+	 t_exec =  1.963804006576538 s
+
+Current run:	 --mu-1.5--sd-0.5--r-2.25
+
+	 t_exec =  2.044110059738159 s
+
+Current run:	 --mu-1.5--sd-0.5--r-2.5
+
+	 t_exec =  2.144218683242798 s
+
+Current run:	 --mu-1.5--sd-0.5--r-2.75
+
+	 t_exec =  2.19344425201416 s
+
+Current run:	 --mu-1.5--sd-0.5--r-3.0
+
+	 t_exec =  2.288057327270508 s
+
+Current run:	 --mu-1.5--sd-0.5--r-3.25
+
+	 t_exec =  2.382648468017578 s
+
+Current run:	 --mu-1.5--sd-0.5--r-3.5
+
+	 t_exec =  2.4409854412078857 s
+
+Current run:	 --mu-1.5--sd-0.5--r-3.75
+
+	 t_exec =  2.5456340312957764 s
+
+Current run:	 --mu-1.5--sd-0.5--r-4.0
+
+	 t_exec =  2.614565849304199 s
+
+Current run:	 --mu-1.5--sd-0.5--r-4.25
+
+	 t_exec =  2.722670793533325 s
+
+Current run:	 --mu-1.5--sd-0.5--r-4.5
+
+	 t_exec =  2.825810432434082 s
+
+Current run:	 --mu-1.5--sd-0.5--r-4.75
+
+	 t_exec =  2.8852319717407227 s
+
+Current run:	 --mu-1.5--sd-0.5--r-5.0
+
+	 t_exec =  2.93888521194458 s
+
+Current run:	 --mu-2.0--sd-0.5--r-0.0
+
+	 t_exec =  1.225792646408081 s
+
+Current run:	 --mu-2.0--sd-0.5--r-0.25
+
+	 t_exec =  1.3334965705871582 s
+
+Current run:	 --mu-2.0--sd-0.5--r-0.5
+
+	 t_exec =  1.443115472793579 s
+
+Current run:	 --mu-2.0--sd-0.5--r-0.75
+
+	 t_exec =  1.5272061824798584 s
+
+Current run:	 --mu-2.0--sd-0.5--r-1.0
+
+	 t_exec =  1.6330771446228027 s
+
+Current run:	 --mu-2.0--sd-0.5--r-1.25
+
+	 t_exec =  1.7005860805511475 s
+
+Current run:	 --mu-2.0--sd-0.5--r-1.5
+
+	 t_exec =  1.7949225902557373 s
+
+Current run:	 --mu-2.0--sd-0.5--r-1.75
+
+	 t_exec =  1.8923089504241943 s
+
+Current run:	 --mu-2.0--sd-0.5--r-2.0
+
+	 t_exec =  1.9661095142364502 s
+
+Current run:	 --mu-2.0--sd-0.5--r-2.25
+
+	 t_exec =  2.0370914936065674 s
+
+Current run:	 --mu-2.0--sd-0.5--r-2.5
+
+	 t_exec =  2.1338367462158203 s
+
+Current run:	 --mu-2.0--sd-0.5--r-2.75
+
+	 t_exec =  2.205848455429077 s
+
+Current run:	 --mu-2.0--sd-0.5--r-3.0
+
+	 t_exec =  2.2757961750030518 s
+
+Current run:	 --mu-2.0--sd-0.5--r-3.25
+
+	 t_exec =  2.380236864089966 s
+
+Current run:	 --mu-2.0--sd-0.5--r-3.5
+
+	 t_exec =  2.4373953342437744 s
+
+Current run:	 --mu-2.0--sd-0.5--r-3.75
+
+	 t_exec =  2.54353404045105 s
+
+Current run:	 --mu-2.0--sd-0.5--r-4.0
+
+	 t_exec =  2.61579966545105 s
+
+Current run:	 --mu-2.0--sd-0.5--r-4.25
+
+	 t_exec =  2.7050726413726807 s
+
+Current run:	 --mu-2.0--sd-0.5--r-4.5
+
+	 t_exec =  2.8333616256713867 s
+
+Current run:	 --mu-2.0--sd-0.5--r-4.75
+
+	 t_exec =  2.890716075897217 s
+
+Current run:	 --mu-2.0--sd-0.5--r-5.0
+
+	 t_exec =  2.969494104385376 s
+
+Current run:	 --mu-2.5--sd-0.5--r-0.0
+
+	 t_exec =  1.2276780605316162 s
+
+Current run:	 --mu-2.5--sd-0.5--r-0.25
+
+	 t_exec =  1.3560152053833008 s
+
+Current run:	 --mu-2.5--sd-0.5--r-0.5
+
+	 t_exec =  1.453603744506836 s
+
+Current run:	 --mu-2.5--sd-0.5--r-0.75
+
+	 t_exec =  1.551192045211792 s
+
+Current run:	 --mu-2.5--sd-0.5--r-1.0
+
+	 t_exec =  1.642909049987793 s
+
+Current run:	 --mu-2.5--sd-0.5--r-1.25
+
+	 t_exec =  1.706935167312622 s
+
+Current run:	 --mu-2.5--sd-0.5--r-1.5
+
+	 t_exec =  1.7918901443481445 s
+
+Current run:	 --mu-2.5--sd-0.5--r-1.75
+
+	 t_exec =  1.8881206512451172 s
+
+Current run:	 --mu-2.5--sd-0.5--r-2.0
+
+	 t_exec =  1.959907054901123 s
+
+Current run:	 --mu-2.5--sd-0.5--r-2.25
+
+	 t_exec =  2.058807373046875 s
+
+Current run:	 --mu-2.5--sd-0.5--r-2.5
+
+	 t_exec =  2.1368656158447266 s
+
+Current run:	 --mu-2.5--sd-0.5--r-2.75
+
+	 t_exec =  2.215169906616211 s
+
+Current run:	 --mu-2.5--sd-0.5--r-3.0
+
+	 t_exec =  2.290632724761963 s
+
+Current run:	 --mu-2.5--sd-0.5--r-3.25
+
+	 t_exec =  2.3609378337860107 s
+
+Current run:	 --mu-2.5--sd-0.5--r-3.5
+
+	 t_exec =  2.436654567718506 s
+
+Current run:	 --mu-2.5--sd-0.5--r-3.75
+
+	 t_exec =  2.539296865463257 s
+
+Current run:	 --mu-2.5--sd-0.5--r-4.0
+
+	 t_exec =  2.6573867797851562 s
+
+Current run:	 --mu-2.5--sd-0.5--r-4.25
+
+	 t_exec =  2.7231006622314453 s
+
+Current run:	 --mu-2.5--sd-0.5--r-4.5
+
+	 t_exec =  2.796931505203247 s
+
+Current run:	 --mu-2.5--sd-0.5--r-4.75
+
+	 t_exec =  2.8791868686676025 s
+
+Current run:	 --mu-2.5--sd-0.5--r-5.0
+
+	 t_exec =  2.9658031463623047 s
+
+Current run:	 --mu-0.0--sd-1.0--r-0.0
+
+	 t_exec =  1.215228796005249 s
+
+Current run:	 --mu-0.0--sd-1.0--r-0.25
+
+	 t_exec =  1.3352680206298828 s
+
+Current run:	 --mu-0.0--sd-1.0--r-0.5
+
+	 t_exec =  1.4403553009033203 s
+
+Current run:	 --mu-0.0--sd-1.0--r-0.75
+
+	 t_exec =  1.5125319957733154 s
+
+Current run:	 --mu-0.0--sd-1.0--r-1.0
+
+	 t_exec =  1.6240503787994385 s
+
+Current run:	 --mu-0.0--sd-1.0--r-1.25
+
+	 t_exec =  1.7026102542877197 s
+
+Current run:	 --mu-0.0--sd-1.0--r-1.5
+
+	 t_exec =  1.7835180759429932 s
+
+Current run:	 --mu-0.0--sd-1.0--r-1.75
+
+	 t_exec =  1.8596992492675781 s
+
+Current run:	 --mu-0.0--sd-1.0--r-2.0
+
+	 t_exec =  1.950937032699585 s
+
+Current run:	 --mu-0.0--sd-1.0--r-2.25
+
+	 t_exec =  2.030176877975464 s
+
+Current run:	 --mu-0.0--sd-1.0--r-2.5
+
+	 t_exec =  2.1235804557800293 s
+
+Current run:	 --mu-0.0--sd-1.0--r-2.75
+
+	 t_exec =  2.1912271976470947 s
+
+Current run:	 --mu-0.0--sd-1.0--r-3.0
+
+	 t_exec =  2.270954132080078 s
+
+Current run:	 --mu-0.0--sd-1.0--r-3.25
+
+	 t_exec =  2.363534927368164 s
+
+Current run:	 --mu-0.0--sd-1.0--r-3.5
+
+	 t_exec =  2.444194793701172 s
+
+Current run:	 --mu-0.0--sd-1.0--r-3.75
+
+	 t_exec =  2.5336697101593018 s
+
+Current run:	 --mu-0.0--sd-1.0--r-4.0
+
+	 t_exec =  2.6031439304351807 s
+
+Current run:	 --mu-0.0--sd-1.0--r-4.25
+
+	 t_exec =  2.6947615146636963 s
+
+Current run:	 --mu-0.0--sd-1.0--r-4.5
+
+	 t_exec =  2.801220655441284 s
+
+Current run:	 --mu-0.0--sd-1.0--r-4.75
+
+	 t_exec =  2.8545663356781006 s
+
+Current run:	 --mu-0.0--sd-1.0--r-5.0
+
+	 t_exec =  2.9606335163116455 s
+
+Current run:	 --mu-0.5--sd-1.0--r-0.0
+
+	 t_exec =  1.2195518016815186 s
+
+Current run:	 --mu-0.5--sd-1.0--r-0.25
+
+	 t_exec =  1.322972059249878 s
+
+Current run:	 --mu-0.5--sd-1.0--r-0.5
+
+	 t_exec =  1.4331026077270508 s
+
+Current run:	 --mu-0.5--sd-1.0--r-0.75
+
+	 t_exec =  1.5299229621887207 s
+
+Current run:	 --mu-0.5--sd-1.0--r-1.0
+
+	 t_exec =  1.631791353225708 s
+
+Current run:	 --mu-0.5--sd-1.0--r-1.25
+
+	 t_exec =  1.7040703296661377 s
+
+Current run:	 --mu-0.5--sd-1.0--r-1.5
+
+	 t_exec =  1.794816255569458 s
+
+Current run:	 --mu-0.5--sd-1.0--r-1.75
+
+	 t_exec =  1.8719186782836914 s
+
+Current run:	 --mu-0.5--sd-1.0--r-2.0
+
+	 t_exec =  1.9706201553344727 s
+
+Current run:	 --mu-0.5--sd-1.0--r-2.25
+
+	 t_exec =  2.045219898223877 s
+
+Current run:	 --mu-0.5--sd-1.0--r-2.5
+
+	 t_exec =  2.140782594680786 s
+
+Current run:	 --mu-0.5--sd-1.0--r-2.75
+
+	 t_exec =  2.195293664932251 s
+
+Current run:	 --mu-0.5--sd-1.0--r-3.0
+
+	 t_exec =  2.278576374053955 s
+
+Current run:	 --mu-0.5--sd-1.0--r-3.25
+
+	 t_exec =  2.3784072399139404 s
+
+Current run:	 --mu-0.5--sd-1.0--r-3.5
+
+	 t_exec =  2.460233688354492 s
+
+Current run:	 --mu-0.5--sd-1.0--r-3.75
+
+	 t_exec =  2.5239179134368896 s
+
+Current run:	 --mu-0.5--sd-1.0--r-4.0
+
+	 t_exec =  2.6123266220092773 s
+
+Current run:	 --mu-0.5--sd-1.0--r-4.25
+
+	 t_exec =  2.7137234210968018 s
+
+Current run:	 --mu-0.5--sd-1.0--r-4.5
+
+	 t_exec =  2.789597749710083 s
+
+Current run:	 --mu-0.5--sd-1.0--r-4.75
+
+	 t_exec =  2.861637592315674 s
+
+Current run:	 --mu-0.5--sd-1.0--r-5.0
+
+	 t_exec =  2.9378318786621094 s
+
+Current run:	 --mu-1.0--sd-1.0--r-0.0
+
+	 t_exec =  1.224269151687622 s
+
+Current run:	 --mu-1.0--sd-1.0--r-0.25
+
+	 t_exec =  1.3293707370758057 s
+
+Current run:	 --mu-1.0--sd-1.0--r-0.5
+
+	 t_exec =  1.4225742816925049 s
+
+Current run:	 --mu-1.0--sd-1.0--r-0.75
+
+	 t_exec =  1.526766061782837 s
+
+Current run:	 --mu-1.0--sd-1.0--r-1.0
+
+	 t_exec =  1.6087024211883545 s
+
+Current run:	 --mu-1.0--sd-1.0--r-1.25
+
+	 t_exec =  1.705230474472046 s
+
+Current run:	 --mu-1.0--sd-1.0--r-1.5
+
+	 t_exec =  1.789893388748169 s
+
+Current run:	 --mu-1.0--sd-1.0--r-1.75
+
+	 t_exec =  1.8849382400512695 s
+
+Current run:	 --mu-1.0--sd-1.0--r-2.0
+
+	 t_exec =  1.9395668506622314 s
+
+Current run:	 --mu-1.0--sd-1.0--r-2.25
+
+	 t_exec =  2.0456130504608154 s
+
+Current run:	 --mu-1.0--sd-1.0--r-2.5
+
+	 t_exec =  2.115487575531006 s
+
+Current run:	 --mu-1.0--sd-1.0--r-2.75
+
+	 t_exec =  2.212075710296631 s
+
+Current run:	 --mu-1.0--sd-1.0--r-3.0
+
+	 t_exec =  2.2873027324676514 s
+
+Current run:	 --mu-1.0--sd-1.0--r-3.25
+
+	 t_exec =  2.352847099304199 s
+
+Current run:	 --mu-1.0--sd-1.0--r-3.5
+
+	 t_exec =  2.4661428928375244 s
+
+Current run:	 --mu-1.0--sd-1.0--r-3.75
+
+	 t_exec =  2.5549228191375732 s
+
+Current run:	 --mu-1.0--sd-1.0--r-4.0
+
+	 t_exec =  2.623112678527832 s
+
+Current run:	 --mu-1.0--sd-1.0--r-4.25
+
+	 t_exec =  2.7201831340789795 s
+
+Current run:	 --mu-1.0--sd-1.0--r-4.5
+
+	 t_exec =  2.774996042251587 s
+
+Current run:	 --mu-1.0--sd-1.0--r-4.75
+
+	 t_exec =  2.8855111598968506 s
+
+Current run:	 --mu-1.0--sd-1.0--r-5.0
+
+	 t_exec =  2.96698260307312 s
+
+Current run:	 --mu-1.5--sd-1.0--r-0.0
+
+	 t_exec =  1.2133979797363281 s
+
+Current run:	 --mu-1.5--sd-1.0--r-0.25
+
+	 t_exec =  1.3323440551757812 s
+
+Current run:	 --mu-1.5--sd-1.0--r-0.5
+
+	 t_exec =  1.4364488124847412 s
+
+Current run:	 --mu-1.5--sd-1.0--r-0.75
+
+	 t_exec =  1.5235328674316406 s
+
+Current run:	 --mu-1.5--sd-1.0--r-1.0
+
+	 t_exec =  1.6155869960784912 s
+
+Current run:	 --mu-1.5--sd-1.0--r-1.25
+
+	 t_exec =  1.6935153007507324 s
+
+Current run:	 --mu-1.5--sd-1.0--r-1.5
+
+	 t_exec =  1.801166296005249 s
+
+Current run:	 --mu-1.5--sd-1.0--r-1.75
+
+	 t_exec =  1.880875587463379 s
+
+Current run:	 --mu-1.5--sd-1.0--r-2.0
+
+	 t_exec =  1.9708151817321777 s
+
+Current run:	 --mu-1.5--sd-1.0--r-2.25
+
+	 t_exec =  2.0527191162109375 s
+
+Current run:	 --mu-1.5--sd-1.0--r-2.5
+
+	 t_exec =  2.116290807723999 s
+
+Current run:	 --mu-1.5--sd-1.0--r-2.75
+
+	 t_exec =  2.1990854740142822 s
+
+Current run:	 --mu-1.5--sd-1.0--r-3.0
+
+	 t_exec =  2.2951059341430664 s
+
+Current run:	 --mu-1.5--sd-1.0--r-3.25
+
+	 t_exec =  2.3870863914489746 s
+
+Current run:	 --mu-1.5--sd-1.0--r-3.5
+
+	 t_exec =  2.453731060028076 s
+
+Current run:	 --mu-1.5--sd-1.0--r-3.75
+
+	 t_exec =  2.561206817626953 s
+
+Current run:	 --mu-1.5--sd-1.0--r-4.0
+
+	 t_exec =  2.6237592697143555 s
+
+Current run:	 --mu-1.5--sd-1.0--r-4.25
+
+	 t_exec =  2.7018539905548096 s
+
+Current run:	 --mu-1.5--sd-1.0--r-4.5
+
+	 t_exec =  2.794686794281006 s
+
+Current run:	 --mu-1.5--sd-1.0--r-4.75
+
+	 t_exec =  2.887295722961426 s
+
+Current run:	 --mu-1.5--sd-1.0--r-5.0
+
+	 t_exec =  2.9783568382263184 s
+
+Current run:	 --mu-2.0--sd-1.0--r-0.0
+
+	 t_exec =  1.2156739234924316 s
+
+Current run:	 --mu-2.0--sd-1.0--r-0.25
+
+	 t_exec =  1.3175640106201172 s
+
+Current run:	 --mu-2.0--sd-1.0--r-0.5
+
+	 t_exec =  1.433896541595459 s
+
+Current run:	 --mu-2.0--sd-1.0--r-0.75
+
+	 t_exec =  1.5363414287567139 s
+
+Current run:	 --mu-2.0--sd-1.0--r-1.0
+
+	 t_exec =  1.6364521980285645 s
+
+Current run:	 --mu-2.0--sd-1.0--r-1.25
+
+	 t_exec =  1.7220547199249268 s
+
+Current run:	 --mu-2.0--sd-1.0--r-1.5
+
+	 t_exec =  1.8155646324157715 s
+
+Current run:	 --mu-2.0--sd-1.0--r-1.75
+
+	 t_exec =  1.8855640888214111 s
+
+Current run:	 --mu-2.0--sd-1.0--r-2.0
+
+	 t_exec =  1.969066858291626 s
+
+Current run:	 --mu-2.0--sd-1.0--r-2.25
+
+	 t_exec =  2.0470917224884033 s
+
+Current run:	 --mu-2.0--sd-1.0--r-2.5
+
+	 t_exec =  2.1243844032287598 s
+
+Current run:	 --mu-2.0--sd-1.0--r-2.75
+
+	 t_exec =  2.2254347801208496 s
+
+Current run:	 --mu-2.0--sd-1.0--r-3.0
+
+	 t_exec =  2.2634119987487793 s
+
+Current run:	 --mu-2.0--sd-1.0--r-3.25
+
+	 t_exec =  2.3693671226501465 s
+
+Current run:	 --mu-2.0--sd-1.0--r-3.5
+
+	 t_exec =  2.4374778270721436 s
+
+Current run:	 --mu-2.0--sd-1.0--r-3.75
+
+	 t_exec =  2.545696973800659 s
+
+Current run:	 --mu-2.0--sd-1.0--r-4.0
+
+	 t_exec =  2.6021506786346436 s
+
+Current run:	 --mu-2.0--sd-1.0--r-4.25
+
+	 t_exec =  2.718515396118164 s
+
+Current run:	 --mu-2.0--sd-1.0--r-4.5
+
+	 t_exec =  2.8059914112091064 s
+
+Current run:	 --mu-2.0--sd-1.0--r-4.75
+
+	 t_exec =  2.8758623600006104 s
+
+Current run:	 --mu-2.0--sd-1.0--r-5.0
+
+	 t_exec =  2.9450182914733887 s
+
+Current run:	 --mu-2.5--sd-1.0--r-0.0
+
+	 t_exec =  1.2152864933013916 s
+
+Current run:	 --mu-2.5--sd-1.0--r-0.25
+
+	 t_exec =  1.3200762271881104 s
+
+Current run:	 --mu-2.5--sd-1.0--r-0.5
+
+	 t_exec =  1.4269123077392578 s
+
+Current run:	 --mu-2.5--sd-1.0--r-0.75
+
+	 t_exec =  1.5246212482452393 s
+
+Current run:	 --mu-2.5--sd-1.0--r-1.0
+
+	 t_exec =  1.6193368434906006 s
+
+Current run:	 --mu-2.5--sd-1.0--r-1.25
+
+	 t_exec =  1.7059385776519775 s
+
+Current run:	 --mu-2.5--sd-1.0--r-1.5
+
+	 t_exec =  1.790308952331543 s
+
+Current run:	 --mu-2.5--sd-1.0--r-1.75
+
+	 t_exec =  1.8637661933898926 s
+
+Current run:	 --mu-2.5--sd-1.0--r-2.0
+
+	 t_exec =  1.9702041149139404 s
+
+Current run:	 --mu-2.5--sd-1.0--r-2.25
+
+	 t_exec =  2.047004461288452 s
+
+Current run:	 --mu-2.5--sd-1.0--r-2.5
+
+	 t_exec =  2.1408169269561768 s
+
+Current run:	 --mu-2.5--sd-1.0--r-2.75
+
+	 t_exec =  2.2123141288757324 s
+
+Current run:	 --mu-2.5--sd-1.0--r-3.0
+
+	 t_exec =  2.288267135620117 s
+
+Current run:	 --mu-2.5--sd-1.0--r-3.25
+
+	 t_exec =  2.372070074081421 s
+
+Current run:	 --mu-2.5--sd-1.0--r-3.5
+
+	 t_exec =  2.473017454147339 s
+
+Current run:	 --mu-2.5--sd-1.0--r-3.75
+
+	 t_exec =  2.5272586345672607 s
+
+Current run:	 --mu-2.5--sd-1.0--r-4.0
+
+	 t_exec =  2.608281373977661 s
+
+Current run:	 --mu-2.5--sd-1.0--r-4.25
+
+	 t_exec =  2.7293386459350586 s
+
+Current run:	 --mu-2.5--sd-1.0--r-4.5
+
+	 t_exec =  2.7962820529937744 s
+
+Current run:	 --mu-2.5--sd-1.0--r-4.75
+
+	 t_exec =  2.8865396976470947 s
+
+Current run:	 --mu-2.5--sd-1.0--r-5.0
+
+	 t_exec =  2.9820189476013184 s
+
+Current run:	 --mu-0.0--sd-1.5--r-0.0
+
+	 t_exec =  1.2137651443481445 s
+
+Current run:	 --mu-0.0--sd-1.5--r-0.25
+
+	 t_exec =  1.3474018573760986 s
+
+Current run:	 --mu-0.0--sd-1.5--r-0.5
+
+	 t_exec =  1.4254298210144043 s
+
+Current run:	 --mu-0.0--sd-1.5--r-0.75
+
+	 t_exec =  1.5315241813659668 s
+
+Current run:	 --mu-0.0--sd-1.5--r-1.0
+
+	 t_exec =  1.6030550003051758 s
+
+Current run:	 --mu-0.0--sd-1.5--r-1.25
+
+	 t_exec =  1.6987028121948242 s
+
+Current run:	 --mu-0.0--sd-1.5--r-1.5
+
+	 t_exec =  1.803710699081421 s
+
+Current run:	 --mu-0.0--sd-1.5--r-1.75
+
+	 t_exec =  1.8818590641021729 s
+
+Current run:	 --mu-0.0--sd-1.5--r-2.0
+
+	 t_exec =  1.9590911865234375 s
+
+Current run:	 --mu-0.0--sd-1.5--r-2.25
+
+	 t_exec =  2.038113832473755 s
+
+Current run:	 --mu-0.0--sd-1.5--r-2.5
+
+	 t_exec =  2.1323025226593018 s
+
+Current run:	 --mu-0.0--sd-1.5--r-2.75
+
+	 t_exec =  2.1994385719299316 s
+
+Current run:	 --mu-0.0--sd-1.5--r-3.0
+
+	 t_exec =  2.28639554977417 s
+
+Current run:	 --mu-0.0--sd-1.5--r-3.25
+
+	 t_exec =  2.387101888656616 s
+
+Current run:	 --mu-0.0--sd-1.5--r-3.5
+
+	 t_exec =  2.4572548866271973 s
+
+Current run:	 --mu-0.0--sd-1.5--r-3.75
+
+	 t_exec =  2.5373759269714355 s
+
+Current run:	 --mu-0.0--sd-1.5--r-4.0
+
+	 t_exec =  2.624159574508667 s
+
+Current run:	 --mu-0.0--sd-1.5--r-4.25
+
+	 t_exec =  2.722679376602173 s
+
+Current run:	 --mu-0.0--sd-1.5--r-4.5
+
+	 t_exec =  2.789297342300415 s
+
+Current run:	 --mu-0.0--sd-1.5--r-4.75
+
+	 t_exec =  2.8872411251068115 s
+
+Current run:	 --mu-0.0--sd-1.5--r-5.0
+
+	 t_exec =  2.962024211883545 s
+
+Current run:	 --mu-0.5--sd-1.5--r-0.0
+
+	 t_exec =  1.226304054260254 s
+
+Current run:	 --mu-0.5--sd-1.5--r-0.25
+
+	 t_exec =  1.3392126560211182 s
+
+Current run:	 --mu-0.5--sd-1.5--r-0.5
+
+	 t_exec =  1.4229214191436768 s
+
+Current run:	 --mu-0.5--sd-1.5--r-0.75
+
+	 t_exec =  1.5159056186676025 s
+
+Current run:	 --mu-0.5--sd-1.5--r-1.0
+
+	 t_exec =  1.6150062084197998 s
+
+Current run:	 --mu-0.5--sd-1.5--r-1.25
+
+	 t_exec =  1.696305513381958 s
+
+Current run:	 --mu-0.5--sd-1.5--r-1.5
+
+	 t_exec =  1.7846429347991943 s
+
+Current run:	 --mu-0.5--sd-1.5--r-1.75
+
+	 t_exec =  1.875762939453125 s
+
+Current run:	 --mu-0.5--sd-1.5--r-2.0
+
+	 t_exec =  1.9364182949066162 s
+
+Current run:	 --mu-0.5--sd-1.5--r-2.25
+
+	 t_exec =  2.0385231971740723 s
+
+Current run:	 --mu-0.5--sd-1.5--r-2.5
+
+	 t_exec =  2.110417366027832 s
+
+Current run:	 --mu-0.5--sd-1.5--r-2.75
+
+	 t_exec =  2.2060112953186035 s
+
+Current run:	 --mu-0.5--sd-1.5--r-3.0
+
+	 t_exec =  2.2929093837738037 s
+
+Current run:	 --mu-0.5--sd-1.5--r-3.25
+
+	 t_exec =  2.3481156826019287 s
+
+Current run:	 --mu-0.5--sd-1.5--r-3.5
+
+	 t_exec =  2.4829156398773193 s
+
+Current run:	 --mu-0.5--sd-1.5--r-3.75
+
+	 t_exec =  2.5771844387054443 s
+
+Current run:	 --mu-0.5--sd-1.5--r-4.0
+
+	 t_exec =  2.6957895755767822 s
+
+Current run:	 --mu-0.5--sd-1.5--r-4.25
+
+	 t_exec =  2.7523372173309326 s
+
+Current run:	 --mu-0.5--sd-1.5--r-4.5
+
+	 t_exec =  2.8261330127716064 s
+
+Current run:	 --mu-0.5--sd-1.5--r-4.75
+
+	 t_exec =  2.9139187335968018 s
+
+Current run:	 --mu-0.5--sd-1.5--r-5.0
+
+	 t_exec =  3.0071070194244385 s
+
+Current run:	 --mu-1.0--sd-1.5--r-0.0
+
+	 t_exec =  1.247218132019043 s
+
+Current run:	 --mu-1.0--sd-1.5--r-0.25
+
+	 t_exec =  1.3318452835083008 s
+
+Current run:	 --mu-1.0--sd-1.5--r-0.5
+
+	 t_exec =  1.4317848682403564 s
+
+Current run:	 --mu-1.0--sd-1.5--r-0.75
+
+	 t_exec =  1.548849105834961 s
+
+Current run:	 --mu-1.0--sd-1.5--r-1.0
+
+	 t_exec =  1.624669075012207 s
+
+Current run:	 --mu-1.0--sd-1.5--r-1.25
+
+	 t_exec =  1.7214791774749756 s
+
+Current run:	 --mu-1.0--sd-1.5--r-1.5
+
+	 t_exec =  1.7994990348815918 s
+
+Current run:	 --mu-1.0--sd-1.5--r-1.75
+
+	 t_exec =  1.8976061344146729 s
+
+Current run:	 --mu-1.0--sd-1.5--r-2.0
+
+	 t_exec =  1.9809165000915527 s
+
+Current run:	 --mu-1.0--sd-1.5--r-2.25
+
+	 t_exec =  2.0797548294067383 s
+
+Current run:	 --mu-1.0--sd-1.5--r-2.5
+
+	 t_exec =  2.1405584812164307 s
+
+Current run:	 --mu-1.0--sd-1.5--r-2.75
+
+	 t_exec =  2.235126495361328 s
+
+Current run:	 --mu-1.0--sd-1.5--r-3.0
+
+	 t_exec =  2.296469211578369 s
+
+Current run:	 --mu-1.0--sd-1.5--r-3.25
+
+	 t_exec =  2.4007527828216553 s
+
+Current run:	 --mu-1.0--sd-1.5--r-3.5
+
+	 t_exec =  2.491182565689087 s
+
+Current run:	 --mu-1.0--sd-1.5--r-3.75
+
+	 t_exec =  2.589829921722412 s
+
+Current run:	 --mu-1.0--sd-1.5--r-4.0
+
+	 t_exec =  2.64924955368042 s
+
+Current run:	 --mu-1.0--sd-1.5--r-4.25
+
+	 t_exec =  2.7480857372283936 s
+
+Current run:	 --mu-1.0--sd-1.5--r-4.5
+
+	 t_exec =  2.827641487121582 s
+
+Current run:	 --mu-1.0--sd-1.5--r-4.75
+
+	 t_exec =  2.9404218196868896 s
+
+Current run:	 --mu-1.0--sd-1.5--r-5.0
+
+	 t_exec =  3.0095746517181396 s
+
+Current run:	 --mu-1.5--sd-1.5--r-0.0
+
+	 t_exec =  1.2326507568359375 s
+
+Current run:	 --mu-1.5--sd-1.5--r-0.25
+
+	 t_exec =  1.3513312339782715 s
+
+Current run:	 --mu-1.5--sd-1.5--r-0.5
+
+	 t_exec =  1.4463868141174316 s
+
+Current run:	 --mu-1.5--sd-1.5--r-0.75
+
+	 t_exec =  1.5450689792633057 s
+
+Current run:	 --mu-1.5--sd-1.5--r-1.0
+
+	 t_exec =  1.6489367485046387 s
+
+Current run:	 --mu-1.5--sd-1.5--r-1.25
+
+	 t_exec =  1.7442636489868164 s
+
+Current run:	 --mu-1.5--sd-1.5--r-1.5
+
+	 t_exec =  1.8134143352508545 s
+
+Current run:	 --mu-1.5--sd-1.5--r-1.75
+
+	 t_exec =  1.898472547531128 s
+
+Current run:	 --mu-1.5--sd-1.5--r-2.0
+
+	 t_exec =  1.962890863418579 s
+
+Current run:	 --mu-1.5--sd-1.5--r-2.25
+
+	 t_exec =  2.086137056350708 s
+
+Current run:	 --mu-1.5--sd-1.5--r-2.5
+
+	 t_exec =  2.142436981201172 s
+
+Current run:	 --mu-1.5--sd-1.5--r-2.75
+
+	 t_exec =  2.2346692085266113 s
+
+Current run:	 --mu-1.5--sd-1.5--r-3.0
+
+	 t_exec =  2.314199924468994 s
+
+Current run:	 --mu-1.5--sd-1.5--r-3.25
+
+	 t_exec =  2.416348457336426 s
+
+Current run:	 --mu-1.5--sd-1.5--r-3.5
+
+	 t_exec =  2.4951083660125732 s
+
+Current run:	 --mu-1.5--sd-1.5--r-3.75
+
+	 t_exec =  2.5795326232910156 s
+
+Current run:	 --mu-1.5--sd-1.5--r-4.0
+
+	 t_exec =  2.6891767978668213 s
+
+Current run:	 --mu-1.5--sd-1.5--r-4.25
+
+	 t_exec =  2.7441399097442627 s
+
+Current run:	 --mu-1.5--sd-1.5--r-4.5
+
+	 t_exec =  2.8462955951690674 s
+
+Current run:	 --mu-1.5--sd-1.5--r-4.75
+
+	 t_exec =  2.9126415252685547 s
+
+Current run:	 --mu-1.5--sd-1.5--r-5.0
+
+	 t_exec =  2.9908998012542725 s
+
+Current run:	 --mu-2.0--sd-1.5--r-0.0
+
+	 t_exec =  1.234943151473999 s
+
+Current run:	 --mu-2.0--sd-1.5--r-0.25
+
+	 t_exec =  1.3510797023773193 s
+
+Current run:	 --mu-2.0--sd-1.5--r-0.5
+
+	 t_exec =  1.428053379058838 s
+
+Current run:	 --mu-2.0--sd-1.5--r-0.75
+
+	 t_exec =  1.5458109378814697 s
+
+Current run:	 --mu-2.0--sd-1.5--r-1.0
+
+	 t_exec =  1.6310906410217285 s
+
+Current run:	 --mu-2.0--sd-1.5--r-1.25
+
+	 t_exec =  1.7255587577819824 s
+
+Current run:	 --mu-2.0--sd-1.5--r-1.5
+
+	 t_exec =  1.7970175743103027 s
+
+Current run:	 --mu-2.0--sd-1.5--r-1.75
+
+	 t_exec =  1.9076333045959473 s
+
+Current run:	 --mu-2.0--sd-1.5--r-2.0
+
+	 t_exec =  1.9812748432159424 s
+
+Current run:	 --mu-2.0--sd-1.5--r-2.25
+
+	 t_exec =  2.0612754821777344 s
+
+Current run:	 --mu-2.0--sd-1.5--r-2.5
+
+	 t_exec =  2.1522693634033203 s
+
+Current run:	 --mu-2.0--sd-1.5--r-2.75
+
+	 t_exec =  2.2129178047180176 s
+
+Current run:	 --mu-2.0--sd-1.5--r-3.0
+
+	 t_exec =  2.3243072032928467 s
+
+Current run:	 --mu-2.0--sd-1.5--r-3.25
+
+	 t_exec =  2.3949246406555176 s
+
+Current run:	 --mu-2.0--sd-1.5--r-3.5
+
+	 t_exec =  2.4646546840667725 s
+
+Current run:	 --mu-2.0--sd-1.5--r-3.75
+
+	 t_exec =  2.542299270629883 s
+
+Current run:	 --mu-2.0--sd-1.5--r-4.0
+
+	 t_exec =  2.6536617279052734 s
+
+Current run:	 --mu-2.0--sd-1.5--r-4.25
+
+	 t_exec =  2.7491652965545654 s
+
+Current run:	 --mu-2.0--sd-1.5--r-4.5
+
+	 t_exec =  2.8394808769226074 s
+
+Current run:	 --mu-2.0--sd-1.5--r-4.75
+
+	 t_exec =  2.958629846572876 s
+
+Current run:	 --mu-2.0--sd-1.5--r-5.0
+
+	 t_exec =  3.0233259201049805 s
+
+Current run:	 --mu-2.5--sd-1.5--r-0.0
+
+	 t_exec =  1.2481935024261475 s
+
+Current run:	 --mu-2.5--sd-1.5--r-0.25
+
+	 t_exec =  1.4195067882537842 s
+
+Current run:	 --mu-2.5--sd-1.5--r-0.5
+
+	 t_exec =  1.5629868507385254 s
+
+Current run:	 --mu-2.5--sd-1.5--r-0.75
+
+	 t_exec =  1.6163547039031982 s
+
+Current run:	 --mu-2.5--sd-1.5--r-1.0
+
+	 t_exec =  1.7677075862884521 s
+
+Current run:	 --mu-2.5--sd-1.5--r-1.25
+
+	 t_exec =  1.8312773704528809 s
+
+Current run:	 --mu-2.5--sd-1.5--r-1.5
+
+	 t_exec =  1.9024288654327393 s
+
+Current run:	 --mu-2.5--sd-1.5--r-1.75
+
+	 t_exec =  2.0137438774108887 s
+
+Current run:	 --mu-2.5--sd-1.5--r-2.0
+
+	 t_exec =  2.0730459690093994 s
+
+Current run:	 --mu-2.5--sd-1.5--r-2.25
+
+	 t_exec =  2.1505281925201416 s
+
+Current run:	 --mu-2.5--sd-1.5--r-2.5
+
+	 t_exec =  2.3299105167388916 s
+
+Current run:	 --mu-2.5--sd-1.5--r-2.75
+
+	 t_exec =  2.440770387649536 s
+
+Current run:	 --mu-2.5--sd-1.5--r-3.0
+
+	 t_exec =  2.5006237030029297 s
+
+Current run:	 --mu-2.5--sd-1.5--r-3.25
+
+	 t_exec =  2.595491647720337 s
+
+Current run:	 --mu-2.5--sd-1.5--r-3.5
+
+	 t_exec =  2.5989813804626465 s
+
+Current run:	 --mu-2.5--sd-1.5--r-3.75
+
+	 t_exec =  2.6975042819976807 s
+
+Current run:	 --mu-2.5--sd-1.5--r-4.0
+
+	 t_exec =  2.8296566009521484 s
+
+Current run:	 --mu-2.5--sd-1.5--r-4.25
+
+	 t_exec =  2.92508864402771 s
+
+Current run:	 --mu-2.5--sd-1.5--r-4.5
+
+	 t_exec =  3.046631336212158 s
+
+Current run:	 --mu-2.5--sd-1.5--r-4.75
+
+	 t_exec =  3.195721387863159 s
+
+Current run:	 --mu-2.5--sd-1.5--r-5.0
+
+	 t_exec =  3.1872873306274414 s
+
+Current run:	 --mu-0.0--sd-2.0--r-0.0
+
+	 t_exec =  1.3184609413146973 s
+
+Current run:	 --mu-0.0--sd-2.0--r-0.25
+
+	 t_exec =  1.4216134548187256 s
+
+Current run:	 --mu-0.0--sd-2.0--r-0.5
+
+	 t_exec =  1.5363507270812988 s
+
+Current run:	 --mu-0.0--sd-2.0--r-0.75
+
+	 t_exec =  1.601961612701416 s
+
+Current run:	 --mu-0.0--sd-2.0--r-1.0
+
+	 t_exec =  1.714012622833252 s
+
+Current run:	 --mu-0.0--sd-2.0--r-1.25
+
+	 t_exec =  1.8297903537750244 s
+
+Current run:	 --mu-0.0--sd-2.0--r-1.5
+
+	 t_exec =  1.956735372543335 s
+
+Current run:	 --mu-0.0--sd-2.0--r-1.75
+
+	 t_exec =  2.0798158645629883 s
+
+Current run:	 --mu-0.0--sd-2.0--r-2.0
+
+	 t_exec =  2.1605677604675293 s
+
+Current run:	 --mu-0.0--sd-2.0--r-2.25
+
+	 t_exec =  2.1942176818847656 s
+
+Current run:	 --mu-0.0--sd-2.0--r-2.5
+
+	 t_exec =  2.191941738128662 s
+
+Current run:	 --mu-0.0--sd-2.0--r-2.75
+
+	 t_exec =  2.3230061531066895 s
+
+Current run:	 --mu-0.0--sd-2.0--r-3.0
+
+	 t_exec =  2.4380605220794678 s
+
+Current run:	 --mu-0.0--sd-2.0--r-3.25
+
+	 t_exec =  2.389950752258301 s
+
+Current run:	 --mu-0.0--sd-2.0--r-3.5
+
+	 t_exec =  2.4773247241973877 s
+
+Current run:	 --mu-0.0--sd-2.0--r-3.75
+
+	 t_exec =  2.558542013168335 s
+
+Current run:	 --mu-0.0--sd-2.0--r-4.0
+
+	 t_exec =  2.6420648097991943 s
+
+Current run:	 --mu-0.0--sd-2.0--r-4.25
+
+	 t_exec =  2.7487409114837646 s
+
+Current run:	 --mu-0.0--sd-2.0--r-4.5
+
+	 t_exec =  2.8494980335235596 s
+
+Current run:	 --mu-0.0--sd-2.0--r-4.75
+
+	 t_exec =  2.925820827484131 s
+
+Current run:	 --mu-0.0--sd-2.0--r-5.0
+
+	 t_exec =  2.9852046966552734 s
+
+Current run:	 --mu-0.5--sd-2.0--r-0.0
+
+	 t_exec =  1.2310984134674072 s
+
+Current run:	 --mu-0.5--sd-2.0--r-0.25
+
+	 t_exec =  1.3400211334228516 s
+
+Current run:	 --mu-0.5--sd-2.0--r-0.5
+
+	 t_exec =  1.4386091232299805 s
+
+Current run:	 --mu-0.5--sd-2.0--r-0.75
+
+	 t_exec =  1.5480616092681885 s
+
+Current run:	 --mu-0.5--sd-2.0--r-1.0
+
+	 t_exec =  1.6474840641021729 s
+
+Current run:	 --mu-0.5--sd-2.0--r-1.25
+
+	 t_exec =  1.709751844406128 s
+
+Current run:	 --mu-0.5--sd-2.0--r-1.5
+
+	 t_exec =  1.804058313369751 s
+
+Current run:	 --mu-0.5--sd-2.0--r-1.75
+
+	 t_exec =  1.8944978713989258 s
+
+Current run:	 --mu-0.5--sd-2.0--r-2.0
+
+	 t_exec =  1.9878275394439697 s
+
+Current run:	 --mu-0.5--sd-2.0--r-2.25
+
+	 t_exec =  2.0579841136932373 s
+
+Current run:	 --mu-0.5--sd-2.0--r-2.5
+
+	 t_exec =  2.151050329208374 s
+
+Current run:	 --mu-0.5--sd-2.0--r-2.75
+
+	 t_exec =  2.223940372467041 s
+
+Current run:	 --mu-0.5--sd-2.0--r-3.0
+
+	 t_exec =  2.298680305480957 s
+
+Current run:	 --mu-0.5--sd-2.0--r-3.25
+
+	 t_exec =  2.4064080715179443 s
+
+Current run:	 --mu-0.5--sd-2.0--r-3.5
+
+	 t_exec =  2.478123426437378 s
+
+Current run:	 --mu-0.5--sd-2.0--r-3.75
+
+	 t_exec =  2.5641815662384033 s
+
+Current run:	 --mu-0.5--sd-2.0--r-4.0
+
+	 t_exec =  2.6978111267089844 s
+
+Current run:	 --mu-0.5--sd-2.0--r-4.25
+
+	 t_exec =  2.7468643188476562 s
+
+Current run:	 --mu-0.5--sd-2.0--r-4.5
+
+	 t_exec =  2.8434274196624756 s
+
+Current run:	 --mu-0.5--sd-2.0--r-4.75
+
+	 t_exec =  2.9056828022003174 s
+
+Current run:	 --mu-0.5--sd-2.0--r-5.0
+
+	 t_exec =  3.0174808502197266 s
+
+Current run:	 --mu-1.0--sd-2.0--r-0.0
+
+	 t_exec =  1.2302286624908447 s
+
+Current run:	 --mu-1.0--sd-2.0--r-0.25
+
+	 t_exec =  1.3386445045471191 s
+
+Current run:	 --mu-1.0--sd-2.0--r-0.5
+
+	 t_exec =  1.4493608474731445 s
+
+Current run:	 --mu-1.0--sd-2.0--r-0.75
+
+	 t_exec =  1.5495378971099854 s
+
+Current run:	 --mu-1.0--sd-2.0--r-1.0
+
+	 t_exec =  1.6253154277801514 s
+
+Current run:	 --mu-1.0--sd-2.0--r-1.25
+
+	 t_exec =  1.723128318786621 s
+
+Current run:	 --mu-1.0--sd-2.0--r-1.5
+
+	 t_exec =  1.8133518695831299 s
+
+Current run:	 --mu-1.0--sd-2.0--r-1.75
+
+	 t_exec =  1.901257038116455 s
+
+Current run:	 --mu-1.0--sd-2.0--r-2.0
+
+	 t_exec =  1.9581174850463867 s
+
+Current run:	 --mu-1.0--sd-2.0--r-2.25
+
+	 t_exec =  2.0508742332458496 s
+
+Current run:	 --mu-1.0--sd-2.0--r-2.5
+
+	 t_exec =  2.136925458908081 s
+
+Current run:	 --mu-1.0--sd-2.0--r-2.75
+
+	 t_exec =  2.223499298095703 s
+
+Current run:	 --mu-1.0--sd-2.0--r-3.0
+
+	 t_exec =  2.3183958530426025 s
+
+Current run:	 --mu-1.0--sd-2.0--r-3.25
+
+	 t_exec =  2.4165308475494385 s
+
+Current run:	 --mu-1.0--sd-2.0--r-3.5
+
+	 t_exec =  2.4835643768310547 s
+
+Current run:	 --mu-1.0--sd-2.0--r-3.75
+
+	 t_exec =  2.594017744064331 s
+
+Current run:	 --mu-1.0--sd-2.0--r-4.0
+
+	 t_exec =  2.6701736450195312 s
+
+Current run:	 --mu-1.0--sd-2.0--r-4.25
+
+	 t_exec =  2.731600522994995 s
+
+Current run:	 --mu-1.0--sd-2.0--r-4.5
+
+	 t_exec =  2.8268418312072754 s
+
+Current run:	 --mu-1.0--sd-2.0--r-4.75
+
+	 t_exec =  2.9051647186279297 s
+
+Current run:	 --mu-1.0--sd-2.0--r-5.0
+
+	 t_exec =  3.013683319091797 s
+
+Current run:	 --mu-1.5--sd-2.0--r-0.0
+
+	 t_exec =  1.2267253398895264 s
+
+Current run:	 --mu-1.5--sd-2.0--r-0.25
+
+	 t_exec =  1.3379967212677002 s
+
+Current run:	 --mu-1.5--sd-2.0--r-0.5
+
+	 t_exec =  1.4496095180511475 s
+
+Current run:	 --mu-1.5--sd-2.0--r-0.75
+
+	 t_exec =  1.5491986274719238 s
+
+Current run:	 --mu-1.5--sd-2.0--r-1.0
+
+	 t_exec =  1.6452341079711914 s
+
+Current run:	 --mu-1.5--sd-2.0--r-1.25
+
+	 t_exec =  1.714977741241455 s
+
+Current run:	 --mu-1.5--sd-2.0--r-1.5
+
+	 t_exec =  1.798234224319458 s
+
+Current run:	 --mu-1.5--sd-2.0--r-1.75
+
+	 t_exec =  1.8890554904937744 s
+
+Current run:	 --mu-1.5--sd-2.0--r-2.0
+
+	 t_exec =  1.978841781616211 s
+
+Current run:	 --mu-1.5--sd-2.0--r-2.25
+
+	 t_exec =  2.0632994174957275 s
+
+Current run:	 --mu-1.5--sd-2.0--r-2.5
+
+	 t_exec =  2.146090030670166 s
+
+Current run:	 --mu-1.5--sd-2.0--r-2.75
+
+	 t_exec =  2.226818561553955 s
+
+Current run:	 --mu-1.5--sd-2.0--r-3.0
+
+	 t_exec =  2.312798500061035 s
+
+Current run:	 --mu-1.5--sd-2.0--r-3.25
+
+	 t_exec =  2.397510290145874 s
+
+Current run:	 --mu-1.5--sd-2.0--r-3.5
+
+	 t_exec =  2.4791948795318604 s
+
+Current run:	 --mu-1.5--sd-2.0--r-3.75
+
+	 t_exec =  2.5529141426086426 s
+
+Current run:	 --mu-1.5--sd-2.0--r-4.0
+
+	 t_exec =  2.6455485820770264 s
+
+Current run:	 --mu-1.5--sd-2.0--r-4.25
+
+	 t_exec =  2.746830701828003 s
+
+Current run:	 --mu-1.5--sd-2.0--r-4.5
+
+	 t_exec =  2.836928367614746 s
+
+Current run:	 --mu-1.5--sd-2.0--r-4.75
+
+	 t_exec =  2.9219861030578613 s
+
+Current run:	 --mu-1.5--sd-2.0--r-5.0
+
+	 t_exec =  3.0158441066741943 s
+
+Current run:	 --mu-2.0--sd-2.0--r-0.0
+
+	 t_exec =  1.2463247776031494 s
+
+Current run:	 --mu-2.0--sd-2.0--r-0.25
+
+	 t_exec =  1.3350193500518799 s
+
+Current run:	 --mu-2.0--sd-2.0--r-0.5
+
+	 t_exec =  1.4460060596466064 s
+
+Current run:	 --mu-2.0--sd-2.0--r-0.75
+
+	 t_exec =  1.5451381206512451 s
+
+Current run:	 --mu-2.0--sd-2.0--r-1.0
+
+	 t_exec =  1.6401331424713135 s
+
+Current run:	 --mu-2.0--sd-2.0--r-1.25
+
+	 t_exec =  1.7208616733551025 s
+
+Current run:	 --mu-2.0--sd-2.0--r-1.5
+
+	 t_exec =  1.8307931423187256 s
+
+Current run:	 --mu-2.0--sd-2.0--r-1.75
+
+	 t_exec =  1.9007210731506348 s
+
+Current run:	 --mu-2.0--sd-2.0--r-2.0
+
+	 t_exec =  1.9895133972167969 s
+
+Current run:	 --mu-2.0--sd-2.0--r-2.25
+
+	 t_exec =  2.0606913566589355 s
+
+Current run:	 --mu-2.0--sd-2.0--r-2.5
+
+	 t_exec =  2.1620562076568604 s
+
+Current run:	 --mu-2.0--sd-2.0--r-2.75
+
+	 t_exec =  2.2266945838928223 s
+
+Current run:	 --mu-2.0--sd-2.0--r-3.0
+
+	 t_exec =  2.312286376953125 s
+
+Current run:	 --mu-2.0--sd-2.0--r-3.25
+
+	 t_exec =  2.4042794704437256 s
+
+Current run:	 --mu-2.0--sd-2.0--r-3.5
+
+	 t_exec =  2.506119728088379 s
+
+Current run:	 --mu-2.0--sd-2.0--r-3.75
+
+	 t_exec =  2.6061713695526123 s
+
+Current run:	 --mu-2.0--sd-2.0--r-4.0
+
+	 t_exec =  2.6794543266296387 s
+
+Current run:	 --mu-2.0--sd-2.0--r-4.25
+
+	 t_exec =  2.789839744567871 s
+
+Current run:	 --mu-2.0--sd-2.0--r-4.5
+
+	 t_exec =  2.8751113414764404 s
+
+Current run:	 --mu-2.0--sd-2.0--r-4.75
+
+	 t_exec =  2.9485244750976562 s
+
+Current run:	 --mu-2.0--sd-2.0--r-5.0
+
+	 t_exec =  3.021026372909546 s
+
+Current run:	 --mu-2.5--sd-2.0--r-0.0
+
+	 t_exec =  1.2457458972930908 s
+
+Current run:	 --mu-2.5--sd-2.0--r-0.25
+
+	 t_exec =  1.3356940746307373 s
+
+Current run:	 --mu-2.5--sd-2.0--r-0.5
+
+	 t_exec =  1.445970058441162 s
+
+Current run:	 --mu-2.5--sd-2.0--r-0.75
+
+	 t_exec =  1.5381278991699219 s
+
+Current run:	 --mu-2.5--sd-2.0--r-1.0
+
+	 t_exec =  1.6414523124694824 s
+
+Current run:	 --mu-2.5--sd-2.0--r-1.25
+
+	 t_exec =  1.7328605651855469 s
+
+Current run:	 --mu-2.5--sd-2.0--r-1.5
+
+	 t_exec =  1.8134772777557373 s
+
+Current run:	 --mu-2.5--sd-2.0--r-1.75
+
+	 t_exec =  1.9060211181640625 s
+
+Current run:	 --mu-2.5--sd-2.0--r-2.0
+
+	 t_exec =  1.9817397594451904 s
+
+Current run:	 --mu-2.5--sd-2.0--r-2.25
+
+	 t_exec =  2.0699539184570312 s
+
+Current run:	 --mu-2.5--sd-2.0--r-2.5
+
+	 t_exec =  2.15346622467041 s
+
+Current run:	 --mu-2.5--sd-2.0--r-2.75
+
+	 t_exec =  2.2265560626983643 s
+
+Current run:	 --mu-2.5--sd-2.0--r-3.0
+
+	 t_exec =  2.3121790885925293 s
+
+Current run:	 --mu-2.5--sd-2.0--r-3.25
+
+	 t_exec =  2.411189317703247 s
+
+Current run:	 --mu-2.5--sd-2.0--r-3.5
+
+	 t_exec =  2.4897918701171875 s
+
+Current run:	 --mu-2.5--sd-2.0--r-3.75
+
+	 t_exec =  2.5790159702301025 s
+
+Current run:	 --mu-2.5--sd-2.0--r-4.0
+
+	 t_exec =  2.6567046642303467 s
+
+Current run:	 --mu-2.5--sd-2.0--r-4.25
+
+	 t_exec =  2.7668352127075195 s
+
+Current run:	 --mu-2.5--sd-2.0--r-4.5
+
+	 t_exec =  2.8544654846191406 s
+
+Current run:	 --mu-2.5--sd-2.0--r-4.75
+
+	 t_exec =  2.9162981510162354 s
+
+Current run:	 --mu-2.5--sd-2.0--r-5.0
+
+	 t_exec =  2.9930498600006104 s
+

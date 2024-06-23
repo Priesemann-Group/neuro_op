@@ -131,7 +131,7 @@ let
 	N_info_pos = 3
 
 	new_ops =
-		[updatedOpinion_WaterLand(p_grid[i], prior_grid[i], N_info_pos, N_info) 	for i in 1:length(p_grid)]
+		[updatedOpinion_WaterLand(p_grid[i], prior_grid[i], N_info_pos, N_info) 	for i in eachindex(p_grid)]
 	scatter(range(0, 1, length(p_grid)), new_ops)
 end
 
@@ -182,7 +182,7 @@ let
 	prior_grid = props(mg, agent_i)[:opinionPDF]
 	plot(range(0,1,N_op), prior_grid/sum(prior_grid))
 	
-	new_ops = [updatedOpinion(p_grid[i], prior_grid[i], sampleVector[i], sum(sampleVector)) for i in 1:length(p_grid)]
+	new_ops = [updatedOpinion(p_grid[i], prior_grid[i], sampleVector[i], sum(sampleVector)) for i in eachindex(p_grid)]
 	
 	#updatedOpinion will be returned
 	some_plot = plot!(range(0,1,N_op), new_ops/sum(new_ops), xticks=0:1/(N_op-1):1)

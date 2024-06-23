@@ -1,0 +1,4 @@
+/data.nst/jfriedel/projects/neuro_op/src/neuro_op/utils.py:129: RuntimeWarning: divide by zero encountered in log
+  terms = P * np.log(P / Q)
+/data.nst/jfriedel/projects/neuro_op/src/neuro_op/utils.py:129: RuntimeWarning: invalid value encountered in multiply
+  terms = P * np.log(P / Q)
