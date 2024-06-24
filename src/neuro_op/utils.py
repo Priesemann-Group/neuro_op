@@ -92,16 +92,14 @@ def dist_binning(llf, params, N_bins=50, range=(-20, 20)):
     """
 
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
-    Q_logpdf = llf.logpdf(**params, x=Q_bins)
-    Q = np.exp(Q_logpdf[:-1]) + np.exp(Q_logpdf[1:])
-
-    # Q_bins = np.linspace(range[0], range[1], N_bins + 1)
-    # Q = np.exp(logpdf(Q_bins[:-1])) + np.exp(logpdf(Q_bins[1:]))
+    #Q_logpdf = llf.logpdf(**params, x=Q_bins)
+    #Q = np.exp(Q_logpdf[:-1]) + np.exp(Q_logpdf[1:])
+    Q = llf.cdf(Q_bins[1:], **params) - llf.cdf(Q_bins[:-1], **params)
 
     return Q / np.sum(Q)
 
 
-def kl_divergence(P, Q):
+def kl_divergence(Q, P):
     """
     Returns Kullback-Leibler divergence between two identically binned discrete probability distributions.
 
@@ -113,9 +111,9 @@ def kl_divergence(P, Q):
     > inputs = inputs[0] / np.sum(inputs[0])
 
     Keyword arguments:
-    P : iterable
-        recorded discrete probability distribution
     Q : iterable
+        recorded discrete probability distribution
+    P : iterable
         reference discrete probability distribution
     """
 
@@ -126,6 +124,7 @@ def kl_divergence(P, Q):
     # kind of wackily add machine epsilon to all elements of Q to avoid 'divided by zero' errors
     epsilon = 7.0 / 3 - 4.0 / 3 - 1
     Q += epsilon
+    P += epsilon
     terms = P * np.log(P / Q)
 
     # assure that KL-div is 0 for (P==0 && Q>0)

@@ -82,7 +82,7 @@ def run_model_Grid(
         # Show progress
         if progress and t >= counter:
             counter += 1
-            print("Currently\t t = ", t, " ,\t t/t_max = ",(t / t_max))
+            print("Currently\t t = ", t, " ,\t t/t_max = ", (t / t_max))
 
         # Information exchange event...
         N_events += 1
@@ -393,9 +393,7 @@ def run_model_Param(
     ]
     world = NodeConjMu(node_id=-1, params_node=params_world)
     if sampling:
-        world_binned = dist_binning(
-            llf_world, params_world, N_bins=sample_bins, range=sample_range
-        )
+        world_binned = dist_binning(llf_world, params_world, sample_bins, sample_range)
     N_events = 0
     t = t0
     sample_counter = int(t0 / t_sample)
@@ -405,19 +403,22 @@ def run_model_Param(
     # Run simulation...
     while t < t_max:
         # Sample MLEs, distance measures with periodicity t_sample
-        if sampling and int(t / t_sample) >= sample_counter:
+        if sampling and sample_counter <= t / t_sample:
             sample_counter += 1
             mu_nodes.append([node.params_node["loc"] for node in nodesConj])
             kl_divs.append(
                 [
                     kl_divergence(
-                        P=dist_binning(
+                        P=world_binned,
+                        Q=dist_binning(
                             llf_nodes,
-                            node.params_node,
+                            {
+                                "loc": node.params_node["loc"],
+                                "scale": node.params_node["scale"] + node.sd_llf,
+                            },
                             sample_bins,
                             sample_range,
                         ),
-                        Q=world_binned,
                     )
                     for node in nodesConj
                 ]
@@ -442,37 +443,40 @@ def run_model_Param(
 
         t += st.expon.rvs(scale=1 / (h + r))
 
-        # Sample post-run state
-        if sampling and int(t / t_sample) >= sample_counter:
-            sample_counter += 1
-            mu_nodes.append([node.params_node["loc"] for node in nodesConj])
-            kl_divs.append(
-                [
-                    kl_divergence(
-                        P=dist_binning(
-                            llf_nodes,
-                            node.params_node,
-                            sample_bins,
-                            sample_range,
-                        ),
-                        Q=world_binned,
-                    )
-                    for node in nodesConj
-                ]
-            )
+    # Sample post-run state
+    if sampling and sample_counter <= t/t_sample:
+        sample_counter += 1
+        mu_nodes.append([node.params_node["loc"] for node in nodesConj])
+        kl_divs.append(
+            [
+                kl_divergence(
+                    P=world_binned,
+                    Q=dist_binning(
+                        llf_nodes,
+                        {
+                            "loc": node.params_node["loc"],
+                            "scale": node.params_node["scale"] + node.sd_llf,
+                        },
+                        sample_bins,
+                        sample_range,
+                    ),
+                )
+                for node in nodesConj
+            ]
+        )
 
-        dict_out = {
-            "nodesConj": nodesConj,
-            "world": world,
-            "G": G,
-            "N_events": N_events,
-            "t_end": t,
-            "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
-            "t_exec": time.time() - starttime,
-            "seed": RANDOM_SEED,
-        }
-        if sampling:
-            dict_out["mu_nodes"] = mu_nodes
-            dict_out["kl_divs"] = kl_divs
+    dict_out = {
+        "nodesConj": nodesConj,
+        "world": world,
+        "G": G,
+        "N_events": N_events,
+        "t_end": t,
+        "t_start": time.strftime("%Y-%m-%d--%H-%M", time.localtime(starttime)),
+        "t_exec": time.time() - starttime,
+        "seed": RANDOM_SEED,
+    }
+    if sampling:
+        dict_out["mu_nodes"] = mu_nodes
+        dict_out["kl_divs"] = kl_divs
 
     return dict_out

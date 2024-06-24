@@ -401,3 +401,5 @@ FodyWeavers.xsd
 # Personal additions
 *.pkl
 *.h5
+graphics-output/
+*.png
