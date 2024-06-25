@@ -99,22 +99,22 @@ def dist_binning(llf, params, N_bins=50, range=(-20, 20)):
     return Q / np.sum(Q)
 
 
-def kl_divergence(Q, P):
+def kl_divergence(P, Q):
     """
     Returns Kullback-Leibler divergence between two identically binned discrete probability distributions.
 
     Returns Kullback-Leibler divergence in base b=e (i.e., nats).
     Usually, P is the to-be-tested (and/or data-based) distribution and Q the reference distribution.
 
-    If you want to use samples as basis of your inputs, you can normalize and bin them via
+    If you want to use samples as basis of your inputs, normalize and bin them via
     > inputs = np.histogram(samples, bins=N_bins, range=(sample_space_min, sample_space_max)
     > inputs = inputs[0] / np.sum(inputs[0])
 
     Keyword arguments:
-    Q : iterable
-        recorded discrete probability distribution
     P : iterable
         reference discrete probability distribution
+    Q : iterable
+        recorded discrete probability distribution
     """
 
     # Normalize P and Q
@@ -169,7 +169,7 @@ def postrun_Mu_ConjMu(
 ):
     """Calculate posterior param.s of a NodeConjMu with some diary_in as input."""
     x_in = np.array(diary_in)[:, 0]
-    t_in = np.array(diary_in)[:, 2]
+    #t_in = np.array(diary_in)[:, 2]
     mu_post = np.zeros_like(x_in)
     sd_post = np.zeros_like(x_in)
     mu_post[-1], sd_post[-1] = mu_prior, sd_prior
@@ -179,16 +179,17 @@ def postrun_Mu_ConjMu(
         )
         sd_post[i] = (1 / sd_post[i - 1] ** 2 + 1 / sd_llf**2) ** (-0.5)
 
-    return x_in, t_in, mu_post, sd_post
+    return mu_post, sd_post
 
 
-def postrun_kld_ConjMu(mu_est, sd_est, mu_real=0, sd_real=1, N_bins=201, range=(-5, 5)):
+def postrun_kld_ConjMu(mu_ppd, sd_ppd, mu_real=0, sd_real=1, N_bins=201, range=(-5, 5)):
     """Calculate Kullback-Leibler divergences between normal distributions of estimated and real parameter values."""
-    Q = dist_binning(st.norm, {"loc": mu_real, "scale": sd_real}, N_bins, range)
+    P = dist_binning(st.norm, {"loc": mu_real, "scale": sd_real}, N_bins, range)
     kl_divs = [
         kl_divergence(
-            P=dist_binning(st.norm, {"loc": mu, "scale": sd}, N_bins, range), Q=Q
+            Q=dist_binning(st.norm, {"loc": mu, "scale": sd}, N_bins, range),
+            P=P
         )
-        for mu, sd in zip(mu_est, sd_est)
+        for mu, sd in zip(mu_ppd, sd_ppd)
     ]
     return kl_divs

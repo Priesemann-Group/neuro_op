@@ -64,7 +64,7 @@ def export_hdf5(output, filename):
             f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
 
 
-def import_hdf5_Grid(filename):
+def import_hdf5(filename):
     """
     Import simulation results from HDF5 file.
 
