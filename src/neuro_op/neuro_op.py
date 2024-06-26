@@ -444,7 +444,7 @@ def run_model_Param(
         t += st.expon.rvs(scale=1 / (h + r))
 
     # Sample post-run state
-    if sampling and sample_counter <= t/t_sample:
+    if sampling and sample_counter <= t / t_sample:
         sample_counter += 1
         mu_nodes.append([node.params_node["loc"] for node in nodesConj])
         kl_divs.append(
