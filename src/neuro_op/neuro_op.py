@@ -404,6 +404,10 @@ def run_model_Param(
     while t < t_max:
         # Sample MLEs, distance measures with periodicity t_sample
         if sampling and sample_counter <= t / t_sample:
+            while len(mu_nodes) <= t / t_sample - 1:
+                sample_counter += 1
+                mu_nodes.append(mu_nodes[-1])
+                kl_divs.append(kl_divs[-1])
             sample_counter += 1
             mu_nodes.append([node.params_node["loc"] for node in nodesConj])
             kl_divs.append(
@@ -445,6 +449,10 @@ def run_model_Param(
 
     # Sample post-run state
     if sampling and sample_counter <= t / t_sample:
+        while len(mu_nodes) <= t / t_sample - 1:
+            sample_counter += 1
+            mu_nodes.append(mu_nodes[-1])
+            kl_divs.append(kl_divs[-1])
         sample_counter += 1
         mu_nodes.append([node.params_node["loc"] for node in nodesConj])
         kl_divs.append(

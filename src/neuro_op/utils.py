@@ -1,4 +1,5 @@
 # Useful functions for neuro_op dynamics implementation
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import scipy.stats as st
@@ -92,8 +93,8 @@ def dist_binning(llf, params, N_bins=50, range=(-20, 20)):
     """
 
     Q_bins = np.linspace(range[0], range[1], N_bins + 1)
-    #Q_logpdf = llf.logpdf(**params, x=Q_bins)
-    #Q = np.exp(Q_logpdf[:-1]) + np.exp(Q_logpdf[1:])
+    # Q_logpdf = llf.logpdf(**params, x=Q_bins)
+    # Q = np.exp(Q_logpdf[:-1]) + np.exp(Q_logpdf[1:])
     Q = llf.cdf(Q_bins[1:], **params) - llf.cdf(Q_bins[:-1], **params)
 
     return Q / np.sum(Q)
@@ -169,7 +170,7 @@ def postrun_Mu_ConjMu(
 ):
     """Calculate posterior param.s of a NodeConjMu with some diary_in as input."""
     x_in = np.array(diary_in)[:, 0]
-    #t_in = np.array(diary_in)[:, 2]
+    # t_in = np.array(diary_in)[:, 2]
     mu_post = np.zeros_like(x_in)
     sd_post = np.zeros_like(x_in)
     mu_post[-1], sd_post[-1] = mu_prior, sd_prior
@@ -187,9 +188,17 @@ def postrun_kld_ConjMu(mu_ppd, sd_ppd, mu_real=0, sd_real=1, N_bins=201, range=(
     P = dist_binning(st.norm, {"loc": mu_real, "scale": sd_real}, N_bins, range)
     kl_divs = [
         kl_divergence(
-            Q=dist_binning(st.norm, {"loc": mu, "scale": sd}, N_bins, range),
-            P=P
+            Q=dist_binning(st.norm, {"loc": mu, "scale": sd}, N_bins, range), P=P
         )
         for mu, sd in zip(mu_ppd, sd_ppd)
     ]
     return kl_divs
+
+
+def plot_setup():
+    plt.rcParams["figure.constrained_layout.use"] = True
+    plt.rcParams["figure.figsize"] = (3, 1.5)
+    plt.rcParams["figure.dpi"] = 200
+    plt.rcParams["savefig.transparent"] = True
+    plt.rcParams["savefig.dpi"] = 3000
+    return None
