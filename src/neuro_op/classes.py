@@ -148,9 +148,9 @@ class NodeConjMu:
             self.params_node["scale"] ** 2 * info_in
             + self.sd_llf**2 * self.params_node["loc"]
         ) / (self.sd_llf**2 + self.params_node["scale"] ** 2)
-        self.params_node["scale"] = np.sqrt(
+        self.params_node["scale"] = (
             1 / (1 / self.params_node["scale"] ** 2 + 1 / self.sd_llf**2)
-        )
+        ) ** 0.5
         return None
 
     def get_belief_sample(self, llf, t_sys):
@@ -160,15 +160,17 @@ class NodeConjMu:
         Returns a list of format [sample, t_sys].
         """
 
-        # info_out = llf.rvs(**self.params_node)
-        info_out = rng.normal(**self.params_node)
+        info_out = llf.rvs(
+            loc=self.params_node["loc"],
+            scale=(self.params_node["scale"] ** 2 + self.sd_llf**2) ** 0.5,
+        )
         self.diary_out += [[info_out, t_sys]]
 
         return info_out
 
 
 ####################################################################################################
-# DEPRECATED
+# DEPRECATED, just here for pickle import compatibility
 ####################################################################################################
 class Node:
     """

@@ -24,12 +24,12 @@ input_ref = dict(
     h=1,  # Rate of external information draw events
     r=1,  # Rate of edge information exchange events
     t0=0,  # Start time of simulation
-    t_max=10000,  # End time of simulation
+    t_max=50,  # End time of simulation
     t_sample=1,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
-    sample_bins=201,  # Number of bins used in distance measures
+    sample_bins=401,  # Number of bins used in distance measures
     sample_range=(
-        -5,
-        5,
+        -10,
+        10,
     ),  # Interval over which distance measure distributions are considered
     sampling=True,  # Switch for sampling
 )
@@ -51,6 +51,7 @@ def model_run(input0, name=""):
     nop.export_hdf5(output, "out-" + name + ".h5")
     del output
     gc.collect()
+    return None
 
 
 input0 = copy.deepcopy(input_ref)
@@ -58,6 +59,8 @@ mu_arr = np.arange(0, 5.1, 1)
 sd_arr = [0.5, 1, 2, 5, 10]
 for mu, sd in itertools.product(mu_arr, sd_arr):
     input0["G"] = nx.empty_graph(1).to_directed()
+    input0["t_max"] = 10000
+    input0["r"] = 0
     input0["params_node"]["loc"] = mu
     input0["params_node"]["scale"] = sd
     name = str("N1-mu-" + str(mu) + "-sd-" + str(sd))
@@ -71,3 +74,4 @@ r_arr = np.arange(0.25, 5.1, 0.25)
 for nn, mu, sd, r in itertools.product(nn_arr, mu_arr, sd_arr, r_arr):
     input0["G"] = nop.build_random_network(100, nn)
     name = str("nn-" + str(nn) + "mu-" + str(mu) + "-sd-" + str(sd) + "-r-" + str(r))
+    model_run(input0, name)
