@@ -16,4 +16,4 @@ cd rundir
 
 4.
 
-qsub -t 1:N nop_run -q rostam.q ./qsub_rostam.sh
+qsub -t 1:N -N nop_run -q rostam.q ./qsub_rostam.sh

@@ -3,7 +3,7 @@
 # Use bash as shell
 #$ -S /bin/bash
 
-rundir=2024-06-Cluster
+rundir=/data.nst/jfriedel/projects/neuro_op_data/2024-06-c2
 
 # Preserve environment variables
 #$ -V
@@ -44,7 +44,7 @@ echo Number of slots: $NSLOTS, ${SGE_TASK_ID}
 
 source /usr/ds/anaconda3-2022.05/bin/activate /data.nst/jfriedel/envs/neuro_op/
 
-cd /data.nst/jfriedel/projects/neuro_op_data/$rundir
+cd $rundir
 # Execute the above commands
 python ./computation.py ${SGE_TASK_ID} &
 # Wait for all the above processes to exit
