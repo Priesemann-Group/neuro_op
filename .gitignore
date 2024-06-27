@@ -403,3 +403,4 @@ FodyWeavers.xsd
 *.h5
 graphics-output/
 *.png
+logs/

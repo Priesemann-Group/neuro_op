@@ -6,7 +6,10 @@ import neuro_op as nop  # project's main module
 import networkx as nx  # graph library
 import numpy as np
 import scipy.stats as st
+import sys
 
+if len(sys.argv) > 1:
+    idx = int(sys.argv[1]) - 1
 
 input_ref = dict(
     G=nx.empty_graph(1).to_directed(),
@@ -46,32 +49,47 @@ def model_run(input0, name=""):
     print("Current run:\t", name)
     output = dict(nop.run_model_Param(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
-    with open("in-" + name + ".pkl", "wb") as f:
+    with open("in" + name + ".pkl", "wb") as f:
         pickle.dump(input, f)
-    nop.export_hdf5(output, "out-" + name + ".h5")
+    nop.export_hdf5(output, "out" + name + ".h5")
     del output
     gc.collect()
     return None
 
 
-input0 = copy.deepcopy(input_ref)
-mu_arr = np.arange(0, 5.1, 1)
-sd_arr = [0.5, 1, 2, 5, 10]
-for mu, sd in itertools.product(mu_arr, sd_arr):
-    input0["G"] = nx.empty_graph(1).to_directed()
-    input0["t_max"] = 10000
-    input0["r"] = 0
-    input0["params_node"]["loc"] = mu
-    input0["params_node"]["scale"] = sd
-    name = str("N1-mu-" + str(mu) + "-sd-" + str(sd))
-    model_run(input0, name)
-
+# input0 = copy.deepcopy(input_ref)
+# mu_arr = np.arange(0, 5.1, 1)
+# sd_arr = [0.5, 1, 2, 5, 10]
+# for mu, sd in itertools.product(mu_arr, sd_arr):
+#    input0["G"] = nx.empty_graph(1).to_directed()
+#    input0["t_max"] = 10000
+#    input0["r"] = 0
+#    input0["params_node"]["loc"] = mu
+#    input0["params_node"]["scale"] = sd
+#    name = str("N1-mu-" + str(mu) + "-sd-" + str(sd))
+#    model_run(input0, name)
+#
+# input0 = copy.deepcopy(input_ref)
+# nn_arr = np.arange(5, 100, 5)
+# mu_arr = np.arange(0, 5.1, 1)
+# sd_arr = [0.5, 1, 2, 5, 10]
+# r_arr = np.arange(0.25, 5.1, 0.25)
+# for nn, mu, sd, r in itertools.product(nn_arr, mu_arr, sd_arr, r_arr):
+#    input0["G"] = nop.build_random_network(100, nn)
+#    name = str("nn-" + str(nn) + "mu-" + str(mu) + "-sd-" + str(sd) + "-r-" + str(r))
+#    model_run(input0, name)
+#
 input0 = copy.deepcopy(input_ref)
 nn_arr = np.arange(5, 100, 5)
 mu_arr = np.arange(0, 5.1, 1)
 sd_arr = [0.5, 1, 2, 5, 10]
 r_arr = np.arange(0.25, 5.1, 0.25)
-for nn, mu, sd, r in itertools.product(nn_arr, mu_arr, sd_arr, r_arr):
-    input0["G"] = nop.build_random_network(100, nn)
-    name = str("nn-" + str(nn) + "mu-" + str(mu) + "-sd-" + str(sd) + "-r-" + str(r))
+nn, mu, sd = list(itertools.product(nn_arr, mu_arr, sd_arr))[idx]
+
+input0["G"] = nop.build_random_network(100, nn)
+input0["params_node"]["loc"] = mu
+input0["params_node"]["scale"] = sd
+for r in r_arr:
+    input0["r"] = r
+    name = str("-nn" + str(nn) + "-mu" + str(mu) + "-sd" + str(sd) + "-r" + str(r))
     model_run(input0, name)
