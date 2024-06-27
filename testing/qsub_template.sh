@@ -44,7 +44,7 @@ echo Number of slots: $NSLOTS, ${SGE_TASK_ID}
 
 source /usr/ds/anaconda3-2022.05/bin/activate /data.nst/jfriedel/envs/neuro_op/
 
-cd /data.nst/jfriedel/projects/neuro_op/testing/$rundir
+cd /data.nst/jfriedel/projects/neuro_op_data/$rundir
 # Execute the above commands
 python ./computation.py ${SGE_TASK_ID} &
 # Wait for all the above processes to exit
