@@ -195,10 +195,14 @@ def postrun_kld_ConjMu(mu_ppd, sd_ppd, mu_real=0, sd_real=1, N_bins=201, range=(
     return kl_divs
 
 
-def plot_setup():
+def plot_setup(fig_dpi=200, save_dpi=3000):
     plt.rcParams["figure.constrained_layout.use"] = True
     plt.rcParams["figure.figsize"] = (3, 1.5)
-    plt.rcParams["figure.dpi"] = 200
+    plt.rcParams["figure.dpi"] = fig_dpi
     plt.rcParams["savefig.transparent"] = True
-    plt.rcParams["savefig.dpi"] = 3000
+    plt.rcParams["savefig.dpi"] = save_dpi
     return None
+
+def get_colorcycle(N_colors, cmap="viridis"):
+    colormap = plt.get_cmap(cmap)
+    return [colormap(i) for i in np.linspace(0, 1, N_colors)]
