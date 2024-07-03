@@ -41,21 +41,33 @@ class NodeGrid:
 
     def set_updated_belief(self, llf_nodes, mu_arr, sd_arr, info_in, id_in, t_sys):
         """Bayesian update of the Node's belief, based on incoming info 'info_in' from node with id 'id_in' at system time 't_sys'."""
+
         self.diary_in += [[info_in, id_in, t_sys]]
         for i, mu in enumerate(mu_arr):
             self.log_probs[i] += llf_nodes.logpdf(x=info_in, loc=mu, scale=sd_arr)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
         return None
 
-    def get_belief_sample(self, mu_arr, sd_arr, t_sys):
+    def get_belief_sample(self, llf, mu_arr, sd_arr, t_sys, ppd=False):
         """
-        Sample a belief "mu=...", proportional to relative plausabilities of 'log_probs'.
+        Sample a ppd belief "data=...", w. parameters chosen proportional to the relative plausabilities stored in 'log_probs'.
         """
 
+        if ppd:
+            size = 1000
+        else:
+            size = 1
         flat_probs = logpdf_to_pdf(self.log_probs).flatten()
-        idx = rng.choice(np.arange(len(flat_probs)), p=flat_probs) // len(sd_arr)
-        info_out = mu_arr[idx]
-        self.diary_out += [[info_out, t_sys]]
+        info_out = [
+            llf.rvs(
+                loc=mu_arr[np.unravel_index(idx, self.log_probs.shape)[0]],
+                scale=sd_arr[np.unravel_index(idx, self.log_probs.shape)[1]],
+            )
+            for idx in rng.choice(np.arange(len(flat_probs)), p=flat_probs, size=size)
+        ]
+        if not ppd:
+            self.diary_out += [[info_out, t_sys]]
+
         return info_out
 
 

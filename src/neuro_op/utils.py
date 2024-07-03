@@ -100,6 +100,18 @@ def dist_binning(llf, params, N_bins=50, range=(-20, 20)):
     return Q / np.sum(Q)
 
 
+def get_MLE_grid(log_probs, mu_arr):
+    """
+    Returns the index of the maximum log-probability in an array, or, for multiple maxima, the "most central" one.
+
+    Keyword arguments:
+    log_probs : iterable
+        array of log-probabilities
+    """
+
+    return mu_arr[[i[len(i) // 2] for i in np.where(log_probs == np.max(log_probs))][0]]
+
+
 def kl_divergence(P, Q):
     """
     Returns Kullback-Leibler divergence between two identically binned discrete probability distributions.
@@ -202,6 +214,7 @@ def plot_setup(fig_dpi=200, save_dpi=3000):
     plt.rcParams["savefig.transparent"] = True
     plt.rcParams["savefig.dpi"] = save_dpi
     return None
+
 
 def get_colorcycle(N_colors, cmap="viridis"):
     colormap = plt.get_cmap(cmap)

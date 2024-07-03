@@ -20,7 +20,10 @@ def run_model_Grid(
     r,
     t0,
     t_max,
-    progress,
+    t_sample=1,
+    sample_range=(-10, 10),
+    sample_bins=101,
+    sampling=False,
 ):
     """
     Execute program.
@@ -68,21 +71,52 @@ def run_model_Grid(
         )
         for i in G.nodes()
     ]
+
+    # Initialize world probabilities as 2D array to stay compatible with 'NodeGrid' class, by setting logprobs to -1000 (effectively zero) for all but the parameter values closest to the truth.
+    world_probs = np.full((len(mu_arr), len(sd_arr)), -1000)
+    mu_idx = np.argmin(np.abs(mu_arr - params_world["loc"]))
+    sd_idx = np.argmin(np.abs(sd_arr - params_world["scale"]))
+    world_probs[mu_idx, sd_idx] = 0
     world = NodeGrid(
         node_id=-1,
-        log_priors=llf_world.logpdf(**params_world, x=mu_arr),
+        log_priors=world_probs,
     )
+    # Bin world distribution for later distance measures
+    world_ppd = dist_binning(llf_world, params_world, sample_bins, sample_range)
 
-    # Run simulation...
     N_events = 0
     t = t0
-    counter = int(t / 1)
+    sample_counter = int(t0 / t_sample)
+    mu_nodes = []
+    kl_divs = []
 
+    # Run simulation...
     while t < t_max:
-        # Show progress
-        if progress and t >= counter:
-            counter += 1
-            print("Currently\t t = ", t, " ,\t t/t_max = ", (t / t_max))
+        # Sample MLEs, KLDs with periodicity t_sample
+        if sampling and sample_counter <= t / t_sample:
+            while len(mu_nodes) <= t / t_sample - 1:
+                sample_counter += 1
+                mu_nodes.append(mu_nodes[-1])
+                kl_divs.append(kl_divs[-1])
+            sample_counter += 1
+            mu_nodes.append(
+                [get_MLE_grid(node.log_probs, mu_arr) for node in nodesGrid]
+            )
+            kl_divs.append(
+                [
+                    kl_divergence(
+                        P=world_ppd,
+                        Q=np.histogram(
+                            node.get_belief_sample(
+                                llf_nodes, mu_arr, sd_arr, t, ppd=True
+                            ),
+                            bins=sample_bins,
+                            range=sample_range,
+                        )[0],
+                    )
+                    for node in nodesGrid
+                ]
+            )
 
         # Information exchange event...
         N_events += 1
@@ -93,7 +127,7 @@ def run_model_Grid(
                 llf_nodes,
                 mu_arr,
                 sd_arr,
-                info_in=world.get_belief_sample(mu_arr, list(params_world["scale"]), t),
+                world.get_belief_sample(llf_world, mu_arr, sd_arr, t),
                 id_in=-1,
                 t_sys=t,
             )
@@ -101,8 +135,12 @@ def run_model_Grid(
         else:
             # edge event
             chatters = rng0.choice(list(G.edges()))
-            sample0 = nodesGrid[chatters[0]].get_belief_sample(mu_arr, sd_arr, t)
-            sample1 = nodesGrid[chatters[1]].get_belief_sample(mu_arr, sd_arr, t)
+            sample0 = nodesGrid[chatters[0]].get_belief_sample(
+                llf_nodes, mu_arr, sd_arr, t
+            )
+            sample1 = nodesGrid[chatters[1]].get_belief_sample(
+                llf_nodes, mu_arr, sd_arr, t
+            )
             nodesGrid[chatters[0]].set_updated_belief(
                 llf_nodes, mu_arr, sd_arr, sample1, chatters[1], t
             )
@@ -113,6 +151,26 @@ def run_model_Grid(
         t += st.expon.rvs(scale=1 / (h + r))
 
     # Sample post-execution system PPDs, distance measures (KL-div, p-distance), if skipped in last iteration
+    if sampling and sample_counter <= t / t_sample:
+        while len(mu_nodes) <= t / t_sample - 1:
+            sample_counter += 1
+            mu_nodes.append(mu_nodes[-1])
+            kl_divs.append(kl_divs[-1])
+        sample_counter += 1
+        mu_nodes.append([get_MLE_grid(node.log_probs, mu_arr) for node in nodesGrid])
+        kl_divs.append(
+            [
+                kl_divergence(
+                    P=world_ppd,
+                    Q=np.histogram(
+                        node.get_belief_sample(llf_nodes, mu_arr, sd_arr, t, ppd=True),
+                        bins=sample_bins,
+                        range=sample_range,
+                    )[0],
+                )
+                for node in nodesGrid
+            ]
+        )
 
     dict_out = {
         "nodesGrid": nodesGrid,
@@ -126,6 +184,9 @@ def run_model_Grid(
         "mu_arr": mu_arr,
         "sd_arr": sd_arr,
     }
+    if sampling:
+        dict_out["mu_nodes"] = mu_nodes
+        dict_out["kl_divs"] = kl_divs
 
     return dict_out
 
@@ -402,7 +463,7 @@ def run_model_Param(
 
     # Run simulation...
     while t < t_max:
-        # Sample MLEs, distance measures with periodicity t_sample
+        # Sample MLEs, KLDs with periodicity t_sample
         if sampling and sample_counter <= t / t_sample:
             while len(mu_nodes) <= t / t_sample - 1:
                 sample_counter += 1

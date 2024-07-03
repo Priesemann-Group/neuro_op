@@ -8,35 +8,28 @@ from .utils import build_random_network
 # Reference input for 'run_model_Grid' function. For description of contents, see 'run_model' function docstring.
 input_ref_Grid = dict(
     G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
+    mu_arr=np.linspace(-10, 10, 201),  # beliefs considered by each node
+    sd_arr=np.linspace(0, 10, 101)[
+        :1
+    ],  # standard deviations of beliefs considered by each node
+    log_prior=np.zeros(201, 101),  # Prior log-probabilities of nodes
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
-    params_node=dict(  # Likelihood function (llf) parameters of nodes, Gaussian by default
-        loc=0,
-        scale=1,
-    ),
     params_world=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
         loc=0,
         scale=1,
     ),
-    beliefs=np.linspace(  # beliefs considered by each node
-        start=-5,  # min. considered belief value
-        stop=5,  # max. considered belief value
-        num=201,  # number of considered belief values
-    ),
-    log_priors=np.zeros(201),  # Prior log-probabilities of nodes
-    sd_prior=1,  # Nodes' standard deviation prior
-    # Dynamics parameters (rates, simulation times)...
-    h=1,
-    r=1,
-    t0=0,
-    t_max=50,
-    # Sampling parameters...
-    t_sample=0.5,
-    sample_bins=201,
-    sample_range=(-5, 5),
-    p_distance_params=[(1, 1), (2, 1)],
-    # Switches...
-    progress=False,
+    h=1,  # Rate of external information draw events
+    r=1,  # Rate of edge information exchange events
+    t0=0,  # Start time of simulation
+    t_max=50,  # End time of simulation
+    t_sample=1,  # Periodicity for which mu_nodes and KLD are sampled
+    sample_range=(
+        -10,
+        10,
+    ),  # Interval over which distance measure distributions are considered
+    sample_bins=101,  # Number of bins used in distance measures
+    sampling=True,
 )
 
 
