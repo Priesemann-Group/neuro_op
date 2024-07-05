@@ -66,8 +66,8 @@ class NodeGrid:
             for idx in rng.choice(np.arange(len(flat_probs)), p=flat_probs, size=size)
         ]
         if not ppd:
+            info_out = info_out[0]
             self.diary_out += [[info_out, t_sys]]
-
         return info_out
 
 

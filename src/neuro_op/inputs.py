@@ -5,14 +5,14 @@ import scipy.stats as st
 from .utils import build_random_network
 
 
-# Reference input for 'run_model_Grid' function. For description of contents, see 'run_model' function docstring.
 input_ref_Grid = dict(
+    # Reference input for 'run_model_Grid' function. For description of contents, see 'run_model' function docstring.
     G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
     mu_arr=np.linspace(-10, 10, 201),  # beliefs considered by each node
     sd_arr=np.linspace(0, 10, 101)[
-        :1
+        1:
     ],  # standard deviations of beliefs considered by each node
-    log_prior=np.zeros(201, 101),  # Prior log-probabilities of nodes
+    log_priors=np.zeros((201, 100)),  # Prior log-probabilities of nodes
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     llf_world=st.norm,  # Likelihood function (llf) of to-be-approximated world state, Gaussian by default
     params_world=dict(  # Likelihood function (llf) parameters of to-be-approximated world state, Gaussian by default
