@@ -8,7 +8,7 @@ from .randomness import *
 from .utils import *
 
 
-def run_model_Grid(
+def run_Grid(
     G,
     mu_arr,
     sd_arr,
@@ -191,14 +191,16 @@ def run_model_Grid(
     return dict_out
 
 
-def run_model_singleGrid(
+def run_GridMu(
     G,
-    llf_nodes,
     llf_world,
-    params_node,
-    params_world,
-    beliefs,
+    mu_world,
+    sd_world,
+    llf_nodes,
+    mu_arr,
     log_priors,
+    sd_prior,
+    sd_llf,
     h,
     r,
     t0,
@@ -206,88 +208,25 @@ def run_model_singleGrid(
     t_sample,
     sample_bins,
     sample_range,
-    p_distance_params,
     progress,
 ):
     """
-    Execute program.
-    Get all parameters and initialize nodes (w. belief and log-prior distributions), network graph, and world distribution.
-    Then, run simulation until t>=t_max and return simulation results.
-
-    Keyword arguments:
-    G : networkx graph object
-        Graph of nodes and edges
-    llf_nodes : scipy.stats function
-        Likelihood function (llf) of nodes
-    llf_world : scipy.stats function
-        Likelihood function (llf) of world
-    params_node : dict
-        Parameters defining the likelihood function (llf) of nodes, concerning a Gaussian by default
-    params_world : dict
-        Parameters defining the likelihood function (llf) of the world, concerning a Gaussian by default
-    beliefs : list (floats)
-        Possible parameter values into which a Node may hold beliefs in
-    log_priors : list (floats)
-        Prior log-probabilities of nodes
-    h : float
-        Rate of external information draw events
-    r : float
-        Rate of edge information exchange events
-    t0 : float
-        Start time of simulation
-    t_max : float
-        End time of simulation
-    t_sample : float
-        Periodicity for which samples and distance measures (KL-div, p-distance) are taken
-    sample_bins : int
-        Number of bins used in distance measures
-    sample_range : tuple
-        Interval over which distance measure distributions are considered
-    p_distance_params : list
-        List of tuples, each containing two floats, defining the p-distance parameters
-    progress : bool
-        Whether or not to print sampling times
-
-
-    Returns:
-    Dictioniary containing the following keys and according data after end of simulation:
-    nodes : list (Nodes)
-        All nodes of the network.
-    G : networkx graph object
-
-    beliefs : np.array (floats)
-        Array of possible parameter values into which a Node may hold beliefs in.
-    world : Node
-        Object representing the world.
-    N_events : int
-        Number of events executed during simulation.
-    t_end : float
-        End time of simulation.
-    mu_nodes : list
-        MAP estimates of each node's mu, sampled during run.
-        Shape: (#samples, #nodes)
-    kl_divs : list
-        KL-divergences between each node's PPD and the world's PPD, sampled during run.
-        Shape: (#samples, #nodes, 2)
-        '2' refers to world_out ([0]) and world_true ([1]) as reference distribution, respectively.
-    p_distances : list
-        p-distances between each node's MLE and the world's MLE, sampled during run.
-        Shape: (#samples, #(p_distance parameter tuples), 2)
-        '2' refers to  world_out ([0]) and world_true ([1]) as reference distribution, respectively.
-    t_start : str
-        Start time and date of simulation.
-    t_exec : float
-        Simulation duration in seconds.
-    seed : int
-        Random seed used for simulation.
+    Run network dynamics with GridMu nodes & return results.
     """
     starttime = time.time()
 
-    assert len(beliefs) == len(log_priors)
+    assert len(mu_arr) == len(log_priors)
 
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
     r = r * len(G)
+
+    world = NodeGridMu(
+        node_id=-1,
+        log_priors=llf_world.logpdf(loc=mu_world, scale=0, x=mu_arr),
+        sd=0,
+        sd_llf=sd_world,
+    )
 
     nodesNormal = [
         NodeNormal(
@@ -301,17 +240,6 @@ def run_model_singleGrid(
         node_id=-1,
         log_priors=llf_world.logpdf(**params_world, x=beliefs),
         params_node=params_world,
-    )
-    ppd_func = ppd_distances_Gaussian
-    ppd_in = dict(
-        llf_nodes=llf_nodes,
-        llf_world=llf_world,
-        beliefs=beliefs,
-        nodes=nodesNormal,
-        world=world,
-        sample_bins=sample_bins,
-        sample_range=sample_range,
-        p_distance_params=p_distance_params,
     )
 
     # Run simulation...
@@ -392,7 +320,7 @@ def run_model_singleGrid(
     return dict_out
 
 
-def run_model_Param(
+def run_ConjMu(
     G,
     llf_nodes,
     llf_world,

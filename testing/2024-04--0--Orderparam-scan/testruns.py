@@ -17,7 +17,7 @@ def model_run(input0, name=""):
     input = copy.deepcopy(input0)
     print("Current adaptions:\t", name)
     start = time.time()
-    output = dict(nop.run_model_Grid(**input))
+    output = dict(nop.run_Grid(**input))
     t1 = time.time()
     print("\n\t t_exec = ", output["t_exec"], "s\n")
     with open("in" + name + ".pkl", "wb") as f:

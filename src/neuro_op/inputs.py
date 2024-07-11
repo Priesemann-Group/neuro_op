@@ -6,7 +6,7 @@ from .utils import build_random_network
 
 
 input_ref_Grid = dict(
-    # Reference input for 'run_model_Grid' function. For description of contents, see 'run_model' function docstring.
+    # Reference input for 'run_Grid' function. For description of contents, see 'run_model' function docstring.
     G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
     mu_arr=np.linspace(-10, 10, 201),  # beliefs considered by each node
     sd_arr=np.linspace(0, 10, 101)[
@@ -32,6 +32,10 @@ input_ref_Grid = dict(
     sampling=True,
 )
 
+input_ref_GridMu = dict(
+    G=build_random_network(N_nodes=100, N_neighbours=5),
+    mu_arr=np.linspace(-10, 10, 201),
+)
 
 input_ref_Param = dict(
     G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
