@@ -12,7 +12,7 @@ def ppd_Gaussian_mu(llf_nodes, beliefs, logprobs, sigma, N_samples=1000):
 
     Posterior predictive distribution (PPD) sampling first samples paramter values of the estimand from the posterior.
     Then these sampled parameter values will be used in llh  to sample predictions.
-    Thereby, the PPD includes all the uncertainty (i.e., model parameter value uncertainty (from posterior) & generative uncertainty (model with given parameter values creating data stochastically).
+    Thereby, theppd includes all the uncertainty (i.e., model parameter value uncertainty (from posterior) & generative uncertainty (model with given parameter values creating data stochastically).
 
     Keyword arguments:
     llf_nodes : scipy.stats function
@@ -51,27 +51,27 @@ def ppd_distances_Gaussian(
     p_distance_params=[],
 ):
     """
-    Return approximated distances between system nodes' PPDs and world state's distribution and binning used during approximation.
+     Return approximated distances between system nodes'ppds and world state's distribution and binning used during approximation.
 
-    Approximates distance between system nodes' posterior predictive distributions (PPDs) and world state's distribution.
-    PPDs and world state distributions are approximated by histogram-binning posterior predictive samples of each distribution.
-    Then, the wanted distance (KL divergence or p-distance) is calculated between each node distribution and the world distribution.
+     Approximates distance between system nodes' posterior predictive distributions (PPDs) and world state's distribution.
+    ppds and world state distributions are approximated by histogram-binning posterior predictive samples of each distribution.
+     Then, the wanted distance (KL divergence or p-distance) is calculated between each node distribution and the world distribution.
 
-    Keyword arguments:
-    llf_nodes : scipy.stats function
-        Likelihood function (llf) of nodes
-    llf_world : scipy.stats function
-        Likelihood function (llf) of world
-    beliefs : iterable
-        Possible parameter values into which a node may hold belief
-    nodes : list of Node objects
-        Objects for which to calculate distances
-    world : Node object
-        Node stroing & providing the actual/"real" state of the world
-    sample_bins : int
-        Number of bins used in histogram binning of posterior predictive samples
-    samlpe_range : tuple
-        Interval over which binning is performed
+     Keyword arguments:
+     llf_nodes : scipy.stats function
+         Likelihood function (llf) of nodes
+     llf_world : scipy.stats function
+         Likelihood function (llf) of world
+     beliefs : iterable
+         Possible parameter values into which a node may hold belief
+     nodes : list of Node objects
+         Objects for which to calculate distances
+     world : Node object
+         Node stroing & providing the actual/"real" state of the world
+     sample_bins : int
+         Number of bins used in histogram binning of posterior predictive samples
+     samlpe_range : tuple
+         Interval over which binning is performed
     """
 
     ppd_bins = np.linspace(sample_range[0], sample_range[1], sample_bins + 1)
@@ -90,15 +90,15 @@ def ppd_distances_Gaussian(
 
     ppds = [
         np.histogram(i, bins=sample_bins, range=sample_range)[0] for i in ppd_samples
-    ]  # create PPD approximations via sampling and binning into histograms
+    ]  # createppd approximations via sampling and binning into histograms
 
     if world.diary_out:
-        ppd_world_out = np.histogram(  # world PPD from all information shared to the network. Also stores binning used for all PPDs.
+        ppd_world_out = np.histogram(  # worldppd from all information shared to the network. Also stores binning used for allppds.
             np.array(world.diary_out)[:, 0], bins=sample_bins, range=sample_range
         )
         ppd_world_out = ppd_world_out[0] / np.sum(
             ppd_world_out[0]
-        )  # normalize world_out PPD
+        )  # normalize world_outppd
     else:
         ppd_world_out = np.zeros(sample_bins)
 
@@ -109,12 +109,12 @@ def ppd_distances_Gaussian(
         sample_range,
     )
 
-    # Get MLEs of each node's PPD -- note this implementation is not robust to PPDs with multiple peaks of same height
+    # Get MLEs of each node'sppd -- note this implementation is not robust toppds with multiple peaks of same height
     argmax = [np.where(i == np.max(i))[0] for i in ppds]
     argmax = [i[len(i) // 2] for i in argmax]
     mu_nodes = [(ppd_bins[i] + ppd_bins[i + 1]) / 2 for i in argmax]
 
-    # Get KL-divergences of each node's PPD
+    # Get KL-divergences of each node'sppd
     kl_divs = []
     for i in ppds:
         node_ppd = i / np.sum(i)
@@ -185,7 +185,7 @@ def ppd_distances_Laplace(
     # Get MLEs of each node
     mu_nodes = [node.params_node["loc"] for node in nodes]
 
-    # Get KL-divergences of each node's PPD
+    # Get KL-divergences of each node'sppd
     kl_divs = [kl_divergence(i, ppd_world) for i in ppd_nodes]
 
     # If p_distance_params given, calculate p-distances

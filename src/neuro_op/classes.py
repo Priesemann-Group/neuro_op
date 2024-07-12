@@ -45,12 +45,12 @@ class NodeGrid:
             self.log_probs[i] += llf.logpdf(x=info_in, loc=mu, scale=sd_arr)
         self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
 
-    def get_belief_sample(self, llf, mu_arr, sd_arr, t_sys, ppd=False):
+    def get_belief_sample(self, llf, mu_arr, sd_arr, t_sys, ppd=False, N_ppd=1000):
         """
-        Return PPD samples "data=...", i.e. with {mu, sd} chosen proportionally to 'log_probs'.
+        Returnppd samples "data=...", i.e. with {mu, sd} chosen proportionally to 'log_probs'.
         """
         if ppd:
-            size = 1000
+            size = N_ppd
         else:
             size = 1
         flat_probs = logpdf_to_pdf(self.log_probs).flatten()
@@ -101,12 +101,12 @@ class NodeGridMu:
             1 / (1 / self.sd**2 + 1 / self.sd_llf**2)
         ) ** 0.5  # closed-form standard deviation update (as if Normal conjugate llf & prior distributions)
 
-    def get_belief_sample(self, llf, mu_arr, t_sys, ppd=False):
+    def get_belief_sample(self, llf, mu_arr, t_sys, ppd=False, N_ppd=1000):
         """
-        Return PPD samples "data=...", i.e. with mu chosen proportionally to 'log_probs.
+        Return ppd samples "data=...", llf samples with mu chosen proportionally to 'log_probs.
         """
         if ppd:
-            size = 1000
+            size = N_ppd
         else:
             size = 1
         mu_sample = mu_arr[

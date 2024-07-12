@@ -5,6 +5,19 @@ import numpy as np
 import scipy.stats as st
 
 
+# All-lowercase glossary of terms & abbreviations used in the neuro_op package
+glossary = {
+    "dist": "Distribution",
+    "llf": "Likelihood function",
+    "mle": "Maximum likelihood estimate",
+    "mu": "Mean",
+    "pdf": "Probability density function",
+    "ppd": "Posterior predictive distribution",
+    "probs": "Probabilities",
+    "sd": "Standard deviation",
+}
+
+
 def build_random_network(N_nodes, N_neighbours):
     """
     Return directed graph of N_nodes with random connections.
@@ -48,18 +61,6 @@ def build_stochastic_block_model(N_nodes, N_blocks, N_neighbours, p_in=0.5, p_ou
     return G
 
 
-def llf_instance(st_function, dict_params):
-    """
-    Return a likelihood function instance of a given scipy.stats function.
-
-    Keyword arguments:
-    st_function : scipy.stats function
-        Likelihood function to be used for the model
-    """
-
-    return st_function(**dict_params)
-
-
 def logpdf_to_pdf(logprobs):
     """
     Returns array of relative log probabilities as normalized relative probabilities.
@@ -100,13 +101,9 @@ def dist_binning(llf, params, N_bins=50, range=(-20, 20)):
     return Q / np.sum(Q)
 
 
-def get_MLE_grid(log_probs, mu_arr):
+def get_MLE_Grid(log_probs, mu_arr):
     """
-    Returns the index of the maximum log-probability in an array, or, for multiple maxima, the "most central" one.
-
-    Keyword arguments:
-    log_probs : iterable
-        array of log-probabilities
+    Returns MLE of mu, or, for multiple maxima, the "most central" one.
     """
 
     return mu_arr[[i[len(i) // 2] for i in np.where(log_probs == np.max(log_probs))][0]]
