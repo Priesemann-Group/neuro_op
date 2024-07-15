@@ -93,10 +93,10 @@ class NodeGridMu:
     def set_updated_belief(self, llf_nodes, mu_arr, info_in, id_in, t_sys):
         """Grid-wise update of mean belief, closed-form update of standard deviation; assuming Normal llf with known standard deviation."""
         self.diary_in += [[info_in, id_in, t_sys]]
-        self.logprobs += llf_nodes.logpdf(
-            x=info_in, loc=mu_arr, scale=self.sd
+        self.log_probs += llf_nodes.logpdf(
+            x=info_in, loc=mu_arr, scale=self.sd_llf
         )  # Bayesian update (log_post ~ log_prior + log_llh)
-        self.logprobs -= np.max(self.logprobs)  # subtract max for numerical stability
+        self.log_probs -= np.max(self.log_probs)  # subtract max for numerical stability
         self.sd = (
             1 / (1 / self.sd**2 + 1 / self.sd_llf**2)
         ) ** 0.5  # closed-form standard deviation update (as if Normal conjugate llf & prior distributions)

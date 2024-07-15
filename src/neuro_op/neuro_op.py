@@ -20,10 +20,10 @@ def run_Grid(
     r,
     t0,
     t_max,
-    t_sample=1,
-    sample_range=(-10, 10),
-    sample_bins=101,
-    sampling=False,
+    t_sample,
+    sample_range,
+    sample_bins,
+    sampling,
 ):
     """
     Run network dynamics with nodesGrid class & return results.
@@ -171,8 +171,8 @@ def run_GridMu(
     t0,
     t_max,
     t_sample,
-    sample_bins,
     sample_range,
+    sample_bins,
     sampling,
 ):
     """
@@ -195,9 +195,9 @@ def run_GridMu(
     ]
     world = NodeGridMu(
         node_id=-1,
-        log_priors=llf_world.logpdf(loc=mu_world, scale=0, x=mu_arr),
+        log_priors=llf_world.logpdf(loc=mu_world, scale=sd_world, x=mu_arr),
         sd=0,
-        sd_llf=sd_world,
+        sd_llf=0,
     )
     world_ppd = dist_binning(
         llf_world, {"loc": mu_world, "scale": sd_world}, sample_bins, sample_range
@@ -254,7 +254,7 @@ def run_GridMu(
             nodesGridMu[chatters[0]].set_updated_belief(
                 llf_nodes, mu_arr, sample1, chatters[1], t
             )
-            NodeGridMu[chatters[1]].set_updated_belief(
+            nodesGridMu[chatters[1]].set_updated_belief(
                 llf_nodes, mu_arr, sample0, chatters[0], t
             )
         t += st.expon.rvs(scale=1 / (h + r))
@@ -304,17 +304,17 @@ def run_GridMu(
 def run_ConjMu(
     G,
     llf_nodes,
-    llf_world,
     params_node,
     sd_llf,
+    llf_world,
     params_world,
     h,
     r,
     t0,
     t_max,
     t_sample,
-    sample_bins,
     sample_range,
+    sample_bins,
     sampling,
 ):
     """

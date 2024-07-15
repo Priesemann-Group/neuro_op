@@ -21,34 +21,42 @@ input_ref_Grid = dict(
     t0=0,  # Start time of simulation
     t_max=50,  # End time of simulation
     t_sample=1,  # Sampling periodicity
-    sample_range=(
-        -10,
-        10,
-    ),
-    sample_bins=101,
+    sample_range=(-10, 10),
+    sample_bins=201,
     sampling=True,
 )
 
+
 input_ref_GridMu = dict(
     G=build_random_network(N_nodes=100, N_neighbours=5),
-    llf_world=st.norm,
-    mu_world=0,
-    sd_world=1,
     llf_nodes=st.norm,
     mu_arr=np.linspace(-10, 10, 201),
     log_priors=np.zeros(201),
-    sd_prior=5,
+    sd_prior=10,
+    sd_llf_nodes=1,
+    llf_world=st.norm,
+    mu_world=0,
+    sd_world=1,
+    h=1,
+    r=1,
+    t0=0,
+    t_max=50,
+    t_sample=1,
+    sample_range=(-10, 10),
+    sample_bins=201,
+    sampling=True,
 )
+
 
 input_ref_ConjMu = dict(
     G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
-    llf_world=st.norm,  # Likelihood function (llf) of world, Gaussian by default
     params_node=dict(  # Parameter priors of nodes (mu and associated uncertainty (standard deviation)), Gaussian by default
         loc=0,
         scale=10,
     ),
     sd_llf=1,  # Standard deviation of the likelihood function (llf) of nodes, assumed known & static
+    llf_world=st.norm,  # Likelihood function (llf) of world, Gaussian by default
     params_world=dict(  # Likelihood function (llf) parameters of world, Gaussian by default
         loc=0,
         scale=1,
@@ -57,11 +65,11 @@ input_ref_ConjMu = dict(
     r=1,  # Rate of edge information exchange events
     t0=0,  # Start time of simulation
     t_max=50,  # End time of simulation
-    t_sample=0.5,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
-    sample_bins=201,  # Number of bins used in distance measures
+    t_sample=1,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
     sample_range=(
         -5,
         5,
     ),  # Interval over which distance measure distributions are considered
+    sample_bins=201,  # Number of bins used in distance measures
     sampling=True,  # Switch for sampling
 )
