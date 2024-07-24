@@ -161,8 +161,7 @@ def run_GridMu(
     llf_nodes,
     mu_arr,
     log_priors,
-    sd_prior,
-    sd_llf_nodes,
+    sd_llf,
     llf_world,
     mu_world,
     sd_world,
@@ -188,16 +187,12 @@ def run_GridMu(
         NodeGridMu(
             node_id=i,
             log_priors=log_priors,
-            sd=sd_prior,
-            sd_llf=sd_llf_nodes,
         )
         for i in G.nodes()
     ]
     world = NodeGridMu(
         node_id=-1,
         log_priors=llf_world.logpdf(loc=mu_world, scale=sd_world, x=mu_arr),
-        sd=0,
-        sd_llf=0,
     )
     world_ppd = dist_binning(
         llf_world, {"loc": mu_world, "scale": sd_world}, sample_bins, sample_range
@@ -249,13 +244,17 @@ def run_GridMu(
         else:
             # event: two neighbours share information
             chatters = rng0.choice(list(G.edges()))
-            sample0 = nodesGridMu[chatters[0]].get_belief_sample(llf_nodes, mu_arr, t)
-            sample1 = nodesGridMu[chatters[1]].get_belief_sample(llf_nodes, mu_arr, t)
+            sample0 = nodesGridMu[chatters[0]].get_belief_sample(
+                llf_nodes, mu_arr, sd_llf, t
+            )
+            sample1 = nodesGridMu[chatters[1]].get_belief_sample(
+                llf_nodes, mu_arr, sd_llf, t
+            )
             nodesGridMu[chatters[0]].set_updated_belief(
-                llf_nodes, mu_arr, sample1, chatters[1], t
+                llf_nodes, mu_arr, sd_llf, sample1, chatters[1], t
             )
             nodesGridMu[chatters[1]].set_updated_belief(
-                llf_nodes, mu_arr, sample0, chatters[0], t
+                llf_nodes, mu_arr, sd_llf, sample0, chatters[0], t
             )
         t += st.expon.rvs(scale=1 / (h + r))
 

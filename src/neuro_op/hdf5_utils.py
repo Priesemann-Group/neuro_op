@@ -38,8 +38,6 @@ def export_hdf5(output, filename):
                         node_group.create_dataset("log_probs", data=node.log_probs)
                     if n == "nodesGridMu":
                         node_group.create_dataset("log_probs", data=node.log_probs)
-                        node_group.create_dataset("sd", data=node.sd)
-                        node_group.create_dataset("sd_llf", data=node.sd_llf)
                     if n == "nodesConjMu":
                         node_group.create_dataset("sd_llf", data=node.sd_llf)
                         for key, value in node.params_node.items():
@@ -115,8 +113,6 @@ def import_hdf5(filename):
                     world = NodeGridMu(
                         node_group["node_id"][()],
                         node_group["log_probs"][()],
-                        node_group["sd"][()],
-                        node_group["sd_llf"][()],
                         node_group["diary_in"][()],
                         node_group["diary_out"][()],
                     )
@@ -125,8 +121,6 @@ def import_hdf5(filename):
                         NodeGridMu(
                             node_group["node_id"][()],
                             node_group["log_probs"][()],
-                            node_group["sd"][()],
-                            node_group["sd_llf"][()],
                             node_group["diary_in"][()],
                             node_group["diary_out"][()],
                         )
