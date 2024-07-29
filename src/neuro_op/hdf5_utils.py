@@ -153,6 +153,34 @@ def import_hdf5(filename):
                             node_group["diary_out"][()],
                         )
                     )
+        elif "nodesConj" in f:
+            n = "nodesConj"
+            for node_name in f[n]:
+                node_group = f[n][node_name]
+                if node_group["node_id"][()] < 0:
+                    world = NodeConjMu(
+                        node_group["node_id"][()],
+                        {
+                            key: node_group[f"params_node/{key}"][()]
+                            for key in node_group["params_node"]
+                        },
+                        node_group["sd_llf"][()],
+                        node_group["diary_in"][()],
+                        node_group["diary_out"][()],
+                    )
+                else:
+                    nodes.append(
+                        NodeConjMu(
+                            node_group["node_id"][()],
+                            {
+                                key: node_group[f"params_node/{key}"][()]
+                                for key in node_group["params_node"]
+                            },
+                            node_group["sd_llf"][()],
+                            node_group["diary_in"][()],
+                            node_group["diary_out"][()],
+                        )
+                    )
         elif "nodesNormal" in f:
             n = "nodesNormal"
             for node_name in f[n]:
@@ -201,7 +229,7 @@ def import_hdf5(filename):
         elif "nodesGridMu" in f:
             dict_out["nodesGridMu"] = nodes
             dict_out["mu_arr"] = f["mu_arr"][()]
-        elif "nodesConjMu" in f:
+        elif "nodesConjMu" in f or "nodesConj" in f:
             dict_out["nodesConjMu"] = nodes
         elif "nodesNormal" in f:
             dict_out["nodesNormal"] = nodes

@@ -31,8 +31,8 @@ input_ref = dict(
     t_sample=1,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
     sample_bins=401,  # Number of bins used in distance measures
     sample_range=(
-        -10,
-        10,
+        -20,
+        20,
     ),  # Interval over which distance measure distributions are considered
     sampling=True,  # Switch for sampling
 )

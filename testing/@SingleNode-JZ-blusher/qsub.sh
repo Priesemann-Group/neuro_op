@@ -51,6 +51,10 @@ python ./computation.py ${SGE_TASK_ID} &
 # Wait for all the above processes to exit
 wait
 
+mkdir -p input output
+mv in*.pkl input/
+mv out*.h5 output/ 
+
 # Print diagnostic messages
 echo ------------
 echo Ended: `date`
