@@ -12,7 +12,7 @@ if len(sys.argv) > 1:
     idx = int(sys.argv[1]) - 1
 
 input_ref = nop.input_ref_ConjMu
-input_ref["G"] = (nx.empty_graph(1).to_directed(),)
+input_ref["G"] = nx.empty_graph(1).to_directed()
 input_ref["params_world"]["scale"] = 0
 input_ref["r"] = 0
 input_ref["t_max"] = 100000
