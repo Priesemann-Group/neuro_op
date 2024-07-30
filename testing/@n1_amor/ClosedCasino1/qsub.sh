@@ -3,7 +3,7 @@
 # Use bash as shell
 #$ -S /bin/bash
 
-rundir=/data.nst/jfriedel/projects/neuro_op_data/@n1_amor/2024-07C1
+rundir=/data.nst/jfriedel/projects/neuro_op/testing/@n1_amor/ClosedCasino1
 
 # Preserve environment variables
 #$ -V
@@ -51,8 +51,9 @@ python ./computation.py ${SGE_TASK_ID} &
 # Wait for all the above processes to exit
 wait
 
-mkdir -p input output
+mkdir -p input log output
 mv in*.pkl input/
+mv *.o*.* log/
 mv out*.h5 output/ 
 
 # Print diagnostic messages
