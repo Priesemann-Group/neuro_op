@@ -13,7 +13,6 @@ if len(sys.argv) > 1:
 
 input_ref = nop.input_ref_ConjMu
 input_ref["G"] = nx.empty_graph(1).to_directed()
-input_ref["params_world"]["scale"] = 0
 input_ref["r"] = 0
 input_ref["t_max"] = 100000
 input_ref["t_sample"] = 1
@@ -32,7 +31,7 @@ def model_run(input0, name=""):
     print("Current run:\t", name)
     output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
-    with open("in-" + name + ".pkl", "wb") as f:
+    with open("in" + name + ".pkl", "wb") as f:
         pickle.dump(input, f)
     nop.export_hdf5(output, "out-" + name + ".h5")
     del output
@@ -40,12 +39,16 @@ def model_run(input0, name=""):
     return None
 
 
-input0 = copy.deepcopy(input_ref)
+sd_world = np.arange(0, 2, 0.1)
 mu_arr = [0, 1, 10]
 sd_arr = [0.1, 1, 10]
-mu, sd = list(itertools.product(mu_arr, sd_arr))[idx]
+mu, sd = list(itertools.product(sd_world, mu_arr, sd_arr))[idx]
 
-input0["params_node"]["loc"] = mu
-input0["params_node"]["scale"] = sd
-name = str("mu" + str(mu) + "-sd" + str(sd))
-model_run(input0, name)
+for sdw in sd_world:
+    input0 = copy.deepcopy(input_ref)
+    input0["params_world"]["scale"] = sd_world
+    input0["params_node"]["loc"] = mu
+    input0["params_node"]["scale"] = sd
+    name = str("-sdWorld" + str(sd_world) + "-mu" + str(mu) + "-sd" + str(sd))
+
+    model_run(input0, name)
