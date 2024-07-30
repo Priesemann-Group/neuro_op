@@ -30,11 +30,11 @@ def model_run(input0, name=""):
 
     input = copy.deepcopy(input0)
     print("Current run:\t", name)
-    output = dict(nop.run_model_Param(**input))
+    output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
-    with open("in" + name + ".pkl", "wb") as f:
+    with open("in-" + name + ".pkl", "wb") as f:
         pickle.dump(input, f)
-    nop.export_hdf5(output, "out" + name + ".h5")
+    nop.export_hdf5(output, "out-" + name + ".h5")
     del output
     gc.collect()
     return None

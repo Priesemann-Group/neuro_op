@@ -175,7 +175,7 @@ def run_GridMu(
     sampling,
 ):
     """
-    Run network dynamics with GridMu nodes & return results.
+    Run network dynamics with NodeGridMu class & return results.
     """
     starttime = time.time()
     assert len(mu_arr) == len(log_priors)
@@ -317,7 +317,7 @@ def run_ConjMu(
     sampling,
 ):
     """
-    Run network dynamics with nodesGrid class & return results.
+    Run network dynamics with nodesConjMu class & return results.
     """
 
     starttime = time.time()

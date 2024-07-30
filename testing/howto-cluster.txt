@@ -1,6 +1,6 @@
 # Cluster How-To
 
-## Single Core, N Jobs
+## Single Core, X Jobs
 
 1.
 
@@ -8,12 +8,12 @@ ssh jfriedel@sohrab001
 
 2.
 
-/data.nst/jfriedel/projects/neuro_op_data/2024-06-c2
+source /core/uge/LMP/common/settings.sh
 
 3.
 
-cd rundir
+cd $(dir containing qsub*.sh)
 
 4.
 
-qsub -t 1:N -N nop_run -q rostam.q ./qsub_rostam.sh
+qsub -t 1:X -N nop_run -q rostam.q ./qsub_rostam.sh
