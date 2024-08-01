@@ -404,3 +404,4 @@ FodyWeavers.xsd
 graphics-output/
 *.png
 logs/
+nop_*.o*.*

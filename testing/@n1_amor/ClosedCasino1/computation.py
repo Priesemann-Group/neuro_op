@@ -33,22 +33,24 @@ def model_run(input0, name=""):
     print("\n\t t_exec = ", output["t_exec"], "s\n")
     with open("in" + name + ".pkl", "wb") as f:
         pickle.dump(input, f)
-    nop.export_hdf5(output, "out-" + name + ".h5")
+    nop.export_hdf5(output, "out" + name + ".h5")
     del output
     gc.collect()
     return None
 
 
-sd_world = np.arange(0, 2, 0.1)
-mu_arr = [0, 1, 10]
-sd_arr = [0.1, 1, 10]
-mu, sd = list(itertools.product(sd_world, mu_arr, sd_arr))[idx]
+mu_arr = np.round(np.arange(0, 10.2, 0.2), 1)
+sd_arr = np.round(np.arange(0.2, 10.2, 0.2), 1)
+sdw_arr = np.round(np.arange(0, 2.1, 0.1), 1)
+mu = mu_arr[idx]
+# mu, sd = list(itertools.product(mu_arr, sd_arr))[idx]
 
-for sdw in sd_world:
-    input0 = copy.deepcopy(input_ref)
-    input0["params_world"]["scale"] = sd_world
-    input0["params_node"]["loc"] = mu
-    input0["params_node"]["scale"] = sd
-    name = str("-sdWorld" + str(sd_world) + "-mu" + str(mu) + "-sd" + str(sd))
+for sd in sd_arr:
+    for sdw in sdw_arr:
+        input0 = copy.deepcopy(input_ref)
+        input0["params_node"]["loc"] = mu
+        input0["params_node"]["scale"] = sd
+        input0["params_world"]["scale"] = sdw
+        name = str("-sdw" + str(sdw) + "-mu" + str(mu) + "-sd" + str(sd))
 
-    model_run(input0, name)
+        model_run(input0, name)
