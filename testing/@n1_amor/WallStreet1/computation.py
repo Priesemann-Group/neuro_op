@@ -39,9 +39,9 @@ def model_run(input0, name=""):
     return None
 
 
-mu_arr = np.round(np.arange(0, 10.2, 0.2), 1)
-sd_arr = np.round(np.arange(0.2, 10.2, 0.2), 1)
-sdw_arr = np.round(np.arange(0, 2.1, 0.1), 1)
+mu_arr = np.round(np.arange(0, 11, 1), 0)
+sd_arr = np.round(np.arange(0.2, 2.2, 0.2), 1)
+sdw_arr = np.round(np.arange(0, 1.1, 0.2), 1)
 mu = mu_arr[idx]
 # mu, sd = list(itertools.product(mu_arr, sd_arr))[idx]
 
