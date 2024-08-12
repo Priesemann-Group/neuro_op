@@ -1,4 +1,6 @@
 # Useful functions for neuro_op dynamics implementation
+import random
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np

@@ -29,6 +29,7 @@ def model_run(input0, name=""):
 
     input = copy.deepcopy(input0)
     print("Current run:\t", name)
+    # init_seeds()
     output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
     with open("in" + name + ".pkl", "wb") as f:

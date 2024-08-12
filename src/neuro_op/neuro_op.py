@@ -315,6 +315,7 @@ def run_ConjMu(
     sample_range,
     sample_bins,
     sampling,
+    init_rngs=False,
 ):
     """
     Run network dynamics with nodesConjMu class & return results.
@@ -322,6 +323,9 @@ def run_ConjMu(
 
     starttime = time.time()
     # Set up simulation environment (nodes, world, utility variables)...
+    if init_rngs:
+        global RANDOM_SEED, rng0, rng
+        RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
     r = r * len(G)
