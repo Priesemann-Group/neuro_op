@@ -15,7 +15,7 @@ np.random.seed(RANDOM_SEED % 2**32)
 
 
 def init_seeds(seed=None):
-    """ "(Re-)Initialize randomness and RNGs with a given seed for reproducible random numbers."""
+    """ "(Re-)Initialize randomness and RNGs with provided or new seed."""
 
     if seed is None:
         seed = np.random.SeedSequence().entropy

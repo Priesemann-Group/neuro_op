@@ -47,7 +47,7 @@ class NodeGrid:
 
     def get_belief_sample(self, llf, mu_arr, sd_arr, t_sys, ppd=False, N_ppd=1000):
         """
-        Returnppd samples "data=...", i.e. with {mu, sd} chosen proportionally to 'log_probs'.
+        Return ppd samples "data=...", i.e. with {mu, sd} chosen proportionally to 'log_probs'.
         """
         if ppd:
             size = N_ppd

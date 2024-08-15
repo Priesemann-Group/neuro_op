@@ -24,6 +24,7 @@ def run_Grid(
     sample_range,
     sample_bins,
     sampling,
+    init_rngs,
 ):
     """
     Run network dynamics with nodesGrid class & return results.
@@ -32,6 +33,10 @@ def run_Grid(
     starttime = time.time()
     assert (len(mu_arr), len(sd_arr)) == log_priors.shape
     # Set up simulation environment (nodes, world, utility variables)...
+    # For reproducibility, (re)initialize RNGs with current seed
+    if init_rngs:
+        global RANDOM_SEED, rng0, rng
+        RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
     r = r * len(G)
@@ -173,6 +178,7 @@ def run_GridMu(
     sample_range,
     sample_bins,
     sampling,
+    init_rngs,
 ):
     """
     Run network dynamics with NodeGridMu class & return results.
@@ -180,6 +186,10 @@ def run_GridMu(
     starttime = time.time()
     assert len(mu_arr) == len(log_priors)
     # Set up simulation environment (nodes, world, utility variables)...
+    # For reproducibility, (re)initialize RNGs with current seed
+    if init_rngs:
+        global RANDOM_SEED, rng0, rng
+        RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
     r = r * len(G)
@@ -221,7 +231,9 @@ def run_GridMu(
                     kl_divergence(
                         P=world_ppd,
                         Q=np.histogram(
-                            node.get_belief_sample(llf_nodes, mu_arr, t, ppd=True),
+                            node.get_belief_sample(
+                                llf_nodes, mu_arr, sd_llf, t, ppd=True
+                            ),
                             bins=sample_bins,
                             range=sample_range,
                         )[0],
@@ -237,7 +249,8 @@ def run_GridMu(
             node.set_updated_belief(
                 llf_nodes,
                 mu_arr,
-                info_in=world.get_belief_sample(llf_world, mu_arr, t),
+                sd_llf,
+                info_in=world.get_belief_sample(llf_world, mu_arr, sd_llf, t),
                 id_in=world.node_id,
                 t_sys=t,
             )
@@ -272,7 +285,7 @@ def run_GridMu(
                 kl_divergence(
                     P=world_ppd,
                     Q=np.histogram(
-                        node.get_belief_sample(llf_nodes, mu_arr, t, ppd=True),
+                        node.get_belief_sample(llf_nodes, mu_arr, sd_llf, t, ppd=True),
                         bins=sample_bins,
                         range=sample_range,
                     )[0],
@@ -315,7 +328,7 @@ def run_ConjMu(
     sample_range,
     sample_bins,
     sampling,
-    init_rngs=False,
+    init_rngs,
 ):
     """
     Run network dynamics with nodesConjMu class & return results.
@@ -323,6 +336,7 @@ def run_ConjMu(
 
     starttime = time.time()
     # Set up simulation environment (nodes, world, utility variables)...
+    # For reproducibility, (re)initialize RNGs with current seed
     if init_rngs:
         global RANDOM_SEED, rng0, rng
         RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)

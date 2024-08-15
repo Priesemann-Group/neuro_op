@@ -24,6 +24,7 @@ input_ref_Grid = dict(
     sample_range=(-10, 10),
     sample_bins=201,
     sampling=True,
+    init_rngs=True,  # Re-initialize random number generators for a reproducible run
 )
 
 
@@ -44,6 +45,7 @@ input_ref_GridMu = dict(
     sample_range=(-10, 10),
     sample_bins=201,
     sampling=True,
+    init_rngs=True,
 )
 
 
@@ -71,4 +73,5 @@ input_ref_ConjMu = dict(
     ),  # Interval over which distance measure distributions are considered
     sample_bins=201,  # Number of bins used in distance measures
     sampling=True,  # Switch for sampling
+    init_rngs=True,  # Re-initialize random number generators for a reproducible run
 )
