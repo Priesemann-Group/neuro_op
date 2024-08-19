@@ -179,7 +179,7 @@ def postrun_Mu_ConjMu(
     sd_llf,
     diary_in,
 ):
-    """Calculate posterior param.s of a NodeConjMu with some diary_in as input."""
+    """Calculate posterior param.s of a NodeConjMu with some diary_in (subset) as input."""
     x_in = np.array(diary_in)[:, 0]
     # t_in = np.array(diary_in)[:, 2]
     mu_post = np.zeros_like(x_in)
@@ -217,4 +217,4 @@ def plot_setup(fig_dpi=200, save_dpi=3000):
 
 def get_colorcycle(N_colors, cmap="viridis"):
     colormap = plt.get_cmap(cmap)
-    return [colormap(i) for i in np.linspace(0, 1, N_colors)]
+    return [colormap(i) for i in np.linspace(1/N_colors, 1-1/N_colors, N_colors)]
