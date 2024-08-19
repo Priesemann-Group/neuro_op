@@ -15,7 +15,7 @@ Unless noted otherwise, each test used `NodesConjMu`.
 ### BlackJack2
 
 - Fine-grained scan ranges (usually step size 0.2)
-- **with rng reinit** (after new rng init implementation)
+- **with rng reinit of same seed** (after new rng init implementation)
 
 ### WallStreet1
 
@@ -25,4 +25,4 @@ Unless noted otherwise, each test used `NodesConjMu`.
 ### WallStreet2
 
 - Coarse-grained scan ranges (especially for $\mu_{prior}$)
-- **with rng reinit** (after new rng init implementation)
+- **with rng reinit of same seed** (after new rng init implementation)

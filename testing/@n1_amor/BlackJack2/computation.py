@@ -18,6 +18,8 @@ input_ref["t_max"] = 100000
 input_ref["t_sample"] = 1
 input_ref["sample_range"] = (-20, 20)
 input_ref["sample_bins"] = 801
+input_ref["init_rngs"] = True
+input_ref["seed"] = 251328883828642274994245237017599543369
 
 
 def model_run(input0, name=""):

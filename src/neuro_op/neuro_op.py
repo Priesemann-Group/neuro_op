@@ -25,6 +25,7 @@ def run_Grid(
     sample_bins,
     sampling,
     init_rngs,
+    seed,
 ):
     """
     Run network dynamics with nodesGrid class & return results.
@@ -36,6 +37,8 @@ def run_Grid(
     # For reproducibility, (re)initialize RNGs with current seed
     if init_rngs:
         global RANDOM_SEED, rng0, rng
+        if bool(int(seed)):
+            RANDOM_SEED = seed
         RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
@@ -179,6 +182,7 @@ def run_GridMu(
     sample_bins,
     sampling,
     init_rngs,
+    seed,
 ):
     """
     Run network dynamics with NodeGridMu class & return results.
@@ -189,6 +193,8 @@ def run_GridMu(
     # For reproducibility, (re)initialize RNGs with current seed
     if init_rngs:
         global RANDOM_SEED, rng0, rng
+        if bool(int(seed)):
+            RANDOM_SEED = seed
         RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
@@ -329,6 +335,7 @@ def run_ConjMu(
     sample_bins,
     sampling,
     init_rngs,
+    seed,
 ):
     """
     Run network dynamics with nodesConjMu class & return results.
@@ -339,6 +346,8 @@ def run_ConjMu(
     # For reproducibility, (re)initialize RNGs with current seed
     if init_rngs:
         global RANDOM_SEED, rng0, rng
+        if bool(int(seed)):
+            RANDOM_SEED = seed
         RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)
     # Renormalize rates to keep rate per node constant
     h = h * len(G)
