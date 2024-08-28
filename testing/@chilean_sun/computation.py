@@ -48,6 +48,6 @@ for mu, sd in list(itertools.product(mu_arr, sd_arr)):
     input0["params_node"]["loc"] = mu
     input0["params_node"]["scale"] = sd
     input0["r"] = r_arr[idx]
-    name = str("-mu" + str(mu) + "-sd" + str(sd) + "-r" + str(r))
+    name = str("-mu" + str(mu) + "-sd" + str(sd) + "-r" + str(r_arr[idx]))
 
     model_run(input0, name)
