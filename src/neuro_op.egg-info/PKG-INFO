@@ -43,7 +43,7 @@ Subsequently, change into the just-cloned directory and, if you have not yet set
 
 ```bash
 $ cd neuro_op
-$ # If not yet existing, create conda environment with needed packages. This also installs pip within this environment
+$ # If not yet existing, create conda environment with needed packages. This also installs pip within that environment
 $ conda env create -f environment.yml
 ```
 
