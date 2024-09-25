@@ -42,22 +42,17 @@ def model_run(input0, name=""):
 
 
 mu_arr = np.round(np.arange(0, 11, 1), 0)
-sd_arr = [0.2, 1, 2]
+sd_arr = np.round(np.arange(0.2, 2.2, 0.2), 1)
+sdw_arr = np.round(np.arange(0, 1.1, 0.2), 1)
 mu = mu_arr[idx]
 # mu, sd = list(itertools.product(mu_arr, sd_arr))[idx]
 
 for sd in sd_arr:
-    for sd2 in sd_arr:
+    for sdw in sdw_arr:
         input0 = copy.deepcopy(input_ref)
         input0["params_node"]["loc"] = mu
         input0["params_node"]["scale"] = sd
-        input0["params_world"]["scale"] = sd2
-        name = str("-sdw" + str(sd2) + "-mu" + str(mu) + "-sd" + str(sd))
-        model_run(input0, name)
+        input0["params_world"]["scale"] = sdw
+        name = str("-sdw" + str(sdw) + "-mu" + str(mu) + "-sd" + str(sd))
 
-        input0 = copy.deepcopy(input_ref)
-        input0["params_node"]["loc"] = mu
-        input0["params_node"]["scale"] = sd
-        input0["sd_llf"] = sd2
-        name = str("-sd_llf" + str(sd2) + "-mu" + str(mu) + "-sd" + str(sd))
         model_run(input0, name)

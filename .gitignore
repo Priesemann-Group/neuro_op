@@ -401,7 +401,8 @@ FodyWeavers.xsd
 # Personal additions
 *.pkl
 *.h5
-graphics-output/
+fig/
+*.pdf
 *.png
 logs/
 nop_*.o*.*

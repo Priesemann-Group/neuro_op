@@ -206,12 +206,13 @@ def postrun_kld_ConjMu(mu_ppd, sd_ppd, mu_real=0, sd_real=1, N_bins=201, range=(
     return kl_divs
 
 
-def plot_setup(fig_dpi=200, save_dpi=2400):
+def plot_setup(fig_dpi=100, save_dpi=1200):
     plt.rcParams["figure.constrained_layout.use"] = True
-    plt.rcParams["figure.figsize"] = (3, 1.5)
     plt.rcParams["figure.dpi"] = fig_dpi
-    plt.rcParams["savefig.transparent"] = True
+    plt.rcParams["figure.figsize"] = (3, 1.5)
+    plt.rcParams["savefig.bbox"] = "tight"
     plt.rcParams["savefig.dpi"] = save_dpi
+    plt.rcParams["savefig.transparent"] = True
     return None
 
 
