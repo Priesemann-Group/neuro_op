@@ -26,3 +26,9 @@ Unless noted otherwise, each test used `NodesConjMu`.
 
 - Coarse-grained scan ranges (especially for $\mu_{prior}$)
 - **with rng reinit of same seed** (after new rng init implementation)
+
+### @MA-n1_amor
+
+- Coarse scan of 3 orders of magnitudes for sd values
+- with same seeds et al.
+- aim: Plot of n1 behaviour for some priors for some oom.s (3d grid kld...) for MA
