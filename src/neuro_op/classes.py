@@ -154,8 +154,6 @@ class NodeConjMu:
     def get_belief_sample(self, llf, t_sys):
         """
         Sample beliefs proportional to relative plausabilities.
-
-        Returns a list of format [sample, t_sys].
         """
         info_out = llf.rvs(
             loc=self.params_node["loc"],

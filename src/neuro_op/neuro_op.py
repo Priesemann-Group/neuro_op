@@ -331,8 +331,6 @@ def run_ConjMu(
     t0,
     t_max,
     t_sample,
-    sample_range,
-    sample_bins,
     sampling,
     init_rngs,
     seed,
@@ -343,53 +341,49 @@ def run_ConjMu(
 
     starttime = time.time()
     # Set up simulation environment (nodes, world, utility variables)...
-    # For reproducibility, (re)initialize RNGs with current seed
+    # For reproducibility, (re)initialize RNGs with current or supplied seed
     if init_rngs:
         global RANDOM_SEED, rng0, rng
         if bool(int(seed)):
             RANDOM_SEED = seed
         RANDOM_SEED, rng0, rng = init_seeds(RANDOM_SEED)
-    # Renormalize rates to keep rate per node constant
-    h = h * len(G)
-    r = r * len(G)
     nodesConjMu = [
         NodeConjMu(node_id=i, params_node=params_node, sd_llf=sd_llf) for i in G.nodes()
     ]
     world = NodeConjMu(node_id=-1, params_node=params_world)
-    if sampling:
-        world_binned = dist_binning(llf_world, params_world, sample_bins, sample_range)
-    N_events = 0
     t = t0
     sample_counter = int(t0 / t_sample)
     mu_nodes = []
+    sd_nodes = []
     kl_divs = []
+    N_events = 0
 
     # Run simulation...
     while t < t_max:
         # Sample MLEs, KLDs with periodicity t_sample...
         if sampling and sample_counter <= t / t_sample:
-            while len(mu_nodes) <= t / t_sample - 1:
+            while (
+                len(mu_nodes) <= t / t_sample - 1
+            ):  # If delta_t > t_sample, use latest sample as for skipped sampling points
                 sample_counter += 1
                 mu_nodes.append(mu_nodes[-1])
+                sd_nodes.append(sd_nodes[-1])
                 kl_divs.append(kl_divs[-1])
             sample_counter += 1
-            mu_nodes.append([node.params_node["loc"] for node in nodesConjMu])
+            mu_q = np.array([node.params_node["loc"] for node in nodesConjMu])
+            sd_q = np.array(
+                [node.params_node["scale"] + node.sd_llf for node in nodesConjMu]
+            )
+            mu_p = world.params_node["loc"]
+            sd_p = world.params_node["scale"]
+            mu_nodes.append(mu_q.tolist())
+            sd_nodes.append(sd_q.tolist())
             kl_divs.append(
-                [
-                    kl_divergence(
-                        P=world_binned,
-                        Q=dist_binning(
-                            llf_nodes,
-                            {
-                                "loc": node.params_node["loc"],
-                                "scale": node.params_node["scale"] + node.sd_llf,
-                            },
-                            sample_bins,
-                            sample_range,
-                        ),
-                    )
-                    for node in nodesConjMu
-                ]
+                (
+                    np.log(sd_q / sd_p)
+                    + (sd_p**2 + (mu_p - mu_q) ** 2) / (2 * sd_q**2)
+                    - 0.5
+                ).tolist()
             )
         # Information exchange event...
         N_events += 1
@@ -408,32 +402,30 @@ def run_ConjMu(
             sample1 = nodesConjMu[chatters[1]].get_belief_sample(llf_nodes, t)
             nodesConjMu[chatters[0]].set_updated_belief(sample1, chatters[1], t)
             nodesConjMu[chatters[1]].set_updated_belief(sample0, chatters[0], t)
-        t += st.expon.rvs(scale=1 / (h + r))
+        t += st.expon.rvs(scale=1 / (len(G) * (h + r)))
 
     # Post-run sampling...
     if sampling and sample_counter <= t / t_sample:
         while len(mu_nodes) <= t / t_sample - 1:
             sample_counter += 1
             mu_nodes.append(mu_nodes[-1])
+            sd_nodes.append(sd_nodes[-1])
             kl_divs.append(kl_divs[-1])
         sample_counter += 1
-        mu_nodes.append([node.params_node["loc"] for node in nodesConjMu])
+        mu_q = np.array([node.params_node["loc"] for node in nodesConjMu])
+        sd_q = np.array(
+            [node.params_node["scale"] + node.sd_llf for node in nodesConjMu]
+        )
+        mu_p = world.params_node["loc"]
+        sd_p = world.params_node["scale"]
+        mu_nodes.append(mu_q.tolist())
+        sd_nodes.append(sd_q.tolist())
         kl_divs.append(
-            [
-                kl_divergence(
-                    P=world_binned,
-                    Q=dist_binning(
-                        llf_nodes,
-                        {
-                            "loc": node.params_node["loc"],
-                            "scale": node.params_node["scale"] + node.sd_llf,
-                        },
-                        sample_bins,
-                        sample_range,
-                    ),
-                )
-                for node in nodesConjMu
-            ]
+            (
+                np.log(sd_q / sd_p)
+                + (sd_p**2 + (mu_p - mu_q) ** 2) / (2 * sd_q**2)
+                - 0.5
+            ).tolist()
         )
 
     # Return results...
@@ -449,6 +441,7 @@ def run_ConjMu(
     }
     if sampling:
         dict_out["mu_nodes"] = mu_nodes
+        dict_out["sd_nodes"] = sd_nodes
         dict_out["kl_divs"] = kl_divs
 
     return dict_out

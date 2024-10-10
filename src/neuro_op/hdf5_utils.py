@@ -65,6 +65,8 @@ def export_hdf5(output, filename):
             f.create_dataset("beliefs", data=output["beliefs"])
         if "mu_nodes" in output:
             f.create_dataset("mu_nodes", data=np.array(output["mu_nodes"]))
+        if "sd_nodes" in output:
+            f.create_dataset("sd_nodes", data=np.array(output["sd_nodes"]))
         if "kl_divs" in output:
             f.create_dataset("kl_divs", data=np.array(output["kl_divs"]))
 
@@ -240,6 +242,8 @@ def import_hdf5(filename):
             )
         if "mu_nodes" in f:
             dict_out["mu_nodes"] = f["mu_nodes"][()]
+        if "sd_nodes" in f:
+            dict_out["sd_nodes"] = f["sd_nodes"][()]
         if "kl_divs" in f:
             dict_out["kl_divs"] = f["kl_divs"][()]
 

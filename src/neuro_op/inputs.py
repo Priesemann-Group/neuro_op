@@ -67,14 +67,9 @@ input_ref_ConjMu = dict(
     h=1,  # Rate of external information draw events
     r=1,  # Rate of edge information exchange events
     t0=0,  # Start time of simulation
-    t_max=50,  # End time of simulation
+    t_max=100,  # End time of simulation
     t_sample=1,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
-    sample_range=(
-        -5,
-        5,
-    ),  # Interval over which distance measure distributions are considered
-    sample_bins=201,  # Number of bins used in distance measures
-    sampling=True,  # Switch for sampling
+    sampling=True,  # Whether to sample and calculate distances
     init_rngs=False,  # Re-initialize random number generators for a reproducible run
     seed=False,  # User-defined rng seed
 )
