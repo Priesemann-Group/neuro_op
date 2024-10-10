@@ -45,15 +45,12 @@ source /usr/ds/anaconda3-2022.05/bin/activate /data.nst/jfriedel/envs/neuro_op/
 
 mkdir -p $rundir
 cd $rundir
+mkdir -p input log output
 # Execute the above commands
 python ./computation.py ${SGE_TASK_ID} &
 # Wait for all the above processes to exit
 wait
 
-mkdir -p input log output
-mv *.pkl input/
-mv *.o*.* log/
-mv out*.h5 output/ 
 
 # Print diagnostic messages
 echo ------------
