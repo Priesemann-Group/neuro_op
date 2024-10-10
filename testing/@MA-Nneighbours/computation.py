@@ -36,7 +36,7 @@ input_ref["t_max"] = 500
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
 
-nn_arr = np.concatenate((np.arange(0, 10, 2), np.arange(10, 100, 10)))
+nn_arr = np.concatenate((np.arange(1, 10, 2), np.arange(10, 100, 10)))
 for nn in nn_arr:
     in_tmp = copy.deepcopy(input_ref)
     in_tmp["G"] = nop.build_random_network(N_nodes=100, N_neighbours=nn)
