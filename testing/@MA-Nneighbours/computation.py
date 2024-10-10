@@ -22,9 +22,9 @@ def model_run(in_tmp, name=""):
     print("Current run:\t", name)
     output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
-    with open("in" + name + ".pkl", "wb") as f:
+    with open("./input/in" + name + ".pkl", "wb") as f:
         pickle.dump(input, f)
-    nop.export_hdf5(output, "out" + name + ".h5")
+    nop.export_hdf5(output, "./output/out" + name + ".h5")
     del output
     gc.collect()
     return None
@@ -36,7 +36,7 @@ input_ref["t_max"] = 500
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
 
-nn_arr = np.concatenate((np.arange(1, 10, 2), np.arange(10, 100, 10)))
+nn_arr = np.concatenate((np.arange(1, 10, 2), np.arange(10, 101, 10)))
 for nn in nn_arr:
     in_tmp = copy.deepcopy(input_ref)
     in_tmp["G"] = nop.build_random_network(N_nodes=100, N_neighbours=nn)

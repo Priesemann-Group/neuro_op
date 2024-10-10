@@ -22,17 +22,17 @@ def model_run(in_tmp, name=""):
     print("Current run:\t", name)
     output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
-    with open("in" + name + ".pkl", "wb") as f:
+    with open("./input/in" + name + ".pkl", "wb") as f:
         pickle.dump(input, f)
-    nop.export_hdf5(output, "out" + name + ".h5")
+    nop.export_hdf5(output, "./output/out" + name + ".h5")
     del output
     gc.collect()
     return None
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
-log_N_arr = np.arange(5)
-log_t_arr = np.arange(5)
+log_N_arr = np.arange(1,6)
+log_t_arr = np.arange(1,6)
 # input_ref["init_rngs"] = True
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
