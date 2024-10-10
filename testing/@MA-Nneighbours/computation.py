@@ -11,25 +11,14 @@ import sys
 if len(sys.argv) > 1:
     idx = int(sys.argv[1]) - 1
 
-input_ref = nop.input_ref_ConjMu
-input_ref["G"] = nx.empty_graph(1).to_directed()
-input_ref["r"] = 0
-input_ref["t_max"] = 100000
-input_ref["t_sample"] = 1
-input_ref["sample_range"] = (-20, 20)
-input_ref["sample_bins"] = 801
-input_ref["init_rngs"] = True
-input_ref["seed"] = 251328883828642274994245237017599543369
 
-
-def model_run(input0, name=""):
+def model_run(in_tmp, name=""):
     """
     Call model with 'input0'.
 
     Serially run multiple model parameter sets, safe output to hdf5 file, garbage collect memory.
     """
-
-    input = copy.deepcopy(input0)
+    input = copy.deepcopy(in_tmp)
     print("Current run:\t", name)
     output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
@@ -41,18 +30,15 @@ def model_run(input0, name=""):
     return None
 
 
-mu_arr = np.round(np.arange(0, 11, 1), 0)
-sd_arr = np.round(np.arange(0.2, 2.2, 0.2), 1)
-sdw_arr = np.round(np.arange(0, 1.1, 0.2), 1)
-mu = mu_arr[idx]
-# mu, sd = list(itertools.product(mu_arr, sd_arr))[idx]
+input_ref = copy.deepcopy(nop.input_ref_ConjMu)
+input_ref["t_max"] = 500
+# input_ref["init_rngs"] = True
+# input_ref["seed"] = 251328883828642274994245237017599543369
 
-for sd in sd_arr:
-    for sdw in sdw_arr:
-        input0 = copy.deepcopy(input_ref)
-        input0["params_node"]["loc"] = mu
-        input0["params_node"]["scale"] = sd
-        input0["params_world"]["scale"] = sdw
-        name = str("-sdw" + str(sdw) + "-mu" + str(mu) + "-sd" + str(sd))
 
-        model_run(input0, name)
+nn_arr = np.concatenate((np.arange(0, 10, 2), np.arange(10, 100, 10)))
+for nn in nn_arr:
+    in_tmp = copy.deepcopy(input_ref)
+    in_tmp["G"] = nop.build_random_network(N_nodes=100, N_neighbours=nn)
+    name = str("-NN" + str(nn))
+    model_run(in_tmp, name)
