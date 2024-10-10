@@ -36,7 +36,8 @@ log_t_arr = np.arange(5)
 # input_ref["init_rngs"] = True
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
-for log_N, log_t in itertools.product(log_N_arr, log_t_arr)[idx]:
+log_N = log_N_arr[idx]
+for log_t in log_t_arr:
     in_tmp = copy.deepcopy(input_ref)
     in_tmp["G"] = nop.build_random_network(N_nodes=int(10**log_N), N_neighbours=5)
     in_tmp["t_max"] = 10**log_t

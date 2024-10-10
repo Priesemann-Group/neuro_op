@@ -51,7 +51,7 @@ python ./computation.py ${SGE_TASK_ID} &
 wait
 
 mkdir -p input log output
-mv in*.pkl input/
+mv *.pkl input/
 mv *.o*.* log/
 mv out*.h5 output/ 
 
