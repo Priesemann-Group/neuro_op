@@ -83,9 +83,11 @@ def import_hdf5(
 
     with h5py.File(filename, "r") as f:
         # Create nodes, world objects from imported old data...
-        nodes = []
         world = None
-        if nodes:
+        if not nodes:
+            nodes = []
+        else:
+            nodes = []
             if "nodesGrid" in f:
                 n = "nodesGrid"
                 for node_name in f[n]:
