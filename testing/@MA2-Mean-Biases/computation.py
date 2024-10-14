@@ -31,15 +31,21 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
-log_N_arr = np.arange(1,6)
-log_t_arr = np.arange(1,6)
+N_arr = [1, 2, 150]
+sd_arr = np.round(np.arange(1 / 3, 2.1, 1 / 3), 2)
 # input_ref["init_rngs"] = True
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
-log_N = log_N_arr[idx]
-for log_t in log_t_arr:
+sd = sd_arr[idx]  # => 6 cores
+for G in [
+    nx.Graph().add_node(),
+    nop.build_random_network(N_nodes=2, N_neighbours=1),
+    nop.build_random_network(N_nodes=150, N_neighbours=5),
+]:
     in_tmp = copy.deepcopy(input_ref)
-    in_tmp["G"] = nop.build_random_network(N_nodes=int(10**log_N), N_neighbours=5)
-    in_tmp["t_max"] = 10**log_t
-    name = str("-logN" + str(log_N) + "-t" + str(log_t))
+    if len(G) == 1:
+        in_tmp["r"] = 0
+    in_tmp["G"] = G
+    in_tmp["node_params"]["scale"] = sd
+    name = str("-N" + str(len(G)) + "-sd" + str(sd))
     model_run(in_tmp, name)

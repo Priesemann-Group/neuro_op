@@ -31,15 +31,35 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
-log_N_arr = np.arange(1,6)
-log_t_arr = np.arange(1,6)
-# input_ref["init_rngs"] = True
-# input_ref["seed"] = 251328883828642274994245237017599543369
+N_nodes = [1, 2, 150]
+mu_arr = np.round(np.arange(0, 10.1, 2.5), 0)
+sd_arr = np.round(np.arange(1, 10.1, 2), 1)
+r_arr = np.round(np.arange(1, 10.1, 2), 1)
+input_ref["init_rngs"] = True
+input_ref["seed"] = 169009300480314836251067998491130068212
 
-log_N = log_N_arr[idx]
-for log_t in log_t_arr:
-    in_tmp = copy.deepcopy(input_ref)
-    in_tmp["G"] = nop.build_random_network(N_nodes=int(10**log_N), N_neighbours=5)
-    in_tmp["t_max"] = 10**log_t
-    name = str("-logN" + str(log_N) + "-t" + str(log_t))
-    model_run(in_tmp, name)
+N_nodes, mu = list(itertools.product(N_nodes, mu_arr))[idx]  # => 15 cores
+if N_nodes == 1:
+    for sd in sd_arr:
+        in_tmp = copy.deepcopy(input_ref)
+        in_tmp["G"] = nx.empty_graph(1)
+        in_tmp["params_node"]["loc"] = mu
+        in_tmp["params_node"]["scale"] = sd
+        in_tmp["r"] = 0  # 1 node, so has to be
+        name = str("-N" + str(N_nodes) + "-mu" + str(mu) + "-sd" + str(sd))
+
+
+else:
+    for sd, r in itertools.product(sd_arr, r_arr):
+        in_tmp = copy.deepcopy(input_ref)
+        if N_nodes == 2:
+            in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=1)
+        else:
+            in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=5)
+        in_tmp["params_node"]["loc"] = mu
+        in_tmp["params_node"]["scale"] = sd
+        in_tmp["r"] = r
+        name = str(
+            "-N" + str(N_nodes) + "-r" + str(r) + "-mu" + str(mu) + "-sd" + str(sd)
+        )
+        model_run(in_tmp, name)

@@ -28,6 +28,7 @@ $\approx$ Fig. 2 of *Baumann et al.*
 $\approx$ Fig. 3/4 of *Baumann et al*
 - aka. density plots $\rho(\bullet)$ of opinions/KLD:
     - $\rho(r, \mu_i)$
+        - $r \approx$ 
     - $\rho(\langle \mu_j \rangle _{j: \exists w_{ij}}, \mu_i)$
 
 

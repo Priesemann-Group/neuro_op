@@ -31,15 +31,14 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
-log_N_arr = np.arange(1,6)
-log_t_arr = np.arange(1,6)
-# input_ref["init_rngs"] = True
-# input_ref["seed"] = 251328883828642274994245237017599543369
+N_arr = np.round(np.logspace(1, 3, 5), 0)
+t_arr = np.round(np.logspace(1, 3, 5), 0)
+input_ref["init_rngs"] = True
+input_ref["seed"] = 251328883828642274994245237017599543369
 
-log_N = log_N_arr[idx]
-for log_t in log_t_arr:
+for N_nodes, t_max in itertools.product(N_arr, t_arr):  # => 25 cores
     in_tmp = copy.deepcopy(input_ref)
-    in_tmp["G"] = nop.build_random_network(N_nodes=int(10**log_N), N_neighbours=5)
-    in_tmp["t_max"] = 10**log_t
-    name = str("-logN" + str(log_N) + "-t" + str(log_t))
+    in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=5)
+    in_tmp["t_max"] = t_max
+    name = str("" + "-N" + str(N_nodes) + "-t" + str(t_arr))
     model_run(in_tmp, name)

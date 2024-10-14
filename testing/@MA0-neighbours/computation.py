@@ -31,14 +31,14 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
-input_ref["t_max"] = 500
-# input_ref["init_rngs"] = True
-# input_ref["seed"] = 251328883828642274994245237017599543369
-
-
-nn_arr = np.concatenate((np.arange(1, 10, 2), np.arange(10, 101, 10)))
-for nn in nn_arr:
-    in_tmp = copy.deepcopy(input_ref)
-    in_tmp["G"] = nop.build_random_network(N_nodes=100, N_neighbours=nn)
-    name = str("-NN" + str(nn))
-    model_run(in_tmp, name)
+input_ref["t_max"] = 100
+input_ref["init_rngs"] = True
+input_ref["seed"] = 251328883828642274994245237017599543369
+nn_arr = np.round(
+    np.concatenate(([1], np.arange(2, 11, 2), np.arange(30, 150, 30), [149])), 0
+)
+nn = nn_arr[idx]  # => 11 cores
+in_tmp = copy.deepcopy(input_ref)
+in_tmp["G"] = nop.build_random_network(N_nodes=150, N_neighbours=nn)
+name = str("-nn" + str(nn))
+model_run(in_tmp, name)

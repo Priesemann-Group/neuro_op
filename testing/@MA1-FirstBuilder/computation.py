@@ -31,15 +31,25 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
-log_N_arr = np.arange(1,6)
-log_t_arr = np.arange(1,6)
-# input_ref["init_rngs"] = True
-# input_ref["seed"] = 251328883828642274994245237017599543369
+N_arr = [1, 2, 150]
+nn_arr = np.round(np.arange(4, 21, 4), 0)
+sd_llf_arr = np.round(np.arange(0.5, 5.1, 0.5), 1)
+input_ref["init_rngs"] = True
+input_ref["seed"] = 251328883828642274994245237017599543369
 
-log_N = log_N_arr[idx]
-for log_t in log_t_arr:
+sd_llf = sd_llf_arr[idx]  # => 10 cores
+for N_nodes, nn in itertools.product(N_arr, nn_arr):
     in_tmp = copy.deepcopy(input_ref)
-    in_tmp["G"] = nop.build_random_network(N_nodes=int(10**log_N), N_neighbours=5)
-    in_tmp["t_max"] = 10**log_t
-    name = str("-logN" + str(log_N) + "-t" + str(log_t))
+    if N_nodes == 1:
+        in_tmp["G"] = nx.empty_graph(1)
+        in_tmp["r"] = 0
+    elif N_nodes == 2:
+        in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=1)
+    else:
+        in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=nn)
+    in_tmp["sd_llf"] = sd_llf
+    name = ""
+    +"-N" + str(N_nodes)
+    +"-nn" + str(nn)
+    +"-sd_llf" + str(sd_llf)
     model_run(in_tmp, name)

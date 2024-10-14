@@ -52,7 +52,7 @@ input_ref_GridMu = dict(
 
 
 input_ref_ConjMu = dict(
-    G=build_random_network(N_nodes=100, N_neighbours=5),  # networkx graph object
+    G=build_random_network(N_nodes=150, N_neighbours=5),  # networkx graph object
     llf_nodes=st.norm,  # Likelihood function (llf) of nodes, Gaussian by default
     params_node=dict(  # Parameter priors of nodes (mu and associated uncertainty (standard deviation)), Gaussian by default
         loc=0,

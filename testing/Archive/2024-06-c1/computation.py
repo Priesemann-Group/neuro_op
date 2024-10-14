@@ -80,10 +80,10 @@ def model_run(input0, name=""):
 #    model_run(input0, name)
 #
 input0 = copy.deepcopy(input_ref)
-nn_arr = np.arange(5, 100, 5)
-mu_arr = np.arange(0, 5.1, 1)
+nn_arr = np.round(np.arange(5, 100, 5), 0)
+mu_arr = np.round(np.arange(0, 5.1, 1), 0)
 sd_arr = [0.5, 1, 2, 5, 10]
-r_arr = np.arange(0.25, 5.1, 0.25)
+r_arr = np.round(np.arange(0.25, 5.1, 0.25), 2)
 nn, mu, sd = list(itertools.product(nn_arr, mu_arr, sd_arr))[idx]
 
 input0["G"] = nop.build_random_network(100, nn)
@@ -91,5 +91,5 @@ input0["params_node"]["loc"] = mu
 input0["params_node"]["scale"] = sd
 for r in r_arr:
     input0["r"] = r
-    name = str("-nn" + str(nn) + "-mu" + str(mu) + "-sd" + str(sd) + "-r" + str(r))
+    name = str("-nn" + str(nn) + "-r" + str(r) + "-mu" + str(mu) + "-sd" + str(sd))
     model_run(input0, name)
