@@ -47,8 +47,7 @@ if N_nodes == 1:
         in_tmp["params_node"]["scale"] = sd
         in_tmp["r"] = 0  # 1 node, so has to be
         name = str("-N" + str(N_nodes) + "-mu" + str(mu) + "-sd" + str(sd))
-
-
+        model_run(in_tmp, name)
 else:
     for sd, r in itertools.product(sd_arr, r_arr):
         in_tmp = copy.deepcopy(input_ref)

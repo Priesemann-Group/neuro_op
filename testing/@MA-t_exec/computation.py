@@ -36,9 +36,11 @@ t_arr = np.round(np.logspace(1, 3, 5), 0)
 input_ref["init_rngs"] = True
 input_ref["seed"] = 251328883828642274994245237017599543369
 
-for N_nodes, t_max in itertools.product(N_arr, t_arr):  # => 25 cores
-    in_tmp = copy.deepcopy(input_ref)
-    in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=5)
-    in_tmp["t_max"] = t_max
-    name = str("" + "-N" + str(N_nodes) + "-t" + str(t_arr))
-    model_run(in_tmp, name)
+arr = list(itertools.product(N_arr, t_arr))
+
+N_nodes, t_max = arr[idx]  # => 25 cores
+in_tmp = copy.deepcopy(input_ref)
+in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=5)
+in_tmp["t_max"] = t_max
+name = str("" + "-N" + str(N_nodes) + "-t" + str(t_arr))
+model_run(in_tmp, name)

@@ -48,8 +48,5 @@ for N_nodes, nn in itertools.product(N_arr, nn_arr):
     else:
         in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=nn)
     in_tmp["sd_llf"] = sd_llf
-    name = ""
-    +"-N" + str(N_nodes)
-    +"-nn" + str(nn)
-    +"-sd_llf" + str(sd_llf)
+    name = str("-N" + str(N_nodes) + "-nn" + str(nn) + "-sd_llf" + str(sd_llf))
     model_run(in_tmp, name)

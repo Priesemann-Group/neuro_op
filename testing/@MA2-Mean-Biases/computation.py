@@ -38,7 +38,7 @@ sd_arr = np.round(np.arange(1 / 3, 2.1, 1 / 3), 2)
 
 sd = sd_arr[idx]  # => 6 cores
 for G in [
-    nx.Graph().add_node(),
+    nx.empty_graph(1),
     nop.build_random_network(N_nodes=2, N_neighbours=1),
     nop.build_random_network(N_nodes=150, N_neighbours=5),
 ]:
