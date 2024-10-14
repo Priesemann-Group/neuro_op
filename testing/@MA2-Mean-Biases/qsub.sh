@@ -3,7 +3,8 @@
 # Use bash as shell
 #$ -S /bin/bash
 
-rundir=/data.nst/jfriedel/projects/neuro_op/testing/@MA-t_exec
+rundir=/data.nst/jfriedel/projects/neuro_op/testing/@MA2-Mean-Biases
+
 # Preserve environment variables
 #$ -V
 

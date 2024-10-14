@@ -4,6 +4,7 @@
 #$ -S /bin/bash
 
 rundir=/data.nst/jfriedel/projects/neuro_op/testing/@MA-t_exec
+
 # Preserve environment variables
 #$ -V
 

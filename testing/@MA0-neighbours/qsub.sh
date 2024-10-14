@@ -4,6 +4,7 @@
 #$ -S /bin/bash
 
 rundir=/data.nst/jfriedel/projects/neuro_op/testing/@MA0-neighbours
+
 # Preserve environment variables
 #$ -V
 

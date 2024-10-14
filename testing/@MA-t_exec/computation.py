@@ -42,5 +42,5 @@ N_nodes, t_max = arr[idx]  # => 25 cores
 in_tmp = copy.deepcopy(input_ref)
 in_tmp["G"] = nop.build_random_network(N_nodes=int(N_nodes), N_neighbours=5)
 in_tmp["t_max"] = int(t_max)
-name = str("" + "-N" + str(int(N_nodes)) + "-t" + str(int(t_max))
+name = str("" + "-N" + str(int(N_nodes)) + "-t" + str(int(t_max)))
 model_run(in_tmp, name)
