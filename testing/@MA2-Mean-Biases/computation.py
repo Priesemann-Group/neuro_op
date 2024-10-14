@@ -46,6 +46,6 @@ for G in [
     if len(G) == 1:
         in_tmp["r"] = 0
     in_tmp["G"] = G
-    in_tmp["node_params"]["scale"] = sd
+    in_tmp["params_node"]["scale"] = sd
     name = str("-N" + str(len(G)) + "-sd" + str(sd))
     model_run(in_tmp, name)
