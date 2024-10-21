@@ -33,7 +33,7 @@ def model_run(in_tmp, name=""):
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
 N_arr = [1, 2, 150]
 sd_arr = np.round(np.arange(1 / 3, 2.1, 1 / 3), 2)
-G = nop.buil_random_network(
+G = nop.build_random_network(
     150, 5
 )  # Just called N_neighbours=5 sensible, nothing else to it
 # input_ref["init_rngs"] = True
@@ -52,5 +52,5 @@ for N in N_arr:
     else:
         in_tmp["G"] = G
     in_tmp["params_node"]["scale"] = sd
-    name = str("-N" + str(len(G)) + "-sd" + str(sd))
+    name = str("-N" + str(N) + "-sd" + str(sd))
     model_run(in_tmp, name)
