@@ -60,6 +60,8 @@ for N_nodes in N_arr:
     # Only vary nn if N_Nodes is not 1,2
     else:
         for nn in nn_arr:
-            in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=nn)
-            name = str("-N" + str(N_nodes) + "-nn" + str(nn) + "-sd_llf" + str(sd_llf))
-            model_run(in_tmp, name)
+            while k < 7:
+                k += 1
+                in_tmp["G"] = nop.build_random_network(N_nodes=N_nodes, N_neighbours=nn)
+                name = "-N" + str(N_nodes) + "-nn" + str(nn) + "-sd_llf" + str(sd_llf) + "-run" + str(k)
+                model_run(in_tmp, name)
