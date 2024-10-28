@@ -48,7 +48,7 @@ mkdir -p $rundir
 cd $rundir
 mkdir -p input2 log2 output2
 # Execute the above commands
-python ./computation22.py ${SGE_TASK_ID} &
+python ./computation2.py ${SGE_TASK_ID} &
 # Wait for all the above processes to exit
 wait
 
