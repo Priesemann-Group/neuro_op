@@ -39,10 +39,11 @@ nn_arr = np.round(
 )
 nn = nn_arr[idx]  # => 10 cores
 
-i=0
+i = 0
 while i < 10:
-	i+=1
-	in_tmp = copy.deepcopy(input_ref)
-	in_tmp["G"] = nop.build_random_network(N_nodes=150, N_neighbours=nn)
-	name = str("-nn" + str(nn)+"-run"+str(i))
-	model_run(in_tmp, name)
+    i += 1
+    in_tmp = copy.deepcopy(input_ref)
+    in_tmp["G"] = nop.build_random_network(N_nodes=150, N_neighbours=nn)
+    name = str("-nn" + str(nn) + "-run" + str(i))
+
+    model_run(in_tmp, name)
