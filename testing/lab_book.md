@@ -7,6 +7,15 @@ Normal brackets show dependencies to plot.
 
 ---
 
+## MA0-nn
+
+(may be named differently)
+
+- RQ: How does nn impact convergence/info spread?
+- H1: Small & high numbers increase convergence speed, medium numbers may prolong group uncertainty
+
+- *Run2* actually important:
+    - 10 runs per settings => no RNG init
 
 ## MA1-FirstBuilder
 
