@@ -1,0 +1,46 @@
+Started: Mon Oct 28 16:37:00 CET 2024
+on rostam075.lmp.ds.mpg.de
+------------
+Number of slots: 1, 10
+Current run:	 -nn149-run1
+
+	 t_exec =  372.61878633499146 s
+
+Current run:	 -nn149-run2
+
+	 t_exec =  379.28189849853516 s
+
+Current run:	 -nn149-run3
+
+	 t_exec =  381.8058581352234 s
+
+Current run:	 -nn149-run4
+
+	 t_exec =  378.2593688964844 s
+
+Current run:	 -nn149-run5
+
+	 t_exec =  380.710725069046 s
+
+Current run:	 -nn149-run6
+
+	 t_exec =  376.9675281047821 s
+
+Current run:	 -nn149-run7
+
+	 t_exec =  378.91856622695923 s
+
+Current run:	 -nn149-run8
+
+	 t_exec =  381.2555055618286 s
+
+Current run:	 -nn149-run9
+
+	 t_exec =  378.9114565849304 s
+
+Current run:	 -nn149-run10
+
+	 t_exec =  384.4680449962616 s
+
+------------
+Ended: Mon Oct 28 17:42:36 CET 2024

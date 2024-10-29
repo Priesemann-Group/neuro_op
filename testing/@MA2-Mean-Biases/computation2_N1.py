@@ -31,11 +31,12 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
+input_ref["t_max"] = 1e3
 N_arr = [1, 2, 150]
 sd_arr = np.round(np.arange(1 / 3, 2.1, 1 / 3), 2)
 G = nop.build_random_network(
-    150, 5
-)  # Just called N_neighbours=5 sensible, nothing else to it
+    150, 10
+)  # Just called N_neighbours=10 sensible, nothing else to it
 # input_ref["init_rngs"] = True
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
