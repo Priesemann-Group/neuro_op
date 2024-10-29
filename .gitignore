@@ -404,5 +404,5 @@ FodyWeavers.xsd
 fig/
 *.pdf
 *.png
-logs/
+log*/
 nop_*.o*.*
