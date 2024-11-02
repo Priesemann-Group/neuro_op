@@ -70,6 +70,7 @@ input_ref_ConjMu = dict(
     t_max=100,  # End time of simulation
     t_sample=1,  # Periodicity for which samples and distance measures (KL-div, p-distance) are taken
     sampling=True,  # Whether to sample and calculate distances
+    actInf=False,  # Whether or not to discount deviating info
     init_rngs=False,  # Re-initialize random number generators for a reproducible run
     seed=False,  # User-defined rng seed
 )
