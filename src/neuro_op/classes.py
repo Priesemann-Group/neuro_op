@@ -151,6 +151,16 @@ class NodeConjMu:
             1 / (1 / self.params_node["scale"] ** 2 + 1 / self.sd_llf**2)
         ) ** 0.5
 
+    def fep_action(self, info_in):
+        """Adapted Bayesian update to adapt update param.s for surprise minimisation."""
+        # Scale sd_in by H(x)/H(mu), with shannon entropy H(x)=-log p(x)
+        c = np.emath.logn(
+            n=st.norm.pdf(**self.params_node, x=self.params_node["loc"]),
+            x=st.norm.pdf(**self.params_node, x=info_in),
+        )
+        self.sd_llf = c
+        print(self.sd_llf)
+
     def get_belief_sample(self, llf, t_sys):
         """
         Sample beliefs proportional to relative plausabilities.

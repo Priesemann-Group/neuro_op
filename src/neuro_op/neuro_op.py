@@ -332,6 +332,7 @@ def run_ConjMu(
     t_max,
     t_sample,
     sampling,
+    actInf,
     init_rngs,
     seed,
 ):
@@ -390,11 +391,14 @@ def run_ConjMu(
         if rng.uniform() < h / (h + r):
             # event: world shares information
             node = rng0.choice(nodesConjMu)
+            x_in = world.get_belief_sample(llf_world, t)
             node.set_updated_belief(
-                info_in=world.get_belief_sample(llf_world, t),
+                info_in=x_in,
                 id_in=world.node_id,
                 t_sys=t,
             )
+            if actInf:
+                node.fep_action(x_in)
         else:
             # event: two neighbours share information
             chatters = rng0.choice(list(G.edges()))
@@ -402,6 +406,9 @@ def run_ConjMu(
             sample1 = nodesConjMu[chatters[1]].get_belief_sample(llf_nodes, t)
             nodesConjMu[chatters[0]].set_updated_belief(sample1, chatters[1], t)
             nodesConjMu[chatters[1]].set_updated_belief(sample0, chatters[0], t)
+            if actInf:
+                nodesConjMu[chatters[0]].fep_action(sample1)
+                nodesConjMu[chatters[1]].fep_action(sample0)
         t += st.expon.rvs(scale=1 / (len(G) * (h + r)))
 
     # Post-run sampling...
