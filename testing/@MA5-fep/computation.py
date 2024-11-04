@@ -31,15 +31,15 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
+actInf_arr = [1, 2]
 N_arr = [1, 2, 150]
 nn_arr = np.round(np.arange(3, 15.1, 3), 0)
 sd_llf_arr = np.round(np.arange(0.5, 3.1, 0.5), 1)
 input_ref["t_max"] = 1e3
-input_ref["actInf"] = True
 # input_ref["init_rngs"] = True
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
-sd_llf = sd_llf_arr[idx]  # => 6 cores
+actInf, sd_llf = list(itertools.product(actInf, sd_llf_arr))[idx]  # => 12 cores
 for N_nodes in N_arr:
     in_tmp = copy.deepcopy(input_ref)
     in_tmp["sd_llf"] = sd_llf

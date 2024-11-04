@@ -152,7 +152,17 @@ class NodeConjMu:
         ) ** 0.5
 
     def fep_action(self, info_in):
-        """Lower surprise by updating sd_in due to relative differential entropies of info_in, loc"""
+        """Given info_in, change sd_llf to minimize KLD(N(loc,scale) || N(info_in, sd_llf)"""
+        self.sd_llf = (
+            self.params_node["scale"] ** 2 + (self.params_node["loc"] - info_in) ** 2
+        ) ** 0.5
+
+    def fep_action2(self, info_in):
+        """
+        ---------- DEPRECATED ----------
+        (Was a try -- just that and not more, logic and result wise)
+        Lower surprise by updating sd_in due to relative differential entropies of info_in, loc
+        """
         # Scale sd_in by H(x)/H(mu), with differential entropy H
         entropy_x = normal_entropy(
             x=info_in,
@@ -165,16 +175,29 @@ class NodeConjMu:
             scale=(self.params_node["scale"] ** 2 + self.sd_llf**2) ** 0.5,
         )
         log_scaling = np.log(np.exp(entropy_x - entropy_mu) + 1e-6)
-        self.sd_llf *= np.exp(log_scaling)
+        self.sd_llf = np.clip(self.sd_llf * np.exp(log_scaling), 1e-6, 1e6)
+        print(self.sd_llf)
 
-    def get_belief_sample(self, llf, t_sys):
+    def get_belief_sample(
+        self,
+        llf,
+        t_sys,
+        actInf=False,
+    ):
         """
         Sample beliefs proportional to relative plausabilities.
         """
-        info_out = llf.rvs(
-            loc=self.params_node["loc"],
-            scale=(self.params_node["scale"] ** 2 + self.sd_llf**2) ** 0.5,
-        )
+        if actInf:
+            info_out = llf.rvs(
+                # **self.params_node,
+                loc=self.params_node["loc"],
+                scale=(self.params_node["scale"] ** 2 + self.sd_llf**2) ** 0.5,
+            )
+        else:
+            info_out = llf.rvs(
+                loc=self.params_node["loc"],
+                scale=(self.params_node["scale"] ** 2 + self.sd_llf**2) ** 0.5,
+            )
         self.diary_out += [[info_out, t_sys]]
         return info_out
 

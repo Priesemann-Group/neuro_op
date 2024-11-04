@@ -208,7 +208,7 @@ def postrun_kld_ConjMu(mu_ppd, sd_ppd, mu_real=0, sd_real=1, N_bins=201, range=(
 
 def normal_entropy(x, loc, scale):
     """Approximated entropy of a normal distribution at a specific value x."""
-    return 0.5 * np.log(2 * np.pi * scale**2) + 0.5 * ((x - loc) / scale) ** 2
+    return 0.5 * np.log(2 * np.pi * scale**2 + 1e-6) + 0.5 * ((x - loc) / scale) ** 2
 
 
 def plot_setup(fig_dpi=100, save_dpi=1200):

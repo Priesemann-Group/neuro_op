@@ -402,11 +402,14 @@ def run_ConjMu(
         else:
             # event: two neighbours share information
             chatters = rng0.choice(list(G.edges()))
-            sample0 = nodesConjMu[chatters[0]].get_belief_sample(llf_nodes, t)
-            sample1 = nodesConjMu[chatters[1]].get_belief_sample(llf_nodes, t)
+            sample0 = nodesConjMu[chatters[0]].get_belief_sample(llf_nodes, t, actInf)
+            sample1 = nodesConjMu[chatters[1]].get_belief_sample(llf_nodes, t, actInf)
+            if actInf == 1:
+                nodesConjMu[chatters[0]].fep_action(sample1)
+                nodesConjMu[chatters[1]].fep_action(sample0)
             nodesConjMu[chatters[0]].set_updated_belief(sample1, chatters[1], t)
             nodesConjMu[chatters[1]].set_updated_belief(sample0, chatters[0], t)
-            if actInf:
+            if actInf == 2:
                 nodesConjMu[chatters[0]].fep_action(sample1)
                 nodesConjMu[chatters[1]].fep_action(sample0)
         t += st.expon.rvs(scale=1 / (len(G) * (h + r)))
