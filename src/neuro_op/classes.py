@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats as st
 
 from .randomness import rng
-from .utils import logpdf_to_pdf
+from .utils import logpdf_to_pdf, normal_entropy
 
 
 class NodeGrid:
@@ -152,14 +152,20 @@ class NodeConjMu:
         ) ** 0.5
 
     def fep_action(self, info_in):
-        """Adapted Bayesian update to adapt update param.s for surprise minimisation."""
-        # Scale sd_in by H(x)/H(mu), with shannon entropy H(x)=-log p(x)
-        c = np.emath.logn(
-            n=st.norm.pdf(**self.params_node, x=self.params_node["loc"]),
-            x=st.norm.pdf(**self.params_node, x=info_in),
+        """Lower surprise by updating sd_in due to relative differential entropies of info_in, loc"""
+        # Scale sd_in by H(x)/H(mu), with differential entropy H
+        entropy_x = normal_entropy(
+            x=info_in,
+            loc=self.params_node["loc"],
+            scale=(self.params_node["scale"] ** 2 + self.sd_llf**2) ** 0.5,
         )
-        self.sd_llf = c
-        print(self.sd_llf)
+        entropy_mu = normal_entropy(
+            x=self.params_node["loc"],
+            loc=self.params_node["loc"],
+            scale=(self.params_node["scale"] ** 2 + self.sd_llf**2) ** 0.5,
+        )
+        log_scaling = np.log(np.exp(entropy_x - entropy_mu) + 1e-6)
+        self.sd_llf *= np.exp(log_scaling)
 
     def get_belief_sample(self, llf, t_sys):
         """
