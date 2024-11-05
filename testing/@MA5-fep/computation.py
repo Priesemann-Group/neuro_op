@@ -55,6 +55,8 @@ for N_nodes in N_arr:
             + str(N_nodes)
             + "-nn"
             + str(nn)
+            + "actInf"
+            + str(actInf)
             + "-sd_llf"
             + str(sd_llf)
             + "-run"
@@ -73,6 +75,8 @@ for N_nodes in N_arr:
             + str(N_nodes)
             + "-nn"
             + str(nn)
+            + "actInf"
+            + str(actInf)
             + "-sd_llf"
             + str(sd_llf)
             + "-run"
@@ -90,6 +94,8 @@ for N_nodes in N_arr:
                     + str(N_nodes)
                     + "-nn"
                     + str(nn)
+                    + "actInf"
+                    + str(actInf)
                     + "-sd_llf"
                     + str(sd_llf)
                     + "-run"
