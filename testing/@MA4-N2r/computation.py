@@ -31,7 +31,7 @@ def model_run(in_tmp, name=""):
 
 
 input_ref = copy.deepcopy(nop.input_ref_ConjMu)
-input_ref["t_max"] = 1e3
+input_ref["t_max"] = 1e4
 G = nx.empty_graph(150)
 for i in np.arange(0, 150, 2):
     G.add_edge(i, i + 1)
