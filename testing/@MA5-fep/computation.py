@@ -39,7 +39,7 @@ input_ref["t_max"] = 1e3
 # input_ref["init_rngs"] = True
 # input_ref["seed"] = 251328883828642274994245237017599543369
 
-actInf, sd_llf = list(itertools.product(actInf, sd_llf_arr))[idx]  # => 12 cores
+actInf, sd_llf = list(itertools.product(actInf_arr, sd_llf_arr))[idx]  # => 12 cores
 for N_nodes in N_arr:
     in_tmp = copy.deepcopy(input_ref)
     in_tmp["sd_llf"] = sd_llf
