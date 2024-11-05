@@ -23,7 +23,7 @@ def model_run(in_tmp, name=""):
     output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
     with open("./input_tmp/in" + name + ".pkl", "wb") as f:
-        pickle.dump(input, f)
+    pickle.dump(input, f)
     nop.export_hdf5(output, "./output_tmp/out" + name + ".h5")
     del output
     gc.collect()
@@ -43,6 +43,7 @@ actInf, sd_llf = list(itertools.product(actInf_arr, sd_llf_arr))[idx]  # => 12 c
 for N_nodes in N_arr:
     in_tmp = copy.deepcopy(input_ref)
     in_tmp["sd_llf"] = sd_llf
+    in_tmp["actInf"] = actInf
     if N_nodes == 1:
         in_tmp["G"] = nx.empty_graph(150)
         in_tmp["r"] = 0
@@ -92,7 +93,7 @@ for N_nodes in N_arr:
                     + "-sd_llf"
                     + str(sd_llf)
                     + "-run"
-                    + str(k)
+                    + str(run)
                 )
                 model_run(in_tmp, name)
                 run += 1
