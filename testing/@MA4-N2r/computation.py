@@ -39,7 +39,7 @@ input_ref["G"] = G
 # input_ref["init_rngs"] = True
 # input_ref["seed"] = 251328883828642274994245237017599543369
 r_arr = np.round(np.concatenate((np.arange(1, 5), np.arange(5, 20.1, 5))), 0)
-r = nn_arr[idx]  # => 8 cores
+r = r_arr[idx]  # => 8 cores
 
 in_tmp = copy.deepcopy(input_ref)
 in_tmp["r"] = r
