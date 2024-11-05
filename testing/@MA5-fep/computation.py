@@ -22,10 +22,10 @@ def model_run(in_tmp, name=""):
     print("Current run:\t", name)
     output = dict(nop.run_ConjMu(**input))
     print("\n\t t_exec = ", output["t_exec"], "s\n")
-    with open("./input_tmp/in" + name + ".pkl", "wb") as f:
-    pickle.dump(input, f)
     nop.export_hdf5(output, "./output_tmp/out" + name + ".h5")
     del output
+    with open("./input_tmp/in" + name + ".pkl", "wb") as f:
+        pickle.dump(input, f)
     gc.collect()
     return None
 
