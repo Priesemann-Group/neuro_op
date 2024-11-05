@@ -406,4 +406,3 @@ fig/
 *.png
 log*/
 nop_*.o*.*
-Archive/
