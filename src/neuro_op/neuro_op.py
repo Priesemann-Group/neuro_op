@@ -373,7 +373,10 @@ def run_ConjMu(
             sample_counter += 1
             mu_q = np.array([node.params_node["loc"] for node in nodesConjMu])
             sd_q = np.array(
-                [node.params_node["scale"] + node.sd_llf for node in nodesConjMu]
+                [
+                    (node.params_node["scale"] ** 2 + node.sd_llf**2) ** 0.5
+                    for node in nodesConjMu
+                ]
             )
             mu_p = world.params_node["loc"]
             sd_p = world.params_node["scale"]
