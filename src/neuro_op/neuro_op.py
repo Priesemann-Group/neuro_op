@@ -395,12 +395,14 @@ def run_ConjMu(
             # event: world shares information
             node = rng0.choice(nodesConjMu)
             x_in = world.get_belief_sample(llf_world, t)
+            if actInf == 1:
+                node.fep_action(x_in)
             node.set_updated_belief(
                 info_in=x_in,
                 id_in=world.node_id,
                 t_sys=t,
             )
-            if actInf:
+            if actInf == 2:
                 node.fep_action(x_in)
         else:
             # event: two neighbours share information
