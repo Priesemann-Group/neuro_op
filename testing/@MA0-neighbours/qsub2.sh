@@ -46,7 +46,7 @@ source /usr/ds/anaconda3-2022.05/bin/activate /data.nst/jfriedel/envs/neuro_op/
 
 mkdir -p $rundir
 cd $rundir
-mkdir -p input2 log2 output2
+mkdir -p input_tmp log_tmp output_tmp
 # Execute the above commands
 python ./computation2.py ${SGE_TASK_ID} &
 # Wait for all the above processes to exit
